@@ -199,7 +199,7 @@
 // 좌석 자동 선점 시뮬레이션 (다른 사람이 좌석을 가져가는 효과)
 (function() {
     var seatDisableInterval = null;
-    var disableSpeed = 200; // 0.8초마다 좌석 선점 (난이도 조절: 숫자 낮을수록 빠름)
+    var disableSpeed = 100; // 0.8초마다 좌석 선점 (난이도 조절: 숫자 낮을수록 빠름)
 
     function startSeatDisabling() {
         seatDisableInterval = setInterval(function() {
@@ -222,9 +222,11 @@
 
                 if (seatToDisable && !seatToDisable.classList.contains('SeatMap_disabled__MFwIq')) {
                     seatToDisable.classList.add('SeatMap_disabled__MFwIq');
-                    seatToDisable.style.fill = '#999';
+                    seatToDisable.style.fill = '#EDEFF3';
                     seatToDisable.style.fillOpacity = '1';
                     seatToDisable.style.cursor = 'not-allowed';
+                    seatToDisable.style.stroke = '#EDEFF3';
+                    seatToDisable.style.strokeOpacity = '0';
 
                     // 다시 가져오기 (선점된 좌석 제외)
                     availableSeats = document.querySelectorAll("[id^='seat_block_']:not(.SeatMap_disabled__MFwIq):not(.seat-selected)");
@@ -245,5 +247,15 @@
 
     // 2초 후 좌석 선점 시작 (사용자가 좌석 선택할 시간 부여)
     setTimeout(startSeatDisabling, 2000);
+})();
+</script>
+
+<script>
+// 좌석 선택 페이지 클릭 추적 계속
+(function() {
+    document.addEventListener('click', function() {
+        var count = parseInt(sessionStorage.getItem('ticketpro_click_count') || '0');
+        sessionStorage.setItem('ticketpro_click_count', count + 1);
+    });
 })();
 </script>

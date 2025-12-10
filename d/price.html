@@ -294,3 +294,13 @@
     }
 })();
 </script>
+
+<script>
+// 가격/수량 선택 페이지 클릭 추적 계속
+(function() {
+    document.addEventListener('click', function() {
+        var count = parseInt(sessionStorage.getItem('ticketpro_click_count') || '0');
+        sessionStorage.setItem('ticketpro_click_count', count + 1);
+    });
+})();
+</script>

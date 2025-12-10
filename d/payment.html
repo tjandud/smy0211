@@ -245,3 +245,52 @@
     }
 })();
 </script>
+
+<script>
+// 실전모드 AI 피드백 연동
+(function() {
+    // 클릭 추적 계속
+    document.addEventListener('click', function() {
+        var count = parseInt(sessionStorage.getItem('ticketpro_click_count') || '0');
+        sessionStorage.setItem('ticketpro_click_count', count + 1);
+    });
+    
+    // 예매 완료 모달의 확인 버튼 수정
+    setTimeout(function() {
+        var modalBtn = document.querySelector('#completeModal button');
+        if (modalBtn) {
+            modalBtn.onclick = function() {
+                // 종료 시간 계산
+                var startTime = parseInt(sessionStorage.getItem('ticketpro_start_time') || Date.now());
+                var endTime = Date.now();
+                var elapsedTime = endTime - startTime; // 밀리초 단위
+                var clickCount = parseInt(sessionStorage.getItem('ticketpro_click_count') || '0');
+                
+                // AI 피드백용 데이터 저장
+                var feedbackData = {
+                    category: '실전모드',
+                    difficulty: '인터파크',
+                    elapsedTime: elapsedTime,
+                    clickCount: clickCount,
+                    accuracy: Math.max(50, 100 - (clickCount * 2)), // 클릭이 적을수록 높은 정확도
+                    reactionTime: elapsedTime / Math.max(1, clickCount), // ms 단위
+                    mouseDistance: clickCount * 150, // 추정값
+                    success: true
+                };
+                
+                localStorage.setItem('ticketpro_feedback_data', JSON.stringify(feedbackData));
+                
+                // 세션 데이터 정리
+                sessionStorage.removeItem('ticketpro_start_time');
+                sessionStorage.removeItem('ticketpro_click_count');
+                sessionStorage.removeItem('ticketpro_mode');
+                
+                // AI 피드백 페이지로 이동
+                window.location.href = '../c/test_ticket/main-pages/ai-feedback.html';
+            };
+        }
+    }, 500);
+    
+    console.log('🎫 결제 페이지 AI 피드백 연동 완료!');
+})();
+</script>
