@@ -422,7 +422,7 @@
         }
 
         /* Step 1: 접속 대기 게임 */
-        .connection-container {
+        .connection-container { display: flex; flex-direction: column; align-items: center;
             max-width: 500px;
             margin: 0 auto;
             text-align: center;
@@ -1288,7 +1288,7 @@
     </div>
 
     <!-- 카운트다운 오버레이 -->
-    <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-overlay hidden" id="countdownOverlay">
         <div class="countdown-number" id="countdownNumber">3</div>
         <div class="countdown-text">대결 준비!</div>
     </div>

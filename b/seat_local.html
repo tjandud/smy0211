@@ -235,13 +235,44 @@ window.addEventListener('DOMContentLoaded', function () {
     S:   { name: "S석",   color: "#ff6aa6", price: 110000 },
     A:   { name: "A석",   color: "#4aa8ff", price:  80000 }
   };
-
-  const gradeKeys = Object.keys(seatGrades);
-
-  function getRandomGrade() {
-    const idx = Math.floor(Math.random() * gradeKeys.length);
-    return gradeKeys[idx];
+  // 좌표(층, 블록, 열) 기준으로 고정 등급 배정
+function getSeatGradeByLayout(floorName, blockName, row, col) {
+  // 1층: A 전부 R석,
+  //      B, C는 18열까지 VIP, 나머지 R석
+  if (floorName === "1F") {
+    if (blockName === "A") {
+      return "R";
+    }
+    if (blockName === "B" || blockName === "C") {
+      if (row <= 18) return "VIP";
+      return "R";
+    }
   }
+
+  // 2층:
+  //  - A, C: 5열까지 R석, 나머지 S석
+  //  - B: 3열까지 VIP, 4~5열 R석, 나머지 S석
+  if (floorName === "2F") {
+    if (blockName === "A" || blockName === "C") {
+      if (row <= 5) return "R";
+      return "S";
+    }
+    if (blockName === "B") {
+      if (row <= 3) return "VIP";
+      if (row <= 5) return "R";
+      return "S";
+    }
+  }
+
+  // 3층: 전부 4열까지 S석, 나머지 A석
+  if (floorName === "3F") {
+    if (row <= 4) return "S";
+    return "A";
+  }
+
+  // 혹시 조건 안 걸린 경우 기본값
+  return "A";
+}
 
 
   const floors = [
@@ -472,19 +503,19 @@ window.addEventListener('DOMContentLoaded', function () {
             rect.dataset.seatId = id;
             rect.style.cursor = "pointer";
 
-            // ★ 랜덤 등급 부여
-            const grade = getRandomGrade();
+// ★ 좌표 기반 고정 등급 부여
+const grade = getSeatGradeByLayout(floorName, blockName, r, c);
 
-            seats.push({
-              id,
-              floor: floorName,
-              block: blockName,
-              row: r,
-              col: c,
-              grade: grade,          // ← 랜덤 등급
-              status: "available",   // ← 처음엔 전부 오픈
-              el: rect
-            });
+seats.push({
+  id,
+  floor: floorName,
+  block: blockName,
+  row: r,
+  col: c,
+  grade: grade,          // 이제는 고정 등급
+  status: "available",
+  el: rect
+});
 
             // SVG에 추가 (항상 마지막에)
             svg.appendChild(rect);
