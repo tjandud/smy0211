@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>캐치테이블 배너 테스트</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    /* 배너 컨테이너 */
+    .banner-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: #fff;
+      position: relative;
+      overflow: hidden; /* 이미지가 박스 밖으로 나가면 잘림 */
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    /* 배너 이미지 영역 */
+    .banner-image-wrapper {
+      width: 100%;
+      height: 280px;
+      position: relative;
+      overflow: hidden; /* 핵심: 박스 밖 이미지 잘림 */
+      background: #e0e0e0;
+    }
+
+    /* 슬라이드 컨테이너 */
+    .slider-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .slider-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .banner-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 이미지 비율 유지하며 채우기 */
+      object-position: center; /* 중앙 정렬 */
+    }
+
+
+
+
+
+    /* 뒤로가기 버튼 */
+    .back-button {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      backdrop-filter: blur(4px);
+    }
+
+    .back-button:hover {
+      background: rgba(0,0,0,0.6);
+    }
+
+    .back-button svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+      stroke-width: 2.5;
+    }
+
+    /* 찜하기 버튼 */
+    .favorite-button {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      backdrop-filter: blur(4px);
+    }
+
+    .favorite-button:hover {
+      background: rgba(0,0,0,0.6);
+    }
+
+    .favorite-button svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+    }
+
+    .favorite-button.active svg {
+      fill: #ff4444;
+      stroke: #ff4444;
+    }
+
+    /* 정보 섹션 */
+    .info-section {
+      padding: 20px;
+      background: #fff;
+    }
+
+    .location-tags {
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      color: #666;
+      background: #f5f5f5;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .restaurant-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 8px 0 12px;
+      color: #000;
+    }
+
+    .rating-section {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .star {
+      font-size: 16px;
+    }
+
+    .rating-score {
+      font-size: 16px;
+      font-weight: 700;
+      color: #000;
+    }
+
+    .review-count {
+      font-size: 14px;
+      color: #666;
+      cursor: pointer;
+    }
+
+    .restaurant-description {
+      font-size: 12px; /* 소개글 폰트 축소 */
+      color: #666;
+      line-height: 1.3;
+      white-space: nowrap; /* 한 줄로 고정 */
+      overflow: hidden;    /* 넘치는 텍스트 숨김 */
+      text-overflow: ellipsis; /* 길면 말줄임표 처리 */
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* 상세 정보 섹션 */
+    .details-section {
+      padding: 16px 20px 20px;
+      background: #fff;
+      border-bottom: 8px solid #f5f5f5;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center; /* 아이콘과 텍스트 수직 가운데 정렬 */
+      gap: 8px;
+      padding: 8px 0; /* 약간 촘촘하게 */
+      font-size: 13px; /* 전체 폰트 크기 축소 */
+      line-height: 1.2; /* 아이콘과 높이를 맞추기 위한 라인 높이 */
+      color: #333;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SVG 아이콘이 텍스트와 정확히 수직 가운데에 오도록 */
+    .detail-item .icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .detail-text {
+      flex: 1;
+      font-size: 13px; /* 텍스트 크기 축소 */
+    }
+
+    .map-link {
+      color: #ff6b35;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .info-icon {
+      width: 16px;
+      height: 16px;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .holiday-badge {
+      background: #ffe5e5;
+      color: #ff4444;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 예약 배지 */
+    .booking-badges {
+      padding: 16px 20px;
+      background: #fff;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-bottom: 8px solid #f5f5f5;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 6px 12px;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    /* 탭 메뉴 */
+    .tab-menu {
+      display: flex;
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 0 20px;
+      overflow: hidden;
+    }
+
+    .tab-item {
+      flex-shrink: 0;
+      padding: 14px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 500;
+      color: #999;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-item.active {
+      color: #000;
+      font-weight: 700;
+      border-bottom-color: #000;
+    }
+
+    .tab-item .count {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* 예약 안내 카드 */
+    .reservation-notice {
+      margin: 16px 20px;
+      padding: 16px;
+      background: #f0f8ff;
+      border-radius: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .notice-icon {
+      font-size: 20px;
+    }
+
+    .notice-content {
+      flex: 1;
+    }
+
+    .notice-title {
+      font-size: 13px;
+      color: #0066cc;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .notice-text {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    /* 예약/웨이팅 버튼 */
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      padding: 16px 20px 24px;
+      background: #fff;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      color: #999;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn.active {
+      border-color: #ff6b35;
+      background: #ff6b35;
+      color: #fff;
+    }
+
+    .action-btn:hover {
+      background: #f8f8f8;
+    }
+
+    .action-btn.active:hover {
+      background: #ff5722;
+    }
+
+    /* 하단 고정 바 */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    /* 하단 바 내 버튼 기본 브라우저 스타일 제거 */
+    .bottom-bar button {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .bottom-icon-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 44px;
+      height: 44px;
+      box-sizing: border-box;
+    }
+
+    .bottom-icon-btn svg {
+      width: 22px;
+      height: 22px;
+      color: #666;
+    }
+
+    .bottom-icon-btn span { display: none; }
+
+    .bottom-bar .bottom-main-btn {
+      height: 44px;
+      padding: 0 16px;
+      background: #ff6a00;
+      color: #fff;
+      border: none;
+      border-radius: 6px; /* 네모 박스 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      flex: 1 1 auto; /* 오른쪽 영역을 꽉 채움 */
+      width: 100%;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .bottom-bar .bottom-main-btn:hover { background: #e83317; }
+
+    /* === 모달 오버레이 & 시트 === */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: saturate(120%) blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+      z-index: 1500;
+    }
+
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+    .modal-sheet {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -100%;
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+      transition: bottom 260ms cubic-bezier(0.25,0.8,0.25,1);
+      z-index: 1600;
+      padding-top: 6px; /* 상단 여유 공간 */
+    }
+
+    .modal-sheet.active { bottom: 0; }
+
+    /* 상단 불필요 요소 제거: 헤더/닫기 버튼 미사용 */
+
+    /* 모달 본문 스크롤 영역 */
+    .modal-body {
+      max-height: none; /* 한눈에 보이도록 제한 해제 */
+      overflow-y: hidden; /* 세로 스크롤 제거 */
+    }
+
+    /* 캘린더 헤더 유사 */
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px 16px 8px; /* 살짝 여유 추가 */
+    }
+
+    .cal-today {
+      color: #ff6a00;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .cal-arrow {
+      color: #bbb;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .calendar-month {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .calendar-grid {
+      padding: 2px 16px 8px; /* 하단 간격 축소 */
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px; /* 칸 간격 약간 축소 */
+    }
+
+    .day-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px; /* 박스형 제거, 동그랗게 */
+      font-size: 14px;
+      color: #333;
+      background: #ffffff; /* 흰 베이스 */
+    }
+
+    .day-cell.today { color: #007aff; font-weight: 700; } /* 오늘 파란 글씨 */
+    .day-cell.selected {
+      background: #ff3b2f;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* 인원 선택 칩 */
+    .people-chips {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 6px;
+      padding: 8px 16px 8px; /* 위쪽 약간 여유 */
+      border-top: 1px solid rgba(0,0,0,0.06); /* 캘린더와 인원수 사이 구분선 */
+    }
+
+    .chip {
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .chip.active { border-color: #ff6a00; color: #ff6a00; }
+
+    /* 시간 선택 칩 */
+    .time-chips {
+      display: flex;
+      gap: 8px;
+      padding: 2px 16px 8px; /* 하단 간격 축소 */
+      overflow-x: auto;
+      overflow-y: hidden;
+      -ms-overflow-style: none; /* IE/Edge */
+      scrollbar-width: none; /* Firefox */
+    }
+    .time-chips::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+    .time-chip {
+      flex: 0 0 auto;
+      height: 36px;
+      border-radius: 8px;
+      background: #ff3b2f;
+      color: #fff;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* 모달 하단 닫기 버튼 */
+    .modal-footer {
+      padding: 12px 20px 20px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .modal-footer .close-btn {
+      width: 100%;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- 전역 미션+타이머 패널 (우상단 고정) -->
+  <div id="globalMissionPanel" style="position: fixed; top: 20px; right: 20px; background: white; border: 3px solid #ff6a00; border-radius: 12px; padding: 16px; box-shadow: 0 6px 14px rgba(2,6,23,0.25); z-index: 2000; min-width: 280px; display: none;">
+    <div style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+      <span>📋 레스토랑 미션</span>
+      <span id="globalMissionBadge" style="display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; background: #ff6a00; color: white;">LEVEL</span>
+    </div>
+    <div id="globalMissionText" style="font-size: 13px; color: #374151; margin-bottom: 8px; line-height: 1.6; padding: 10px; background: #f9fafb; border-radius: 6px;">미션을 확인하세요!</div>
+    <div id="globalMissionList" style="font-size: 13px; color: #111827;"></div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <div style="background:#0b1220;color:#fff;border-radius:10px;padding:6px 10px;font-weight:900;min-width:64px;text-align:center;">
+        <span id="globalMissionRemain">--:--</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="banner-container">
+    <!-- 배너 이미지 영역 -->
+    <div class="banner-image-wrapper">
+      <!-- 슬라이드 컨테이너 -->
+      <div class="slider-container">
+        <div class="slider-track" id="sliderTrack"></div>
+      </div>
+
+    </div>
+
+    <!-- 뒤로가기 버튼 -->
+    <div class="back-button" onclick="history.back()">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <!-- 찜하기 버튼 -->
+    <div class="favorite-button" onclick="toggleFavorite(this)">
+      <svg viewBox="0 0 24 24">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <!-- 레스토랑 기본 정보 -->
+    <div class="info-section">
+      <div class="location-tags">
+        <span class="tag location-tag">서울 • 중식</span>
+      </div>
+      <h1 class="restaurant-title shop-name">도량</h1>
+      <div class="rating-section">
+        <span class="star">⭐</span>
+        <span class="rating-score rating-text">4.9</span>
+        <span class="review-count">리뷰 3,989개 ></span>
+      </div>
+      <p class="restaurant-description shop-description">맛있는 훠궈와 중화요리가 있는 식당</p>
+    </div>
+
+    <!-- 상세 정보 -->
+    <div class="details-section">
+      <div class="detail-item">
+        <span class="icon">📌</span>
+        <span class="detail-text location-text">경복궁역에서 262m</span>
+        <a href="#" class="map-link">🗺️ 위치</a>
+      </div>
+      <div class="detail-item">
+        <span class="icon">🕐</span>
+        <span class="detail-text price-info">점심 저녁 동일가 4.9 ~ 11.9만원</span>
+        <span class="info-icon">ⓘ</span>
+      </div>
+      <div class="detail-item">
+        <span class="icon">📅</span>
+        <span class="detail-text opening-hours">오늘 (수) 12:00 ~ 22:00</span>
+      </div>
+    </div>
+
+    <!-- 예약 정보 배지 -->
+    <div class="booking-badges">
+      <span class="badge">🔥 최대 12명 예약</span>
+      <span class="badge">💳 예약금 0원</span>
+      <span class="badge extra-badge-1">📄</span>
+      <span class="badge extra-badge-2">주차</span>
+      <span class="badge extra-badge-3">반려동물</span>
+    </div>
+    
+    <!-- 메뉴 하이라이트 제거됨 -->
+
+    <!-- 탭 메뉴 -->
+    <div class="tab-menu">
+      <button class="tab-item active">홈</button>
+      <button class="tab-item">소식</button>
+      <button class="tab-item">메뉴</button>
+      <button class="tab-item">사진 <span class="count">5,197</span></button>
+      <button class="tab-item">리뷰 <span class="count">4,035</span></button>
+      <button class="tab-item">방송</button>
+      <button class="tab-item">매장정보</button>
+    </div>
+
+    <!-- 예약 안내 카드 -->
+    <div class="reservation-notice">
+      <span class="notice-icon">🔊</span>
+      <div class="notice-content">
+        <div class="notice-title">소식</div>
+        <div class="notice-text notice-message">예약 안내</div>
+      </div>
+    </div>
+
+    <!-- 예약/웨이팅 버튼 -->
+    <div class="action-buttons">
+      <button class="action-btn reservation active">예약</button>
+      <button class="action-btn waiting">웨이팅</button>
+    </div>
+
+    <!-- 하단 고정 바 -->
+    <div class="bottom-bar">
+      <button class="bottom-icon-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+      <button class="bottom-icon-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      </button>
+      <button class="bottom-main-btn">예약하기</button>
+    </div>
+  </div>
+
+  <!-- 예약 모달: 캐치테이블 유사 비주얼 -->
+  <div class="modal-overlay" id="reserveOverlay"></div>
+  <div class="modal-sheet" id="reserveSheet" role="dialog" aria-modal="true">
+    <div class="modal-body">
+      <!-- 미션 표시 패널 -->
+      <div id="missionPanel" style="padding:10px 16px; border-bottom:1px solid #f0f0f0; display:none;">
+        <div style="font-size:14px; font-weight:700; color:#111;">미션</div>
+        <div id="missionText" style="font-size:13px; color:#333; margin-top:4px;"></div>
+        <div id="missionTimer" style="font-size:12px; color:#ff3b2f; margin-top:4px;">남은 시간: <span id="missionRemain">--:--</span></div>
+      </div>
+      <div class="calendar-header">
+        <span class="cal-today" id="calTodayText">오늘</span>
+        <span class="cal-arrow">〈</span>
+        <span class="calendar-month" id="calendarMonth">2025년 12월</span>
+        <span class="cal-arrow">〉</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid" aria-label="날짜 선택"></div>
+
+      <div class="people-chips" aria-label="인원 선택">
+        <div class="chip">1명</div>
+        <div class="chip active">2명</div>
+        <div class="chip">3명</div>
+        <div class="chip">4명</div>
+        <div class="chip">5명</div>
+        <div class="chip">6명</div>
+        <div class="chip">7명</div>
+        <div class="chip">8명</div>
+        <div class="chip">9명</div>
+      </div>
+
+      <div class="time-chips" id="timeChips" aria-label="시간 선택"></div>
+
+      <div class="modal-footer">
+        <button class="close-btn" id="modalCloseBottom">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 결과 모달 (성공/실패/경고 공용) -->
+  <div id="resultOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);z-index:3000;align-items:center;justify-content:center;padding:24px;">
+    <div id="resultModal" style="width:400px;max-width:96%;background:#ffffff;border-radius:12px;padding:50px 40px;color:#111827;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:center;">
+      <!-- 통일된 아이콘: 원 + 박스 + 마크 -->
+      <div id="resultIcon" style="position:relative;width:88px;height:88px;margin:0 auto 24px;border-radius:50%;"></div>
+      <h2 id="resultTitle" style="margin:0 0 40px 0;font-size:28px;text-align:center;font-weight:700;">결과</h2>
+      <p id="resultDesc" style="margin:0 0 40px 0;font-size:16px;line-height:1.5;text-align:center;color:#6b7280;"></p>
+      <p id="elapsedTimeText" style="font-size: 18px; color: #666; margin: -20px 0 20px; display: none;">소요시간: <strong id="elapsedTime">00:00</strong></p>
+      <div id="resultActions" style="display:flex;flex-direction:column;gap:10px;justify-content:center;">
+        <button id="saveRecordBtn" type="button" onclick="saveRecord()" style="display:none;width:100%;background:linear-gradient(135deg, #8b5cf6, #ec4899);color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">🏆 기록 저장하기</button>
+        <button id="aiFeedbackBtn" type="button" onclick="goToAIFeedback()" style="display:none;width:100%;background:linear-gradient(135deg, #3b82f6, #06b6d4);color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">🤖 AI 피드백 받기</button>
+        <button id="resultLevelBtn" type="button" style="width:100%;background:#00d9c8;color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">난이도 선택으로</button>
+        <button id="resultRetryBtn" type="button" style="width:100%;background:#00d9c8;color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">다시하기</button>
+        <button id="resultHomeBtn" type="button" style="width:100%;background:#00d9c8;color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">메인으로</button>
+      </div>
+      <p id="saveStatus" style="margin-top: 15px; font-size: 14px; color: #888;"></p>
+    </div>
+  </div>
+
+  <script>
+    // ========== 식당 데이터 ==========
+    const restaurantData = {
+      easy: [
+        {
+          name: '아티스트 베이커리',
+          url: 'https://app.catchtable.co.kr/ct/shop/artistbakery?type=WAITING&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/아티스트베이커리.png',
+          rating: 4.5,
+          location: '안국역',
+          distance: '95m',
+          maxPeople: 1,
+          maxPeopleText: '1인당 1인원 미만',
+          deposit: 0,
+          category: '카페 • 디저트',
+          priceRange: '1인당 1만원 미만',
+          hours: '영업 중 20:00 영업 마감',
+          badges: ['주차', '반려동물'],
+          /* 특별 메뉴 제거 */
+        },
+        {
+          name: '업투미',
+          url: 'https://app.catchtable.co.kr/ct/shop/uptome?type=DINING&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/업투미.png',
+          rating: 4.8,
+          location: '홍대입구역',
+          distance: '797m',
+          maxPeople: 40,
+          maxPeopleText: '최대 40인 예약',
+          deposit: 0,
+          paymentInfo: '예약금 0원',
+          category: '연남 • 코스요리',
+          tags: ['콜라켓', '공휴', '호텔인근'],
+          priceRange: '점심 저녁 동일가 4.9 ~ 11.9만원',
+          hours: '오늘 (수) 12:00 ~ 22:00',
+          additionalBadges: ['자동결제', '주차', '글자기'],
+          badges: []
+        },
+        {
+          name: '금돼지식당',
+          url: 'https://app.catchtable.co.kr/ct/shop/Goldpig?type=WAITING&foodKeywords=%EA%B8%88%EB%8F%BC%EC%A7%80&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/금돼지식당.png',
+          rating: 4.3,
+          location: '약수역',
+          distance: '266m',
+          maxPeople: 4,
+          maxPeopleText: '최대 4명 예약',
+          deposit: 0,
+          category: '약수 • 돼지고기구이',
+          priceRange: '1인당 1-2만원',
+          hours: '영업 중 22:15 라스트오더',
+          badges: ['주차']
+        }
+      ],
+      normal: [
+        {
+          name: '포노 부오노',
+          url: 'https://app.catchtable.co.kr/ct/shop/ponobouno',
+          image: 'image/restaurant/포노부오노.png',
+          rating: 4.6,
+          location: '압구정로데오역',
+          distance: '604m',
+          maxPeople: 6,
+          maxPeopleText: '최대 6명 예약',
+          deposit: 0,
+          category: '도산공원 • 다이닝바',
+          priceRange: '점심 영업안함 · 저녁 1-5만원',
+          hours: '오늘 (수) · 18:00 ~ 24:00',
+          badges: ['발렛', '콜키지', '원컴'],
+          description: 'COMFY, VIBEY, BEV! 흑백요리사 히든천재의 양식 노프 PONO BUONO'
+        },
+        {
+          name: '도량',
+          url: 'https://app.catchtable.co.kr/ct/shop/dolyang?type=DINING&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/도량.png',
+          rating: 4.9,
+          location: '경복궁역',
+          distance: '262m',
+          maxPeople: 12,
+          maxPeopleText: '최대 12명 예약',
+          deposit: 0,
+          paymentInfo: '예약금 0원',
+          category: '서촌 • 중식',
+          priceRange: '점심, 저녁 동일가 · 1-7만원',
+          hours: '오늘 (수) · 11:00 ~ 21:30',
+          badges: ['자동결제', '주차', '콜키지'],
+          description: '맛있는 훠궈와 중화요리가 있는 식당'
+        },
+        {
+          name: '티엔미미 홍대',
+          url: 'https://app.catchtable.co.kr/ct/shop/tianmimihongdae?type=WAITING&foodKeywords=%ED%8B%B0%EC%97%94%EB%AF%B8%EB%AF%B8&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/티엔미미.png',
+          rating: 4.4,
+          location: '홍대입구역',
+          distance: '199m',
+          maxPeople: 8,
+          maxPeopleText: '최대 8명 예약',
+          deposit: 0,
+          category: '홍대 • 중식',
+          priceRange: '티엔미미 해산물냉채 · 41,000원',
+          hours: '영업 중 · 20:00 라스트오더',
+          badges: ['무선인터넷', '대관'],
+          description: '딤섬의 여행, 중식 셰프 정지선의 딤섬 & 광둥식 요리'
+        }
+      ],
+      hard: [
+        {
+          name: '모수 서울',
+          url: 'https://app.catchtable.co.kr/ct/shop/tempmosuseoul?type=DINING&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/모수서울.png',
+          rating: 4.8,
+          location: '한강진역',
+          distance: '518m',
+          maxPeople: 8,
+          deposit: 0,
+          category: '경리단길 • 파인다이닝',
+          priceRange: '점심 32만원 · 저녁 42만원',
+          hours: '오늘 (수) · 점심 휴무 · 17:00 ~ 23:00',
+          badges: ['노키즈존', '미취학 아동 이용 불가'],
+          description: 'Taste of Seoul'
+        },
+        {
+          name: '밍글스',
+          url: 'https://app.catchtable.co.kr/ct/shop/mingles?type=DINING&currentSuggestionType=SHOP_NAME',
+          image: 'image/restaurant/밍글스.png',
+          rating: 4.8,
+          location: '압구정로데오역',
+          distance: '390m',
+          maxPeople: 4,
+          maxPeopleText: '최대 4명 예약',
+          deposit: 0,
+          category: '청담 • 한식',
+          priceRange: '점심 30만원 · 저녁 40만원',
+          hours: '오늘 (수) · 12:00 ~ 22:00',
+          badges: ['발렛', '콜키지'],
+          description: '한식을 기본으로 하는 강민구 셰프의 감각적인 파인다이닝'
+        }
+      ]
+    };
+
+    // URL에서 난이도 파라미터 가져오기
+    function getDifficultyFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      // 기본값을 'all'로 설정하여 모든 식당에서 랜덤 선택되도록 함
+      const lvl = (urlParams.get('level') || 'all').toLowerCase();
+      return ['easy','normal','hard','all'].includes(lvl) ? lvl : 'all';
+    }
+
+    // URL에서 특정 식당 강제 파라미터 가져오기 (예: ?shop=goldpig)
+    function getShopFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shop = urlParams.get('shop');
+      return shop ? shop.toLowerCase() : null;
+    }
+    function getLevelFromURL(){
+      const urlParams = new URLSearchParams(window.location.search);
+      return (urlParams.get('level')||'all').toLowerCase();
+    }
+
+    // 랜덤 식당 선택 (shop 파라미터가 있으면 해당 식당 사용)
+    function getRandomRestaurant(difficulty) {
+      const forcedShop = getShopFromURL();
+      if (forcedShop) {
+        const levels = Object.keys(restaurantData);
+        const aliasMatch = (r) => {
+          const key = r.name.replace(/\s+/g, '').toLowerCase();
+          if (forcedShop === 'goldpig') return key.includes('금돼지');
+          if (forcedShop === 'artistbakery' || forcedShop === 'artist') return key.includes('아티스트');
+          if (forcedShop === 'uptome') return key.includes('업투미');
+          return key.includes(forcedShop);
+        };
+        for (const level of levels) {
+          const match = restaurantData[level].find(aliasMatch);
+          if (match) return match;
+        }
+      }
+
+      let pool = [];
+      if (difficulty === 'all') {
+        pool = [].concat(
+          restaurantData.easy || [],
+          restaurantData.normal || [],
+          restaurantData.hard || []
+        );
+      } else {
+        pool = restaurantData[difficulty] || restaurantData.easy;
+      }
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      return pool[randomIndex];
+    }
+
+    // 페이지 로드 시 식당 정보 표시 + 슬라이드 이미지 매핑
+    function loadRestaurantData() {
+      const difficulty = getDifficultyFromURL();
+      const restaurant = getRandomRestaurant(difficulty);
+      console.log('난이도:', difficulty);
+      console.log('선택된 식당:', restaurant);
+
+      document.querySelector('.shop-name').textContent = restaurant.name;
+      document.querySelector('.rating-text').textContent = restaurant.rating;
+      document.querySelector('.location-text').textContent = `${restaurant.location}에서 ${restaurant.distance}`;
+
+      const firstBadge = document.querySelector('.booking-badges .badge:first-child');
+      if (restaurant.maxPeopleText) {
+        firstBadge.textContent = `🔥 ${restaurant.maxPeopleText}`;
+      } else {
+        firstBadge.textContent = `🔥 최대 ${restaurant.maxPeople}명 예약`;
+      }
+
+      const secondBadge = document.querySelector('.booking-badges .badge:nth-child(2)');
+      if (restaurant.paymentInfo) {
+        secondBadge.textContent = `💳 ${restaurant.paymentInfo}`;
+      } else {
+        secondBadge.textContent = `💳 예약금 ${restaurant.deposit.toLocaleString()}원`;
+      }
+
+      const reserveBtn = document.querySelector('.bottom-main-btn');
+      if (reserveBtn) {
+        reserveBtn.style.background = '#ff6a00';
+        reserveBtn.style.color = '#ffffff';
+        reserveBtn.style.border = 'none';
+        reserveBtn.style.borderRadius = '6px';
+        reserveBtn.style.height = '44px';
+        reserveBtn.style.lineHeight = '44px';
+        reserveBtn.style.padding = '0 16px';
+        reserveBtn.style.display = 'flex';
+        reserveBtn.style.alignItems = 'center';
+        reserveBtn.style.justifyContent = 'center';
+        reserveBtn.style.flex = '1 1 auto';
+        reserveBtn.style.width = '100%';
+      }
+
+      // 배너 이미지 업데이트: shop 별로 슬라이드 전부 매핑
+      const aliasKey = (restaurant.name || '').replace(/\s+/g,'').toLowerCase();
+      // 이미지 파일은 1~N 범위로 존재. 아래 카운트를 실제 폴더에 맞춰 하드코딩.
+      const seriesCount = {
+        '아티스트': 4,
+        '금돼지': 5,
+        '도량': 11,
+        '포노': 5,
+        '티엔미미': 7,
+        '모수': 2,
+        '밍글스': 5,
+        '업투미': 5
+      };
+      function resolvePath(p){
+        // 현재 파일은 restaurant-pages/ 하위이므로 image/ 는 ../image/ 로 접근
+        if(p.startsWith('image/')) return '../'+p;
+        return p;
+      }
+      function pickSeries(base, count){
+        // 첫 3장만 슬라이드에 사용
+        const c = Math.max(1, count||1);
+        const arr = [];
+        for(let i=1;i<=Math.min(3,c);i++){
+          arr.push(resolvePath(`image/restaurant/${base}${i}.avif`));
+        }
+        return arr;
+      }
+      // 이름 매핑: 파일 접두와 연결
+      let base = null;
+      if(aliasKey.includes('아티스트')) base = '아티스트';
+      else if(aliasKey.includes('금돼지')) base = '금돼지';
+      else if(aliasKey.includes('도량')) base = '도량';
+      else if(aliasKey.includes('포노')) base = '포노';
+      else if(aliasKey.includes('티엔미미')) base = '티엔미미';
+      else if(aliasKey.includes('모수')) base = '모수';
+      else if(aliasKey.includes('밍글스')) base = '밍글스';
+      else if(aliasKey.includes('업투미')) base = '업투미';
+      const imgs = base ? pickSeries(base, seriesCount[base]) : [resolvePath(restaurant.image)];
+      const track = document.getElementById('sliderTrack');
+      track.innerHTML = '';
+      imgs.forEach((src, idx)=>{
+        const slide = document.createElement('div');
+        slide.className = 'slide';
+        const img = document.createElement('img');
+        img.className = 'banner-image';
+        img.alt = `레스토랑 이미지 ${idx+1}`;
+        img.src = src;
+        img.onerror = function(){ this.src = resolvePath(restaurant.image); };
+        slide.appendChild(img);
+        track.appendChild(slide);
+      });
+      totalSlides = imgs.length;
+      currentSlide = 0;
+      updateSlider();
+
+      const noticeText = document.querySelector('.notice-message');
+      if (noticeText) {
+        noticeText.textContent = `${restaurant.name} 예약 안내`;
+      }
+
+      const descriptions = {
+        '아티스트 베이커리': '방금 나온 소금빵과 바게트 그리고 따뜻한 수프가 기다리는 아티스트 베이커리',
+        '업투미': '호주까지 가는 비행기표를 절약해줄 업투미',
+        '금돼지식당': '2024년 미쉐린 가이드 선정, 셀럽도 줄서는 돼지고기 핫 스팟',
+        '포노부오노': '이태원의 정통 이탈리안 파인다이닝',
+        '도량': '경복궁 근처 프리미엄 중식당, 훠궈 맛집',
+        '티엔미미': '홍대 딤섬 전문점, 중식 요리의 깊은 맛',
+        '모수 서울': '미슐랭 2스타, 한국 최정상급 파인다이닝',
+        '밍글스': '미슐랭 2스타, 모던 한식의 명가'
+      };
+      const descElement = document.querySelector('.shop-description');
+      if (descElement && descriptions[restaurant.name]) {
+        descElement.textContent = descriptions[restaurant.name];
+      }
+
+      const locationTag = document.querySelector('.location-tag');
+      if (locationTag && restaurant.category) {
+        locationTag.textContent = `서울 • ${restaurant.category}`;
+      }
+
+      const useSiteIcons = true;
+      if (useSiteIcons) {
+        const iconElems = document.querySelectorAll('.detail-item .icon');
+        if (iconElems[0]) {
+          iconElems[0].innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+        }
+        if (iconElems[1]) {
+          iconElems[1].innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h10"/><path d="M7 9h3"/></svg>';
+        }
+        if (iconElems[2]) {
+          iconElems[2].innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+        }
+      }
+
+      const priceInfo = document.querySelector('.price-info');
+      if (priceInfo && restaurant.priceRange) {
+        priceInfo.textContent = restaurant.priceRange;
+      }
+
+      const openingHours = document.querySelector('.opening-hours');
+      if (openingHours && restaurant.hours) {
+        openingHours.textContent = restaurant.hours;
+      }
+
+      const extraBadge1 = document.querySelector('.extra-badge-1');
+      const extraBadge2 = document.querySelector('.extra-badge-2');
+      const extraBadge3 = document.querySelector('.extra-badge-3');
+      if (extraBadge1) extraBadge1.style.display = 'none';
+      if (extraBadge2) extraBadge2.style.display = 'none';
+      if (extraBadge3) extraBadge3.style.display = 'none';
+
+      if (restaurant.badges && restaurant.badges.length > 0) {
+        restaurant.badges.forEach((badge, index) => {
+          if (index === 0 && extraBadge2) {
+            extraBadge2.textContent = badge;
+            extraBadge2.style.display = 'inline-block';
+          } else if (index === 1 && extraBadge3) {
+            extraBadge3.textContent = badge;
+            extraBadge3.style.display = 'inline-block';
+          }
+        });
+      }
+
+      document.title = `${restaurant.name} - 캐치테이블`;
+    }
+
+    // 페이지 로드 시 실행
+    window.addEventListener('DOMContentLoaded', function() {
+      loadRestaurantData();
+      // 전역 미션/타이머 복구
+      try{
+        const raw = localStorage.getItem('ct_mission');
+        const payload = raw ? JSON.parse(raw) : null;
+        if(payload){
+          renderGlobalMission(payload);
+          startGlobalTimer(payload.endAt);
+        }
+      }catch(e){ console.warn('미션 복구 실패', e); }
+    });
+
+    function toggleFavorite(button) {
+      button.classList.toggle('active');
+    }
+
+    // ========== 슬라이드 기능 ==========
+    let currentSlide = 0;
+    const sliderTrack = document.getElementById('sliderTrack');
+    let totalSlides = 0;
+    function updateSlider() { sliderTrack.style.transform = `translateX(-${currentSlide * 100}%)`; }
+    function changeSlide(direction) {
+      currentSlide += direction;
+      if (currentSlide < 0) { currentSlide = totalSlides - 1; }
+      else if (currentSlide >= totalSlides) { currentSlide = 0; }
+      updateSlider();
+      resetAutoPlay();
+    }
+    function goToSlide(index) { currentSlide = index; updateSlider(); resetAutoPlay(); }
+    let autoPlayInterval;
+    function startAutoPlay() { autoPlayInterval = setInterval(() => { changeSlide(1); }, 4000); }
+    function resetAutoPlay() { clearInterval(autoPlayInterval); startAutoPlay(); }
+    let touchStartX = 0; let touchEndX = 0;
+    sliderTrack.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+    sliderTrack.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); });
+    function handleSwipe() { if (touchStartX - touchEndX > 50) { changeSlide(1); } else if (touchEndX - touchStartX > 50) { changeSlide(-1); } }
+    startAutoPlay();
+
+    // === 예약 모달 동작 ===
+    const overlay = document.getElementById('reserveOverlay');
+    const sheet = document.getElementById('reserveSheet');
+    const openBtn = document.querySelector('.bottom-main-btn');
+    const closeBottom = document.getElementById('modalCloseBottom');
+    const missionPanel = document.getElementById('missionPanel');
+    const missionText = document.getElementById('missionText');
+    const missionTimer = document.getElementById('missionTimer');
+    const missionRemain = document.getElementById('missionRemain');
+    let missionPayload = null;
+    let missionTickId = null;
+    const globalMissionPanel = document.getElementById('globalMissionPanel');
+    const globalMissionBadge = document.getElementById('globalMissionBadge');
+    const globalMissionText = document.getElementById('globalMissionText');
+    const globalMissionList = document.getElementById('globalMissionList');
+    const globalMissionRemain = document.getElementById('globalMissionRemain');
+    let globalTimerAnimId = null;
+
+    function openReserve() {
+      overlay.classList.add('active');
+      sheet.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      try{
+        const raw = localStorage.getItem('ct_mission');
+        missionPayload = raw ? JSON.parse(raw) : null;
+      }catch(e){ missionPayload=null; }
+      if(missionPayload){
+        missionPanel.style.display = 'block';
+        renderMissionText(missionPayload.mission);
+        startMissionTimer(missionPayload.endAt);
+        renderGlobalMission(missionPayload);
+        startGlobalTimer(missionPayload.endAt);
+      } else {
+        missionPanel.style.display = 'none';
+      }
+    }
+
+    function closeReserve() {
+      overlay.classList.remove('active');
+      sheet.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', openReserve);
+    overlay.addEventListener('click', closeReserve);
+    closeBottom.addEventListener('click', closeReserve);
+    // 알림 사운드 및 토글 제거 요청에 따라 재생/컨트롤 로직 제외
+    function renderMissionText(m){
+      if(!m){ missionText.textContent = '미션 없음'; return; }
+      const lvl = getLevelFromURL();
+      missionText.textContent = (lvl==='easy') ? '어떤 조건이든 예약을 성공시켜보세요!' : '다음 조건을 만족해주세요.';
+      if(m.type==='any'){ return; }
+      if(m.type==='one'){ const r = m.rules[0]; missionText.textContent += ' ' + formatRule(r); return; }
+      if(m.type==='multi'){ const list = m.rules.map(formatRule).join(' · '); missionText.textContent += ' ' + list; return; }
+      missionText.textContent = '다음 조건을 만족해주세요.';
+    }
+    function formatRule(rule){ if(rule.kind==='date') return `날짜: ${rule.value}일`; if(rule.kind==='people') return `인원: ${rule.value}명`; if(rule.kind==='time') return `시간: ${rule.value}`; return '알 수 없는 조건'; }
+    let missionCompleted = false;
+    function startMissionTimer(endAt){
+      function fmt(ms){ const r = Math.max(0, endAt - Date.now()); const s = Math.floor(r/1000); const mm = String(Math.floor(s/60)).padStart(2,'0'); const ss = String(s%60).padStart(2,'0'); return {text:`${mm}:${ss}`, remain:r}; }
+      function tick(){ const {text, remain} = fmt(endAt); missionRemain.textContent = text; if(remain<=0){ cancelAnimationFrame(missionTickId); missionTickId=null; if(!missionCompleted){ showFail('시간 초과로 예약에 실패했습니다.'); } } else { missionTickId = requestAnimationFrame(tick); } }
+      if(missionTickId) cancelAnimationFrame(missionTickId); missionTickId = requestAnimationFrame(tick);
+    }
+
+    function renderGlobalMission(payload){
+      if(!payload) return;
+      const lvl = getLevelFromURL();
+      globalMissionBadge.textContent = (lvl||'NORMAL').toUpperCase();
+      globalMissionBadge.style.background = lvl==='easy' ? '#22c55e' : (lvl==='hard' ? '#ef4444' : '#2563EB');
+      const m = payload.mission;
+      globalMissionText.textContent = (lvl==='easy') ? '어떤 조건이든 예약을 성공시켜보세요!' : '다음 조건을 만족해주세요.';
+      function checklistItem(rule, idx){
+        return (
+          '<div class="quest-item" id="global-quest-item-'+idx+'" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:#f3f4f6;border-radius:6px;">'
+          + '<div class="quest-checkbox" style="width:18px;height:18px;border:2px solid #9ca3af;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;"></div>'
+          + '<div>'+formatRule(rule)+'</div>'
+          + '</div>'
+        );
+      }
+      if(m.type==='any'){ globalMissionList.innerHTML = ''; }
+      else if(m.type==='one'){ globalMissionList.innerHTML = checklistItem(m.rules[0], 0); }
+      else { globalMissionList.innerHTML = m.rules.map((r,i)=>checklistItem(r,i)).join(''); }
+      globalMissionPanel.style.display = 'block';
+    }
+    function updateGlobalChecklist(chosen){
+      if(!missionPayload || !missionPayload.mission) return;
+      const m = missionPayload.mission;
+      function ok(rule){ if(rule.kind==='date') return chosen.date && chosen.date===rule.value; if(rule.kind==='people') return chosen.people && chosen.people===rule.value; if(rule.kind==='time') return chosen.time && chosen.time===rule.value; return false; }
+      const rules = m.type==='any' ? [] : (m.type==='one' ? [m.rules[0]] : m.rules);
+      rules.forEach((rule, idx)=>{
+        const el = document.getElementById('global-quest-item-'+idx);
+        if(!el) return;
+        const box = el.querySelector('.quest-checkbox');
+        const completed = ok(rule);
+        el.style.background = completed ? '#d4edda' : '#f3f4f6';
+        if(box){ box.style.background = completed ? '#22c55e' : 'transparent'; box.style.borderColor = completed ? '#22c55e' : '#9ca3af'; box.style.color = completed ? '#ffffff' : 'inherit'; box.textContent = completed ? '✓' : ''; }
+      });
+    }
+    function startGlobalTimer(endAt){
+      if(!endAt){ return; }
+      function frame(){ const r = Math.max(0, endAt - Date.now()); const s = Math.floor(r/1000); const mm = String(Math.floor(s/60)).padStart(2,'0'); const ss = String(s%60).padStart(2,'0'); globalMissionRemain.textContent = mm+':'+ss; if(r<=0){ cancelAnimationFrame(globalTimerAnimId); globalTimerAnimId=null; } else { globalTimerAnimId = requestAnimationFrame(frame); } }
+      if(globalTimerAnimId) cancelAnimationFrame(globalTimerAnimId);
+      globalTimerAnimId = requestAnimationFrame(frame);
+    }
+
+    function showWarning(msg){ showToast(msg || '미션 조건을 만족하지 못했습니다.'); }
+    function showSuccess(){ openResultModal('성공', '예약 성공! 미션을 달성했습니다.', 'success'); try{ localStorage.removeItem('ct_mission'); }catch(e){} globalMissionPanel.style.display='none'; missionCompleted = true; if(missionTickId) { cancelAnimationFrame(missionTickId); missionTickId=null; } if(globalTimerAnimId) { cancelAnimationFrame(globalTimerAnimId); globalTimerAnimId=null; } closeReserve(); }
+    function showFail(msg){ openResultModal('실패', msg || '예약 실패', 'failure'); try{ localStorage.removeItem('ct_mission'); }catch(e){} globalMissionPanel.style.display='none'; missionCompleted = true; if(missionTickId) { cancelAnimationFrame(missionTickId); missionTickId=null; } if(globalTimerAnimId) { cancelAnimationFrame(globalTimerAnimId); globalTimerAnimId=null; } closeReserve(); }
+
+    const resultOverlay = document.getElementById('resultOverlay');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultDesc = document.getElementById('resultDesc');
+    const resultRetryBtn = document.getElementById('resultRetryBtn');
+    const resultLevelBtn = document.getElementById('resultLevelBtn');
+    const resultHomeBtn = document.getElementById('resultHomeBtn');
+    function openResultModal(title, desc, kind){
+      resultTitle.textContent = title;
+      resultDesc.textContent = desc;
+      const icon = document.getElementById('resultIcon');
+      if(kind==='success'){
+        icon.style.background = '#22c55e';
+        icon.innerHTML = '<div style="position:absolute;left:50%;top:50%;width:54px;height:54px;border-radius:10px;background:#1fbfa0;transform:translate(-50%,-50%);box-shadow:inset 0 0 0 2px rgba(255,255,255,0.22);"></div>'+
+                          '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;">'+
+                            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="34" height="34">'+
+                              '<path d="M20 7L9 18L4 13" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>'+
+                            '</svg>'+
+                          '</div>';
+      } else if(kind==='failure'){
+        icon.style.background = '#ef4444';
+        icon.innerHTML = '<div style="position:absolute;left:50%;top:50%;width:54px;height:54px;border-radius:10px;background:#f25c5c;transform:translate(-50%,-50%);box-shadow:inset 0 0 0 2px rgba(255,255,255,0.18);"></div>'+
+                          '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;">'+
+                            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="34" height="34">'+
+                              '<path d="M15 9l-6 6M9 9l6 6" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>'+
+                            '</svg>'+
+                          '</div>';
+      } else {
+        icon.style.background = '#f59e0b';
+        icon.innerHTML = '<div style="position:absolute;left:50%;top:50%;width:54px;height:54px;border-radius:10px;background:#f7b64a;transform:translate(-50%,-50%);box-shadow:inset 0 0 0 2px rgba(255,255,255,0.18);"></div>'+
+                          '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;">'+
+                            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="34" height="34">'+
+                              '<circle cx="12" cy="12" r="10" fill="none" stroke="#ffffff" stroke-width="2.6"/>'+
+                              '<line x1="12" y1="8" x2="12" y2="12" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>'+
+                              '<line x1="12" y1="16" x2="12" y2="16" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>'+
+                            '</svg>'+
+                          '</div>';
+      }
+      resultOverlay.style.display = 'flex';
+    }
+    resultRetryBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} const url = new URL(window.location.href); const level = url.searchParams.get('level') || 'normal'; window.location.href = '../restaurant-pages/restaurant-timer.html?level=' + encodeURIComponent(level); });
+    resultLevelBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} window.location.href = '../main-pages/choice.html'; });
+    resultHomeBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} window.location.href = '../main-pages/index.html'; });
+    resultOverlay.addEventListener('click', function(e){ if(e.target===resultOverlay){ resultOverlay.style.display = 'none'; } });
+
+    // === 비방해형 경고 토스트 UI ===
+    (function(){
+      var style = document.createElement('style');
+      style.textContent = 
+        '.toast-container{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none}'+
+        '.toast{min-width:240px;max-width:90vw;background:rgba(17,24,39,0.92);color:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 8px 20px rgba(0,0,0,0.25);font-size:14px;line-height:1.4;pointer-events:auto}'+
+        '.toast-warning{background:rgba(217,119,6,0.95)}';
+      document.head.appendChild(style);
+      var container = document.createElement('div');
+      container.className = 'toast-container';
+      container.id = 'toastContainer';
+      document.body.appendChild(container);
+    })();
+
+    function showToast(message){
+      var container = document.getElementById('toastContainer');
+      if(!container) return;
+      var el = document.createElement('div');
+      el.className = 'toast toast-warning';
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(function(){ el.style.transition = 'opacity 300ms, transform 300ms'; el.style.opacity = '0'; el.style.transform = 'translateY(-6px)'; setTimeout(function(){ if(el && el.parentNode){ el.parentNode.removeChild(el); } }, 320); }, 1600);
+    }
+
+    const calGrid = document.getElementById('calendarGrid');
+    const calMonthLabel = document.getElementById('calendarMonth');
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startWeekday = firstDay.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthLabel = `${year}년 ${month + 1}월`;
+    calMonthLabel.textContent = monthLabel;
+    const weekdayLabels = ['일','월','화','수','목','금','토'];
+    for (let w = 0; w < 7; w++) {
+      const headerCell = document.createElement('div');
+      headerCell.className = 'day-cell';
+      headerCell.style.fontWeight = '600';
+      headerCell.style.color = '#999';
+      headerCell.textContent = weekdayLabels[w];
+      calGrid.appendChild(headerCell);
+    }
+    for (let s = 0; s < startWeekday; s++) {
+      const emptyCell = document.createElement('div');
+      emptyCell.className = 'day-cell';
+      emptyCell.style.visibility = 'hidden';
+      calGrid.appendChild(emptyCell);
+    }
+    const todayDate = today.getDate();
+    const tomorrowDate = todayDate + 1;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      cell.textContent = d;
+      if (d === todayDate) { cell.classList.add('today'); }
+      if (d === tomorrowDate) { cell.classList.add('selected'); }
+      cell.addEventListener('click', () => {
+        document.querySelectorAll('.day-cell.selected').forEach(el => el.classList.remove('selected'));
+        cell.classList.add('selected');
+        validateIfComplete();
+      });
+      calGrid.appendChild(cell);
+    }
+    const timeChips = document.getElementById('timeChips');
+    function pushSlots(startH, startM, endH, endM) {
+      const start = new Date(0,0,0,startH,startM);
+      const end = new Date(0,0,0,endH,endM);
+      const fmt = (h, m) => { const isPM = h >= 12; const hour12 = h % 12 === 0 ? 12 : h % 12; const mm = m.toString().padStart(2,'0'); return `오${isPM ? '후' : '전'} ${hour12}:${mm}`; };
+      for (let t = new Date(start); t <= end; t.setMinutes(t.getMinutes() + 30)) {
+        const chip = document.createElement('div');
+        chip.className = 'time-chip';
+        chip.textContent = fmt(t.getHours(), t.getMinutes());
+        chip.addEventListener('click', function(){ validateIfComplete(chip.textContent); });
+        timeChips.appendChild(chip);
+      }
+    }
+    pushSlots(11,30,13,30);
+    pushSlots(17,30,20,0);
+    timeChips.addEventListener('wheel', (e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { timeChips.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+    let isDown = false; let startX = 0; let startScrollLeft = 0;
+    function onMouseDown(e) { isDown = true; timeChips.classList.add('dragging'); startX = e.pageX - timeChips.offsetLeft; startScrollLeft = timeChips.scrollLeft; }
+    function onMouseLeave() { isDown = false; timeChips.classList.remove('dragging'); }
+    function onMouseUp() { isDown = false; timeChips.classList.remove('dragging'); }
+    function onMouseMove(e) { if (!isDown) return; e.preventDefault(); const x = e.pageX - timeChips.offsetLeft; const walk = (x - startX); timeChips.scrollLeft = startScrollLeft - walk; }
+    timeChips.addEventListener('mousedown', onMouseDown);
+    timeChips.addEventListener('mouseleave', onMouseLeave);
+    timeChips.addEventListener('mouseup', onMouseUp);
+    timeChips.addEventListener('mousemove', onMouseMove);
+    timeChips.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
+    const peopleChips = document.querySelectorAll('.people-chips .chip');
+    peopleChips.forEach(function(chip){ chip.addEventListener('click', function(){ peopleChips.forEach(function(c){ c.classList.remove('active'); }); chip.classList.add('active'); validateIfComplete(); }); });
+
+    function getSelectedDate(){ const sel = document.querySelector('.calendar-grid .day-cell.selected'); if(!sel) return null; return parseInt(sel.textContent,10); }
+    function getSelectedPeople(){ const sel = document.querySelector('.people-chips .chip.active'); if(!sel) return null; return parseInt(sel.textContent.replace('명',''),10); }
+    function matchesMission(m, chosen){ if(!m) return true; if(m.type==='any') return true; function ok(rule){ if(rule.kind==='date') return chosen.date && chosen.date===rule.value; if(rule.kind==='people') return chosen.people && chosen.people===rule.value; if(rule.kind==='time') return chosen.time && chosen.time===rule.value; return false; } if(m.type==='one') return ok(m.rules[0]); if(m.type==='multi'){ var cnt=0; m.rules.forEach(function(r){ if(ok(r)) cnt++; }); return cnt >= (m.need||m.rules.length); } return false; }
+    function validateIfComplete(timeText){ const dateVal = getSelectedDate(); const peopleVal = getSelectedPeople(); const chosen = { date: dateVal, people: peopleVal, time: timeText || null }; if(!missionPayload){ return; } const now = Date.now(); if(missionPayload.endAt && now > missionPayload.endAt){ showFail('시간 초과로 예약 실패'); return; } updateGlobalChecklist(chosen); if(timeText){ if(matchesMission(missionPayload.mission, chosen)){ showSuccess(); } else { showWarning('미션 조건에 맞지 않습니다.'); } } }
+  </script>
+
+<!-- Supabase 설정 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+
+<script>
+// === 기록 저장 기능 ===
+let gameStartTime = Date.now();
+let gameEndTime = null;
+let elapsedMs = 0;
+let recordSaved = false;
+
+// 페이지 로드 시 시작 시간 기록
+document.addEventListener('DOMContentLoaded', function() {
+  gameStartTime = Date.now();
+});
+
+// 성공 모달이 표시될 때 소요시간 계산
+const resultOverlayEl = document.getElementById('resultOverlay');
+const resultObserver = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+      if (resultOverlayEl.style.display === 'flex') {
+        const resultTitle = document.getElementById('resultTitle').textContent;
+        if (resultTitle === '성공') {
+          gameEndTime = Date.now();
+          elapsedMs = gameEndTime - gameStartTime;
+
+          // 소요시간 표시
+          const elapsedEl = document.getElementById('elapsedTime');
+          const elapsedTextEl = document.getElementById('elapsedTimeText');
+          if (elapsedEl && elapsedTextEl) {
+            elapsedEl.textContent = formatTimeSimple(elapsedMs);
+            elapsedTextEl.style.display = 'block';
+          }
+
+          // 저장 버튼 및 AI 피드백 버튼 표시
+          const saveBtn = document.getElementById('saveRecordBtn');
+          const aiFeedbackBtn = document.getElementById('aiFeedbackBtn');
+          const saveStatus = document.getElementById('saveStatus');
+          saveBtn.style.display = 'block';
+          aiFeedbackBtn.style.display = 'block';
+
+          if (!isLoggedIn()) {
+            saveBtn.textContent = '🔒 로그인 필요';
+            saveBtn.style.background = '#6b7280';
+            saveStatus.innerHTML = '<a href="../main-pages/login.html" style="color: #8b5cf6;">로그인</a>하면 기록을 저장할 수 있어요!';
+          }
+        }
+      }
+    }
+  });
+});
+
+resultObserver.observe(resultOverlayEl, { attributes: true });
+
+// 기록 저장 함수
+async function saveRecord() {
+  if (recordSaved) {
+    alert('이미 저장된 기록입니다!');
+    return;
+  }
+
+  if (!isLoggedIn()) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      window.location.href = '../main-pages/login.html';
+    }
+    return;
+  }
+
+  const saveBtn = document.getElementById('saveRecordBtn');
+  const saveStatus = document.getElementById('saveStatus');
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = '저장 중...';
+
+  try {
+    const difficulty = getDifficulty();
+    const recordId = await saveBookingRecord('restaurant', difficulty, elapsedMs, {
+      type: 'restaurant',
+      timestamp: new Date().toISOString()
+    });
+
+    if (recordId) {
+      recordSaved = true;
+      saveBtn.textContent = '✅ 저장 완료!';
+      saveBtn.style.background = '#10b981';
+      saveStatus.innerHTML = '<a href="../main-pages/ranking.html" style="color: #8b5cf6; font-weight: bold;">👉 순위표 보러가기</a>';
+    } else {
+      throw new Error('저장 실패');
+    }
+  } catch (error) {
+    console.error('기록 저장 오류:', error);
+    saveBtn.disabled = false;
+    saveBtn.textContent = '🏆 기록 저장하기';
+    saveStatus.textContent = '저장에 실패했습니다. 다시 시도해주세요.';
+    saveStatus.style.color = '#ef4444';
+  }
+}
+
+function getDifficulty() {
+  return getLevelFromURL() || 'normal';
+}
+
+// === 클릭 추적 및 AI 피드백 기능 ===
+let clickCount = 0;
+let mouseDistance = 0;
+let lastMousePos = { x: 0, y: 0 };
+let clickTimes = [];
+
+// 클릭 추적
+document.addEventListener('click', function(e) {
+  clickCount++;
+  clickTimes.push(Date.now());
+});
+
+// 마우스 이동 거리 추적
+document.addEventListener('mousemove', function(e) {
+  if (lastMousePos.x !== 0 || lastMousePos.y !== 0) {
+    const dx = e.clientX - lastMousePos.x;
+    const dy = e.clientY - lastMousePos.y;
+    mouseDistance += Math.sqrt(dx * dx + dy * dy);
+  }
+  lastMousePos = { x: e.clientX, y: e.clientY };
+});
+
+// AI 피드백 페이지로 이동
+function goToAIFeedback() {
+  // 평균 반응 시간 계산
+  let avgReactionTime = 0;
+  if (clickTimes.length > 1) {
+    let totalGap = 0;
+    for (let i = 1; i < clickTimes.length; i++) {
+      totalGap += clickTimes[i] - clickTimes[i - 1];
+    }
+    avgReactionTime = Math.floor(totalGap / (clickTimes.length - 1));
+  }
+
+  // 피드백 데이터 저장
+  const feedbackData = {
+    category: 'restaurant',
+    difficulty: getDifficulty(),
+    elapsedTime: elapsedMs,
+    clickCount: clickCount,
+    success: true,
+    mouseDistance: Math.floor(mouseDistance),
+    accuracy: Math.min(100, Math.floor((5 / Math.max(1, clickCount)) * 100)),
+    reactionTime: avgReactionTime
+  };
+
+  localStorage.setItem('ticketpro_feedback_data', JSON.stringify(feedbackData));
+  localStorage.removeItem('ct_mission');
+  location.href = '../main-pages/ai-feedback.html';
+}
+</script>
+
+</body>
+</html>

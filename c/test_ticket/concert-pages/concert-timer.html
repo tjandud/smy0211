@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TicketPro - 타이머</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../common/theme.css">
+  <style>
+    body { overflow: hidden; }
+
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    #pre-count {
+      font-size: 150px;
+      font-weight: 900;
+      background: var(--gradient-purple);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      display: none;
+    }
+
+    #start-msg {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: none;
+    }
+
+    #timer-area { display: none; }
+
+    #ready-msg {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    #ten-timer {
+      font-size: 140px;
+      font-weight: 900;
+      background: var(--gradient-purple);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    #connect-btn {
+      margin-top: 32px;
+      padding: 18px 48px;
+      font-size: 20px;
+      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      background: var(--gradient-purple);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+    }
+
+    #connect-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+    }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); transform: scale(1); }
+      50% { box-shadow: 0 0 30px 15px rgba(239, 68, 68, 0); transform: scale(1.05); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+    }
+
+    .pulse-red {
+      animation: pulse-red 1s infinite;
+      background: linear-gradient(135deg, #ef4444 0%, #f97316 100%) !important;
+    }
+
+    #result-area { display: none; text-align: center; }
+
+    #result-msg {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-pink);
+      margin-bottom: 24px;
+    }
+
+    #retry-btn {
+      padding: 12px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #retry-btn:hover {
+      background: var(--card-hover);
+      border-color: var(--border-hover);
+    }
+
+    /* Queue Modal */
+    #queue-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 8, 12, 0.9);
+      backdrop-filter: blur(12px);
+      z-index: 10000;
+      padding: 24px;
+    }
+
+    .queue-content {
+      width: 600px;
+      max-width: 95%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+    }
+
+    .queue-content h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: var(--gradient-purple);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .queue-info {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .queue-count {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--accent-violet);
+    }
+
+    .queue-bar-container {
+      background: rgba(139, 92, 246, 0.2);
+      border-radius: 999px;
+      padding: 4px;
+      overflow: hidden;
+    }
+
+    #queue-bar {
+      width: 0%;
+      height: 16px;
+      background: var(--gradient-purple);
+      border-radius: 999px;
+      transition: width 400ms ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+    <div class="gradient-orb gradient-orb-3"></div>
+  </div>
+
+  <!-- 네비게이션 바 -->
+  <nav class="navbar">
+    <a href="../../../a/index.html" class="nav-logo">
+      <span class="nav-logo-text">TicketPro</span>
+      <div class="star star-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+    </a>
+    <div class="nav-actions" id="navActions">
+    </div>
+  </nav>
+
+  <!-- 로그인 상태 체크 -->
+  <script>
+    (function() {
+      const navActions = document.getElementById('navActions');
+      const userId = sessionStorage.getItem('userId');
+      const nickname = sessionStorage.getItem('nickname');
+      const adminBtn = `<a href="../admin/key-manager.html" class="nav-btn secondary" style="font-size: 11px; padding: 4px 8px; opacity: 0.5; margin-left: 8px;" title="관리자">⚙️</a>`;
+      if (userId && nickname) {
+        navActions.innerHTML = `
+          <span style="color: var(--text-secondary); font-size: 14px; margin-right: 8px;">👤 ${nickname}</span>
+          <a href="../battle-pages/battle-mode.html" class="nav-btn" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2)); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">⚔️ 대결</a>
+          <a href="../main-pages/ranking.html" class="nav-btn secondary">🏆 순위표</a>
+          <a href="../main-pages/chat.html" class="nav-btn secondary">💬 채팅</a>
+          <button onclick="logout()" class="nav-btn secondary">로그아웃</button>
+          ${adminBtn}
+        `;
+      } else {
+        navActions.innerHTML = `
+          <a href="../main-pages/login.html" class="nav-btn primary">로그인</a>
+          ${adminBtn}
+        `;
+      }
+    })();
+    function logout() {
+      sessionStorage.removeItem('userId');
+      sessionStorage.removeItem('nickname');
+      location.reload();
+    }
+  </script>
+
+  <!-- 메인 컨테이너 -->
+  <div class="main-container">
+    <div class="timer-container">
+      <div id="start-msg">잠시 후 게임이 시작됩니다</div>
+      <div id="pre-count"></div>
+
+      <div id="timer-area">
+        <div id="ready-msg">타이머가 끝나면 티케팅을 시작하세요!</div>
+        <div id="ten-timer"></div>
+        <button id="connect-btn">사이트 접속하기</button>
+      </div>
+
+      <div id="result-area">
+        <div id="result-msg"></div>
+        <button id="retry-btn">다시하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Queue Modal -->
+  <div id="queue-modal">
+    <div class="queue-content">
+      <h2>예매 대기중입니다</h2>
+      <div class="queue-info">
+        <span id="queue-top-msg">사이트에 접속중입니다..</span><br><br>
+        사용자 님 앞에 <span class="queue-count" id="queue-count">83</span> 명의 대기자가 있습니다.
+      </div>
+      <div class="queue-bar-container">
+        <div id="queue-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var preCountEl = document.getElementById('pre-count');
+    var timerArea = document.getElementById('timer-area');
+    var tenTimer = document.getElementById('ten-timer');
+    var connectBtn = document.getElementById('connect-btn');
+    var resultArea = document.getElementById('result-area');
+    var resultMsg = document.getElementById('result-msg');
+    var retryBtn = document.getElementById('retry-btn');
+    var startMsgEl = document.getElementById('start-msg');
+
+    var timerId = null;
+    var startTime = 0;
+    var duration = 5000;
+    var remaining = duration;
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var selectedLevel = urlParams.get('level') || 'normal';
+    var selectedHall = urlParams.get('hall') || 'default';
+
+    var levelConfigs = {
+      easy:   { duration: 5000, successWindow: 150 },
+      normal: { duration: 5000, successWindow: 80 },
+      hard:   { duration: 5000, successWindow: 40 }
+    };
+
+    var effective = { duration: duration, successWindow: 0 };
+    if(levelConfigs[selectedLevel]){
+      effective.duration = levelConfigs[selectedLevel].duration;
+      effective.successWindow = levelConfigs[selectedLevel].successWindow;
+    }
+    duration = effective.duration;
+    remaining = duration;
+
+    function runPreCount(){
+      return new Promise(function(resolve){
+        if(startMsgEl) startMsgEl.style.display = 'block';
+        preCountEl.style.display = 'block';
+        timerArea.style.display = 'none';
+        resultArea.style.display = 'none';
+        var nums = ['3','2','1'];
+        var i = 0;
+        preCountEl.textContent = nums[i];
+        var pc = setInterval(function(){
+          i++;
+          if(i < nums.length){
+            preCountEl.textContent = nums[i];
+          } else {
+            clearInterval(pc);
+            preCountEl.style.display = 'none';
+            if(startMsgEl) startMsgEl.style.display = 'none';
+            resolve();
+          }
+        }, 1000);
+      });
+    }
+
+    function formatMs(ms){
+      var s = Math.max(0, ms / 1000);
+      if(selectedLevel === 'hard') return Math.ceil(s).toString();
+      return s.toFixed(2);
+    }
+
+    function startTenTimer(){
+      timerArea.style.display = 'block';
+      resultArea.style.display = 'none';
+      startTime = performance.now();
+      window._timerEndTime = null;
+
+      function tick(){
+        var now = performance.now();
+        var elapsed = now - startTime;
+        remaining = Math.max(0, duration - elapsed);
+        tenTimer.textContent = formatMs(remaining);
+
+        if(remaining <= 0){
+          cancelAnimationFrame(timerId);
+          timerId = null;
+          tenTimer.textContent = selectedLevel === 'hard' ? '0' : '0.00';
+          if(!window._timerEndTime) window._timerEndTime = performance.now();
+          connectBtn.classList.add('pulse-red');
+          return;
+        }
+        timerId = requestAnimationFrame(tick);
+      }
+      timerId = requestAnimationFrame(tick);
+    }
+
+    function stopTenTimer(){ if(timerId) { cancelAnimationFrame(timerId); timerId = null; } }
+
+    function showResult(msg){
+      resultMsg.textContent = msg;
+      resultArea.style.display = 'block';
+      timerArea.style.display = 'none';
+    }
+
+    // Auto-start
+    (async function(){
+      await new Promise(r=>setTimeout(r, 50));
+      await runPreCount();
+      startTenTimer();
+    })();
+
+    connectBtn.addEventListener('click', function(){
+      if(remaining > effective.successWindow){
+        stopTenTimer();
+        showResult('이런.. 티케팅이 열리기 전에 접속했습니다!');
+        return;
+      }
+
+      var clickTime = performance.now();
+      var endTime = window._timerEndTime || clickTime;
+      var extraMs = Math.max(0, clickTime - endTime);
+      var extraSec = extraMs / 1000;
+
+      var ratesPerSecond = { easy: 50, normal: 150, hard: 300 };
+      var rate = ratesPerSecond[selectedLevel] || 150;
+      var added = Math.round(rate * extraSec);
+
+      var baseByLevel = { easy: 50, normal: 83, hard: 120 };
+      var base = baseByLevel[selectedLevel] || 80;
+      var initialQueue = Math.max(0, base + added);
+
+      showQueueModal(initialQueue, 6500);
+    });
+
+    function showQueueModal(initialCount, durationMs){
+      var modal = document.getElementById('queue-modal');
+      var countEl = document.getElementById('queue-count');
+      var bar = document.getElementById('queue-bar');
+      var topMsg = document.getElementById('queue-top-msg');
+
+      var queueCount = Math.max(0, Math.round(initialCount || 0));
+      countEl.textContent = queueCount;
+      bar.style.width = '0%';
+      if(topMsg) topMsg.textContent = '사이트에 접속중입니다..';
+      modal.style.display = 'flex';
+
+      var dur = durationMs || 6500;
+      var start = performance.now();
+
+      function frame(now){
+        var t = Math.min(1, (now - start) / dur);
+        var percent = Math.round(t * 100);
+        bar.style.width = percent + '%';
+        var current = Math.max(0, Math.round(queueCount * (1 - t)));
+        countEl.textContent = current;
+
+        if(t < 1){
+          requestAnimationFrame(frame);
+        } else {
+          if(topMsg) topMsg.textContent = '대기열 처리 완료 — 예매 페이지로 이동합니다.';
+          setTimeout(function(){
+            var timerEndTime = window._timerEndTime || performance.now();
+            window.location.href = 'ticketingMain.html?level=' + selectedLevel + '&hall=' + encodeURIComponent(selectedHall) + '&timerEnd=' + timerEndTime;
+          }, 1200);
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    retryBtn.addEventListener('click', function(){ location.reload(); });
+  })();
+  </script>
+</body>
+</html>

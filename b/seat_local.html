@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>좌석 선택 연습 (멜론 스타일 / SVG)</title>
+
+  <!-- 멜론 onestop 스타일 -->
+  <link rel="stylesheet" type="text/css"
+        href="https://cdnticket.melon.co.kr/resource/style/web/common/common_onestop-1f4da835a2.css" />
+  <link rel="stylesheet" type="text/css"
+        href="https://cdnticket.melon.co.kr/resource/style/web/common/onestop-ea2e58911c.css" />
+  <link rel="stylesheet" type="text/css"
+        href="https://cdnticket.melon.co.kr/resource/style/web/common/onestop_map-9b67a82c75.css" />
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    body {
+      background:#f5f5f5;
+    }
+
+    /* 좌석 SVG 영역 (멜론처럼 682x602) */
+    .seat-area {
+      position:relative;
+      width:682px;
+      height:602px;
+      margin:0 auto;
+      overflow:hidden;
+    }
+
+    #scroller {
+      width:682px;
+      height:602px;
+      transform-origin:0 0;
+    }
+
+    #ez_canvas {
+      width:682px;
+      height:602px;
+    }
+
+    #seatSvg {
+      width:682px;
+      height:602px;
+      background:#f4f4f4;
+    }
+
+    .wrap_seat {
+      position:relative;
+      min-height:602px;
+      background:#f5f5f5;
+    }
+
+    /* 오른쪽 미니맵 */
+    #miniMap {
+      width:100%;
+      max-width:180px;
+      filter:brightness(1.2);
+      opacity:0.95;
+    }
+
+.box_timer .txt_timer {
+    font-size: 16px;
+    font-weight: bold;
+}
+.virtual-page-notice {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        padding: 6px 10px;
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        font-size: 11px;
+        border-radius: 4px;
+        z-index: 99999;
+        pointer-events: none; /* 아래 버튼 클릭 막지 않게 */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif;
+      }
+  </style>
+</head>
+<body>
+<div class="section_onestop" id="section_onestop">
+        <!-- === 예매 타이머 박스 === -->
+        <div class="box_info box_timer">
+            <h3 class="select_tit">예매 타이머</h3>
+            <div class="box_ticket">
+                <p class="txt_timer"><span id="bookingTimer">00:00</span></p>
+            </div>
+        </div>
+
+  <!-- 좌석 선택 영역 -->
+  <div class="wrap_select">
+    <div class="box_seat_top">
+      <h3 class="tit_seat">
+        좌석 선택
+        <span class="tit_s txt_prod_name">[연습용 공연]</span>
+        <span class="seat_wrap_sel">
+          <select id="scheduleNo" class="sel_cate">
+            <option value="S1">2026.02.05 (목) 19:30</option>
+          </select>
+        </span>
+      </h3>
+    </div>
+
+    <!-- 좌석 영역 -->
+    <div class="wrap_seat">
+      <div class="btn_extension">
+        <a href="#" class="btn_plus" id="btnZoomIn">+</a>
+        <a href="#" class="btn_minus" id="btnZoomOut">−</a>
+      </div>
+
+      <!-- 멜론 구조: scroller > ez_canvas > svg(image+rect) -->
+      <div class="seat-area">
+        <div id="scroller">
+          <div id="ez_canvas">
+            <svg id="seatSvg"
+                 width="682" height="602"
+                 viewBox="0 0 650 935"
+                 preserveAspectRatio="xMidYMid meet"
+                 xmlns="http://www.w3.org/2000/svg">
+
+              <!-- 배경 평면도 -->
+              <image x="0" y="0" width="650" height="850"
+                     preserveAspectRatio="none"
+                     href="./cdnticket/resource/image/upload/seat/2025/04/202504171151330ab8b58d-fdd8-4482-b27e-7bb4980abdf7.svg" />
+
+              <!-- JS에서 좌석 rect 추가 -->
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="wrap_seat_box">
+        <div class="seat_box">
+          <div class="seat_btn" id="txtSelectSeatInfo">좌석을 선택해 주세요</div>
+          <div class="seat_choice">
+            <ul id="partSeatSelected" class="seat_info"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- // 좌석 영역 -->
+  </div>
+
+  <!-- 오른쪽 티켓 정보 영역 -->
+  <div class="wrap_ticket_info">
+    <h2 class="logo_onestop">
+      <a href="#none">
+        <img src="./cdnticket/resource/image/web/onestop/logo_onestop.png" alt="Melon 티켓">
+      </a>
+    </h2>
+
+    <!-- 밝은 미니맵 -->
+    <div class="box_info box_map">
+      <div class="minimap_scroller">
+        <div class="map_seat" style="text-align:center; padding:10px;">
+          <img id="miniMap"
+               src="./cdnticket/resource/image/upload/seat/2025/04/202504171151330ab8b58d-fdd8-4482-b27e-7bb4980abdf7.svg"
+               alt="좌석 배치 미니맵">
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap_seat_list">
+      <div class="seat_list">
+        <h3 class="select_tit">
+          좌석등급/잔여석
+          <a href="#none" id="btnReload" class="btn_flexible btn_flexible_ico2 btn_detail">
+            <span>새로고침</span>
+          </a>
+        </h3>
+        <div class="box_seat">
+          <div class="box_seat_inner box_seat_area">
+            <table class="tbl">
+              <colgroup>
+                <col style="width:26px;" />
+                <col />
+                <col style="width:65px;" />
+                <col style="width:60px;" />
+              </colgroup>
+              <tbody id="partSeatGrade"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box_info_bm">
+      <div class="btn_onestop">
+        <span class="button btNext">
+          <a href="#" id="btnNext" class="btnOne btnOneB">
+            좌석 선택 완료
+            <em class="one_arr next_ar">다음</em>
+          </a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  // ===== 인덱스에서 넘어온 날짜/시간 읽기 =====
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedDate = urlParams.get('date'); // 예: 20251210
+  const selectedTime = urlParams.get('time'); // 예: 19:30
+
+  // (선택) 상단 셀렉트에 표시해주고 싶다면 여기서 처리
+  const sel = document.getElementById('scheduleNo');
+  if (sel && selectedDate && selectedTime) {
+    function formatDateKorean(dateStr) {
+      if (!dateStr || dateStr.length !== 8) return '';
+      const y = dateStr.substring(0, 4);
+      const m = dateStr.substring(4, 6);
+      const d = dateStr.substring(6, 8);
+      const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+      const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+      const dayName = weekdays[dateObj.getDay()];
+      return y + '.' + m + '.' + d + ' (' + dayName + ') ' + selectedTime;
+    }
+
+    sel.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = 'S1';
+    opt.textContent = formatDateKorean(selectedDate);
+    sel.appendChild(opt);
+  }
+
+  // ===== [1] 등급 / 좌석 데이터 =====
+  const seatGrades = {
+    VIP: { name: "VIP석", color: "#c4a27a", price: 170000 },
+    R:   { name: "R석",   color: "#7e6bff", price: 140000 },
+    S:   { name: "S석",   color: "#ff6aa6", price: 110000 },
+    A:   { name: "A석",   color: "#4aa8ff", price:  80000 }
+  };
+
+  const gradeKeys = Object.keys(seatGrades);
+
+  function getRandomGrade() {
+    const idx = Math.floor(Math.random() * gradeKeys.length);
+    return gradeKeys[idx];
+  }
+
+
+  const floors = [
+    { name: "1F", label: "1F" },
+    { name: "2F", label: "2F" },
+    { name: "3F", label: "3F" }
+  ];
+
+  // ===== [좌표 세팅 - SVG 기반] =====
+  const seatWidth  = 11;
+  const seatHeight = 11;
+  const colGap = 2;
+  const stepX  = seatWidth + colGap; // 13
+  const stepY  = 13;                 // 줄 간격
+
+  // A-B / B-C 사이 실제 간격
+  const gapAB = 15.61;
+  const gapBC = 14.34;
+
+  // 층별 첫 좌석 줄 Y
+  const floorRowBaseY = {
+    "1F": 115.5,
+    "2F": 520.5,
+    "3F": 712.5
+  };
+
+  const floorRowCount = {
+    "1F": 21,
+    "2F": 11,
+    "3F": 8
+  };
+
+  const colsPerBlock = {
+    "1F": { A: 9,  B: 17, C: 9 },
+    "2F": { A: 9,  B: 16, C: 9 },
+    "3F": { A: 9,  B: 16, C: 9 }
+  };
+
+  const seats = [];
+  const svg   = document.getElementById("seatSvg");
+  const NS    = "http://www.w3.org/2000/svg";
+
+  // ===== [좌석 생성: SVG rect로 찍기] =====
+  (function buildSeatMap() {
+    floors.forEach(floor => {
+      const floorName = floor.name;
+      const baseRowY  = floorRowBaseY[floorName];
+      const rowCount  = floorRowCount[floorName];
+
+      // 이 층에서 각 블럭(A/B/C)의 폭 계산
+      const colsA = colsPerBlock[floorName].A;
+      const colsB = colsPerBlock[floorName].B;
+      const colsC = colsPerBlock[floorName].C;
+
+      const widthA = colsA * stepX;
+      const widthB = colsB * stepX;
+      const widthC = colsC * stepX;
+
+      // 전체 폭 = A + gapAB + B + gapBC + C
+      const totalWidth = widthA + gapAB + widthB + gapBC + widthC;
+
+      // 650 좌표 기준 가운데 정렬 + 미세조정(2.8)
+      const startX = (650 - totalWidth) / 2 + 2.8;
+
+      // 각 블럭의 왼쪽 x (baseX)
+      const baseXPerBlock = {
+        A: startX,
+        B: startX + widthA + gapAB,
+        C: startX + widthA + gapAB + widthB + gapBC
+      };
+
+      ["A","B","C"].forEach(blockName => {
+        const cols    = colsPerBlock[floorName][blockName];
+        const baseX   = baseXPerBlock[blockName];
+
+        for (let r=1;r<=rowCount;r++){
+          for (let c=1;c<=cols;c++){
+
+            // ===== [★ 1층 삭제 패턴 적용 ★] =====
+            if (floorName === "1F") {
+
+              // A-1~3-1,2 삭제
+              if (blockName === "A"
+                  && (r === 1 || r === 2 || r === 3)
+                  && (c === 1 || c === 2)) {
+                continue;
+              }
+
+              // C-1~3-8,9 삭제
+              if (blockName === "C"
+                  && (r === 1 || r === 2 || r === 3)
+                  && (c === 8 || c === 9)) {
+                continue;
+              }
+
+              // A-4-1 삭제
+              if (blockName === "A" && r === 4 && c === 1) {
+                continue;
+              }
+
+              // C-4-9 삭제
+              if (blockName === "C" && r === 4 && c === 9) {
+                continue;
+              }
+
+              // B 짝수 열 17행 삭제
+              if (blockName === "B" && c === 17 && r % 2 === 0) {
+                continue;
+              }
+
+              // B-21-모든 열 삭제
+              if (blockName === "B" && r === 21) {
+                continue;
+              }
+
+              // A-21-1,2,7 삭제
+              if (blockName === "A" && r === 21 &&
+                  (c === 1 || c === 2 || c === 9)) {
+                continue;
+              }
+
+              // C-21-1,7 삭제
+              if (blockName === "C" && r === 21 &&
+                  (c === 1 || c === 9)) {
+                continue;
+              }
+            }
+
+            // ===== [★ 2층 삭제 패턴 적용 ★] =====
+            if (floorName === "2F") {
+
+              // B 짝수 열 16행 삭제
+              if (blockName === "B" && c === 16 && r % 2 === 0) {
+                continue;
+              }
+
+              // A-8-모든 열 삭제
+              if (blockName === "A" && r === 8) {
+                continue;
+              }
+              // A-9-모든 열 삭제
+              if (blockName === "A" && r === 9) {
+                continue;
+              }
+              
+              // A-10-모든 열 삭제
+              if (blockName === "A" && r === 10) {
+                continue;
+              }
+
+              // A-11-모든 열 삭제
+              if (blockName === "A" && r === 11) {
+                continue;
+              }
+              // C-8-모든 열 삭제
+              if (blockName === "C" && r === 8) {
+                continue;
+              }
+              // C-9-모든 열 삭제
+              if (blockName === "C" && r === 9) {
+                continue;
+              }
+              
+              // C-10-모든 열 삭제
+              if (blockName === "C" && r === 10) {
+                continue;
+              }
+
+              // C-11-모든 열 삭제
+              if (blockName === "C" && r === 11) {
+                continue;
+              }              
+              // A-7-8,9 삭제
+              if (blockName === "A" && r === 7 &&
+                  (c === 8 || c === 9)) {
+                continue;
+              }
+              // C-7-1,8,9 삭제
+              if (blockName === "C" && r === 7 &&
+                  (c === 1 || c === 8 || c === 9)) {
+                continue;
+              }
+              // B-8-1,2,14,15,16 삭제
+              if (blockName === "B" && r === 8 &&
+                  (c === 1 || c === 2 || c === 14 || c === 15 || c === 16)) {
+                continue;
+              }
+              // B-9-1,2,14,15,16 삭제
+              if (blockName === "B" && r === 9 &&
+                  (c === 1 || c === 2 || c === 14 || c === 15 || c === 16)) {
+                continue;
+              }
+              // B-10-1,2,14,15,16 삭제
+              if (blockName === "B" && r === 10 &&
+                  (c === 1 || c === 2 || c === 14 || c === 15 || c === 16)) {
+                continue;
+              }
+              // B-11-1,2,3,12,13,14,15,16 삭제
+              if (blockName === "B" && r === 8 &&
+                  (c === 1 || c === 2 || c === 3 || c === 12 || c === 13 || c === 14|| c === 15|| c === 16)) {
+                continue;
+              }
+            }
+
+            // ===== [★ 3층 삭제 패턴 적용 ★] =====
+            if (floorName === "3F") {
+
+              // B 짝수 열 16행 삭제
+              if (blockName === "B" && c === 16 && r % 2 === 0) {
+                continue;
+              }
+
+            }
+            // ===== [★ 삭제 패턴 끝 ★] =====
+
+            const id   = `${floorName}-${blockName}-${r}-${c}`;
+            const xPos = baseX    + (c-1)*stepX;
+            const yPos = baseRowY + (r-1)*stepY;
+
+            const rect = document.createElementNS(NS,"rect");
+            rect.setAttribute("x", xPos);
+            rect.setAttribute("y", yPos);
+            rect.setAttribute("width",  seatWidth);
+            rect.setAttribute("height", seatHeight);
+            rect.setAttribute("data-seat-id", id);
+            rect.style.cursor = "pointer";
+
+            rect.dataset.seatId = id;
+            rect.style.cursor = "pointer";
+
+            // ★ 랜덤 등급 부여
+            const grade = getRandomGrade();
+
+            seats.push({
+              id,
+              floor: floorName,
+              block: blockName,
+              row: r,
+              col: c,
+              grade: grade,          // ← 랜덤 등급
+              status: "available",   // ← 처음엔 전부 오픈
+              el: rect
+            });
+
+            // SVG에 추가 (항상 마지막에)
+            svg.appendChild(rect);
+
+          }
+        }
+      });
+    });
+  })();
+
+  // ---- 상태에 따른 색칠 ----
+    let selectedSeatIds = new Set();
+
+      // ===== [자동 랜덤 마감 좌석 기능] =====
+  const AUTO_BLOCK_PER_TICK = 30;          // ★ 1초당 마감할 좌석 수
+  const AUTO_BLOCK_INTERVAL_MS = 100;     // ★ 간격(ms) = 1초
+  let autoBlockTimer = null;
+
+  // 좌석 하나를 "마감" 상태로 변경
+  function markSeatSold(seat) {
+    if (seat.status !== "available") return;
+    seat.status = "taken";
+
+    // 이미 선택한 좌석이었다면 선택 해제
+    if (selectedSeatIds.has(seat.id)) {
+      selectedSeatIds.delete(seat.id);
+    }
+  }
+
+  // 일정 간격으로 랜덤 좌석을 자동 마감
+  function startAutoRandomSold() {
+    if (autoBlockTimer) return; // 중복 방지
+
+    autoBlockTimer = setInterval(() => {
+      // 아직 남아있고, 유저가 선택하지 않은 좌석만 후보
+      const candidates = seats.filter(seat =>
+        seat.status === "available" && !selectedSeatIds.has(seat.id)
+      );
+
+      // 더 이상 마감할 좌석이 없으면 타이머 종료
+      if (candidates.length === 0) {
+        clearInterval(autoBlockTimer);
+        autoBlockTimer = null;
+        return;
+      }
+
+      const count = Math.min(AUTO_BLOCK_PER_TICK, candidates.length);
+
+      for (let i = 0; i < count; i++) {
+        const idx = Math.floor(Math.random() * candidates.length);
+        const seat = candidates[idx];
+        candidates.splice(idx, 1); // 중복되지 않게 빼기
+
+        markSeatSold(seat);
+      }
+
+      // 화면 갱신
+      updateSelectedUI();
+      updateGradeSummary();
+      redrawSeats();
+    }, AUTO_BLOCK_INTERVAL_MS);
+  }
+
+    // // floor + block + row 기준으로 묶어서 col 연속성 체크
+    // const groups = {};
+    // list.forEach((seat) => {
+    //   const key = seat.floor + "-" + seat.block + "-" + seat.row;
+    //   if (!groups[key]) groups[key] = [];
+    //   groups[key].push(seat.col);
+    // });
+
+    // let success = false;
+    // Object.values(groups).forEach((cols) => {
+    //   cols.sort((a, b) => a - b);
+    //   let streak = 1;
+    //   for (let i = 1; i < cols.length; i++) {
+    //     if (cols[i] === cols[i - 1] + 1) {
+    //       streak++;
+    //       if (streak >= mission.requiredCount) {
+    //         success = true;
+    //         break;
+    //       }
+    //     } else if (cols[i] !== cols[i - 1]) {
+    //       streak = 1;
+    //     }
+    //   }
+    // });
+
+  // ===== [예매 타이머 - index에서 저장한 시작 시간으로부터 경과시간 표시] =====
+  function startBookingTimer() {
+    const startStr = sessionStorage.getItem("bookingStartTime");
+    if (!startStr) return;
+    const start = parseInt(startStr, 10);
+    if (Number.isNaN(start)) return;
+
+    const el = document.getElementById("bookingTimer");
+    if (!el) return;
+
+    function render() {
+      const now = Date.now();
+      const diffSec = Math.max(0, Math.floor((now - start) / 1000));
+      const m = String(Math.floor(diffSec / 60)).padStart(2, "0");
+      const s = String(diffSec % 60).padStart(2, "0");
+      el.textContent = m + ":" + s;
+    }
+
+    render();
+    setInterval(render, 1000);
+  }
+
+
+
+
+  function redrawSeats() {
+    // ===== [자동 랜덤 마감용 함수] =====
+    const AUTO_BLOCK_PER_TICK = 20;     // ★ 1초마다 마감할 좌석 수
+    const AUTO_BLOCK_INTERVAL_MS = 1000;
+    let autoBlockTimer = null;
+
+    // 특정 좌석을 sold(마감) 처리하는 함수
+    function markSeatSold(seat) {
+    // 상태만 바꾸면 색칠은 redrawSeats가 처리
+      seat.status = "taken";
+
+      // 만약 이미 선택돼 있던 좌석이면 선택 해제
+      if (selectedSeatIds.has(seat.id)) {
+        selectedSeatIds.delete(seat.id);
+      }
+    }
+
+    // 일정 간격으로 랜덤 좌석을 자동 마감
+function startAutoRandomSold() {
+  if (autoBlockTimer) return; // 이미 돌고 있으면 중복 시작 방지
+
+  autoBlockTimer = setInterval(() => {
+    // 아직 팔리지 않았고, 유저가 선택하지도 않은 좌석들만 대상
+    const candidates = seats.filter(seat =>
+      seat.status === "available" && !selectedSeatIds.has(seat.id)
+    );
+
+    // 더 이상 마감할 좌석이 없으면 타이머 종료
+    if (candidates.length === 0) {
+      clearInterval(autoBlockTimer);
+      autoBlockTimer = null;
+      return;
+    }
+
+    const count = Math.min(AUTO_BLOCK_PER_TICK, candidates.length);
+
+    for (let i = 0; i < count; i++) {
+      const idx = Math.floor(Math.random() * candidates.length);
+      const seat = candidates[idx];
+      candidates.splice(idx, 1); // 중복 방지
+
+      markSeatSold(seat);
+    }
+
+    // UI 갱신
+    updateSelectedUI();
+    updateGradeSummary();
+    redrawSeats();
+  }, AUTO_BLOCK_INTERVAL_MS);
+}
+
+
+    const gradeFill = {
+      VIP: "rgba(196,162,122,0.9)",
+      R:   "rgba(126,107,255,0.9)",
+      S:   "rgba(255,106,166,0.9)",
+      A:   "rgba( 74,168,255,0.9)"
+    };
+    const takenColor = "rgba(200,200,200,0.9)";
+
+    seats.forEach(seat => {
+      const el = seat.el;
+      if (!el) return;
+
+      let fill;
+      if (seat.status === "available")
+        fill = gradeFill[seat.grade] || "rgba(150,150,150,0.8)";
+      else
+        fill = takenColor;
+
+      el.setAttribute("fill", fill);
+
+      if (selectedSeatIds.has(seat.id)) {
+        el.setAttribute("stroke", "#000");
+        el.setAttribute("stroke-width", "0.8");
+      } else {
+        el.setAttribute("stroke", "none");
+      }
+    });
+  }
+
+  // ===== [2] 줌/드래그 - scroller transform 사용 =====
+  const scroller = document.getElementById("scroller");
+
+  let scale = 1.0;
+  let offsetX = 0;
+  let offsetY = 0;
+  let isDragging = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  function applyTransform() {
+    scroller.style.transform =
+      `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+  }
+
+  function onSeatClick(seat) {
+    if (seat.status !== "available") return;
+    if (selectedSeatIds.has(seat.id)) selectedSeatIds.delete(seat.id);
+    else selectedSeatIds.add(seat.id);
+    updateSelectedUI();
+    redrawSeats();
+    checkMission();
+  }
+
+  svg.addEventListener("mousedown", e => {
+    const target = e.target;
+    const seatId = target.getAttribute("data-seat-id");
+    if (seatId) {
+      const seat = seats.find(s=>s.id===seatId);
+      if (seat) onSeatClick(seat);
+    } else {
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    }
+  });
+
+  window.addEventListener("mousemove", e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    offsetX += dx;
+    offsetY += dy;
+    applyTransform();
+  });
+
+  window.addEventListener("mouseup", ()=>{ isDragging=false; });
+
+  document.getElementById("btnZoomIn").addEventListener("click", e=>{
+    e.preventDefault();
+    scale *= 1.2;
+    if (scale > 2.5) scale = 2.5;
+    applyTransform();
+  });
+
+  document.getElementById("btnZoomOut").addEventListener("click", e=>{
+    e.preventDefault();
+    scale /= 1.2;
+    if (scale < 0.5) scale = 0.5;
+    applyTransform();
+  });
+
+  // ===== [3] 오른쪽 등급/선택 UI =====
+  function updateGradeSummary() {
+    const $tbody = $("#partSeatGrade").empty();
+    const summary = {};
+    Object.keys(seatGrades).forEach(g=>{
+      summary[g]={total:0,remain:0};
+    });
+    seats.forEach(seat=>{
+      const info = summary[seat.grade];
+      if(!info) return;
+      info.total++;
+      if(seat.status==="available") info.remain++;
+    });
+    Object.keys(seatGrades).forEach(gradeKey=>{
+      const grade = seatGrades[gradeKey];
+      const info = summary[gradeKey];
+      if(!grade||!info) return;
+      const $tr = $("<tr/>");
+      $tr.append(
+        '<th class="seat_color"><em class="seat_color" style="background-color:'+grade.color+'"></em></th>'
+      );
+      $tr.append('<td class="seat_name">'+grade.name+'</td>');
+      $tr.append('<td class="price">'+grade.price.toLocaleString()+'원</td>');
+      $tr.append('<td class="seat_remain">'+info.remain+'석</td>');
+      $tbody.append($tr);
+    });
+  }
+
+  function updateSelectedUI() {
+    const $ul = $("#partSeatSelected").empty();
+    const list = seats.filter(seat=>selectedSeatIds.has(seat.id));
+    list.forEach(seat=>{
+      const g = seatGrades[seat.grade];
+      const txt = `${seat.floor} ${seat.block}구역 ${seat.row}열 ${seat.col}번 (${g?g.name:seat.grade})`;
+      $("<li/>").text(txt).appendTo($ul);
+    });
+    const count = list.length;
+    if(count>0){
+      $("#txtSelectSeatInfo").html(
+        '선택한 좌석 총 <span class="txt_seat">'+count+'석</span>이 선택되었습니다.'
+      );
+      $("#btnNext").parent().addClass("on");
+    }else{
+      $("#txtSelectSeatInfo").text("좌석을 선택해 주세요");
+      $("#btnNext").parent().removeClass("on");
+    }
+  }
+
+    // ===== [좌석 선택 완료 → 결제 페이지로 이동] =====
+  $("#btnNext").on("click", function(e){
+    e.preventDefault();
+
+    // 선택된 좌석 목록
+    const list = seats.filter(seat => selectedSeatIds.has(seat.id));
+    if (list.length === 0) {
+      alert("선택된 좌석이 없습니다.");
+      return;
+    }
+
+    // seat_local.html 상단에서 읽어온 date/time 다시 가져오기
+    const params = new URLSearchParams(window.location.search);
+    const date = params.get('date') || '';
+    const time = params.get('time') || '';
+
+    // 결제창으로 넘길 좌석 정보 정리
+    const seatPayload = list.map(seat => {
+      const g = seatGrades[seat.grade];
+      const price = g ? g.price : 0;
+      return {
+        id: seat.id,
+        grade: seat.grade,
+        price: price,
+        floor: seat.floor,
+        block: seat.block,
+        row: seat.row,
+        col: seat.col
+      };
+    });
+
+    // 총 금액
+    const totalAmount = seatPayload.reduce(function(sum, s){
+      return sum + (s.price || 0);
+    }, 0);
+
+    // 쿼리스트링 만들기
+    const seatsJSON = JSON.stringify(seatPayload);
+    const query =
+      '?date='  + encodeURIComponent(date) +
+      '&time='  + encodeURIComponent(time) +
+      '&total=' + encodeURIComponent(totalAmount) +
+      '&seats=' + encodeURIComponent(seatsJSON);
+
+    // 연습용 결제창으로 이동
+    window.location.href = 'payment.html' + query;
+  });
+
+
+  $("#btnReload").on("click", function(e){
+    e.preventDefault();
+    selectedSeatIds = new Set();
+    updateSelectedUI();
+    redrawSeats();
+  });
+
+  updateGradeSummary();
+  updateSelectedUI();
+  redrawSeats();
+  applyTransform();   // 초기 위치/배율
+  startAutoRandomSold();
+  startBookingTimer();
+});
+</script>
+
+<script>
+(function () {
+  const KEY_PREFIX = 'melonGame_';
+
+  // ===== 좌석 선택 저장 =====
+  // seat SVG/버튼에 쓰는 클래스/속성에 맞게 selector만 맞춰주면 됨
+  const SEAT_SELECTOR = '.seat, .seat-rect, [data-seat-id]';
+
+  function collectSelectedSeats() {
+    const selected = [];
+    document.querySelectorAll(SEAT_SELECTOR + '.selected').forEach(function (el) {
+      const row = parseInt(el.getAttribute('data-row'), 10);
+      const col = parseInt(el.getAttribute('data-col'), 10);
+      const id  = el.dataset.seatId || (row + '-' + col);
+      if (!isNaN(row) && !isNaN(col)) {
+        selected.push({ id: id, row: row, col: col });
+      }
+    });
+    sessionStorage.setItem(KEY_PREFIX + 'selectedSeats', JSON.stringify(selected));
+  }
+
+  // 좌석 클릭될 때마다 선택 목록 갱신
+  document.addEventListener('click', function (e) {
+    const seatEl = e.target.closest(SEAT_SELECTOR);
+    if (!seatEl) return;
+    // 이미 예매된 좌석은 무시 (아래 랜덤 예매 좌석에서 .sold 붙일 예정)
+    if (seatEl.classList.contains('sold')) return;
+    // 너의 기존 클릭 로직이 selected 클래스를 토글하고 있을 거라고 가정
+    setTimeout(collectSelectedSeats, 0); // DOM 상태 갱신 이후에 읽기
+    // 기존 좌석 클릭 이벤트 내부 어딘가 최상단 근처
+    if (seatElement.classList.contains('sold') || seatElement.dataset.disabled === 'true') {
+    return; // 이미 팔린 좌석은 클릭 무시
+}
+
+  });
+})();
+</script>
+<div class="virtual-page-notice">
+  이 페이지는 가상의 페이지입니다.
+</div>
+</body>
+</html>

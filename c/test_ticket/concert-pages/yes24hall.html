@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>티케팅 좌석도 YES24홀 테스트</title>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #777777;
+      font-family: system-ui, -apple-system, "Pretendard",
+        BlinkMacSystemFont, sans-serif;
+    }
+
+    .app {
+      display: flex;
+      gap: 16px;
+      background: #6b6b6b;
+      padding: 16px 24px;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .left-panel { flex: 0 0 auto; }
+
+    /* 좌석 이미지 영역 */
+    .seat-map {
+      position: relative;
+      width: 658px;
+      height: 619px;
+      background-image: url("../image/concert/yes24_image.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      overflow: hidden;
+    }
+
+    .seat {
+      position: absolute;
+      border-radius: 2px;
+      border: 1px solid #15803d;
+      background: #22c55e;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .seat:hover {
+      filter: brightness(0.9);
+    }
+
+    .seat.selected {
+      background: #ef4444;
+      border-color: #b91c1c;
+    }
+
+    .seat.sold {
+      background: #9ca3af;
+      border-color: #6b7280;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* 오른쪽 패널 */
+
+    .right-panel {
+      width: 320px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      padding: 12px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .guide-box {
+      background: #ffffff;
+      border: 1px solid #dddddd;
+      padding: 10px 12px;
+      line-height: 1.4;
+    }
+
+    .guide-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333333;
+    }
+
+    .guide-sub {
+      color: #666666;
+      font-size: 11px;
+    }
+
+    .grade-box {
+      background: #ffffff;
+      border: 1px solid #dddddd;
+      padding: 8px 10px;
+    }
+
+    .grade-header {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333333;
+    }
+
+    .grade-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .grade-left {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .grade-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      border: 1px solid #444;
+    }
+
+    .grade-dot.r { background: #6366f1; } /* R석 */
+    .grade-dot.s { background: #22c55e; } /* S석 */
+
+    .grade-count {
+      min-width: 45px;
+      text-align: right;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .grade-price {
+      min-width: 70px;
+      text-align: right;
+      color: #111827;
+    }
+
+    .selected-box {
+      background: #ffffff;
+      border: 1px solid #dddddd;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1 1 auto;
+      min-height: 130px;
+    }
+
+    .selected-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
+    .selected-header strong {
+      color: #dc2626;
+    }
+
+    .selected-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .selected-table th,
+    .selected-table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 3px 2px;
+      text-align: left;
+      word-break: keep-all;
+    }
+
+    .selected-table th {
+      background: #f9fafb;
+      font-weight: 600;
+    }
+
+    .button-area {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost {
+      border-radius: 2px;
+      border: 1px solid transparent;
+      font-size: 12px;
+      padding: 7px 4px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #e11d48;
+      border-color: #be123c;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(0.95);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      border-color: #9ca3af;
+      color: #111827;
+    }
+
+    .btn-secondary:hover {
+      background: #f3f4f6;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: #d1d5db;
+      color: #374151;
+    }
+
+    .btn-ghost:hover {
+      background: #f9fafb;
+    }
+
+    /* 보안문자 모달 */
+    .captcha-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .captcha-container {
+      background: white;
+      padding: 32px 28px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 360px;
+      height: 430px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .captcha-canvas {
+      cursor: pointer;
+    }
+
+    .captcha-input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    .captcha-result {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .captcha-result.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .captcha-result.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* 통일된 결과 모달 스타일 (굿즈/배너와 일관) */
+    .success-modal,
+    .failure-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; }
+    /* 굿즈 구매 결과창과 동일한 규격 */
+    .success-container,
+    .failure-container { background:#fff; padding:50px 40px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.3); width:400px; text-align:center; }
+    /* 굿즈 구매 성공/실패 아이콘과 동일한 구조: 원 + 박스 + 마크 */
+    .success-icon,
+    .failure-icon { position:relative; width:88px; height:88px; margin:0 auto 24px; border-radius:50%; }
+    .success-icon { background:#22c55e; box-shadow:0 10px 30px rgba(16,185,129,0.35); }
+    .failure-icon { background:#ef4444; box-shadow:0 10px 30px rgba(239,68,68,0.35); }
+    .success-icon .inner-box,
+    .failure-icon .inner-box { position:absolute; left:50%; top:50%; width:54px; height:54px; border-radius:10px; transform:translate(-50%, -50%); }
+    .success-icon .inner-box { background:#1fbfa0; box-shadow:inset 0 0 0 2px rgba(255,255,255,0.22); }
+    .failure-icon .inner-box { background:#f25c5c; box-shadow:inset 0 0 0 2px rgba(255,255,255,0.18); }
+    .success-icon .mark,
+    .failure-icon .mark { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:34px; height:34px; }
+    .success-icon .mark svg,
+    .failure-icon .mark svg { width:34px; height:34px; display:block; }
+    .success-title,
+    .failure-title { font-size:28px; font-weight:700; color:#111827; margin:0 0 40px 0; }
+    .failure-subtitle { font-size:16px; color:#6b7280; margin:0 0 40px 0; line-height:1.5; }
+    .result-actions { display:flex; flex-direction:column; gap:10px; justify-content:center; }
+    .btn-action { width:100%; padding:14px; border-radius:6px; border:none; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    /* 버튼 컬러를 굿즈와 동일하게 통일 */
+    .btn-teal { background:#00d9c8; color:#fff; }
+    .btn-teal:hover { background:#00c4b4; }
+    .btn-gray { background:#e5e7eb; color:#374151; }
+    .btn-gray:hover { background:#dfe3e7; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- 왼쪽: 좌석도 -->
+  <div class="left-panel">
+    <div class="seat-map" id="seatMap"></div>
+  </div>
+
+  <!-- 오른쪽: 인터파크 느낌 패널 -->
+  <div class="right-panel">
+    <div class="guide-box">
+      <div class="guide-title">원하시는 좌석 위치를 선택해주세요.</div>
+      <div class="guide-sub">
+        좌석을 클릭하면 선택/해제가 됩니다.<br />
+        선택된 좌석은 아래 목록과 잔여석 정보에 표시됩니다.
+      </div>
+    </div>
+
+    <div class="grade-box">
+      <div class="grade-header">좌석등급 / 잔여석</div>
+
+      <div class="grade-row">
+        <div class="grade-left">
+          <span class="grade-dot r"></span>
+          <span>R석</span>
+        </div>
+        <span class="grade-count" id="remainR">0석</span>
+        <span class="grade-price">77,000원</span>
+      </div>
+
+      <div class="grade-row">
+        <div class="grade-left">
+          <span class="grade-dot s"></span>
+          <span>S석</span>
+        </div>
+        <span class="grade-count" id="remainS">0석</span>
+        <span class="grade-price">55,000원</span>
+      </div>
+    </div>
+
+    <div class="selected-box">
+      <div class="selected-header">
+        <span>선택좌석</span>
+        <span>총 <strong id="selectedCount">0석</strong> 선택되었습니다.</span>
+      </div>
+
+      <table class="selected-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">좌석등급</th>
+            <th>좌석번호</th>
+          </tr>
+        </thead>
+        <tbody id="selectedTableBody">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="button-area">
+      <button class="btn-primary" id="btnComplete">좌석선택완료</button>
+      <button class="btn-secondary" id="btnClearSelection">좌석 다시 선택</button>
+      <button class="btn-ghost">이전단계</button>
+    </div>
+  </div>
+</div>
+
+<!-- 예매 성공 모달 -->
+<div class="success-modal" id="successModal">
+  <div class="success-container">
+    <div class="success-icon" aria-hidden="true">
+      <div class="inner-box"></div>
+      <div class="mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 7L9 18L4 13" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <h2 class="success-title">예매에 성공하셨습니다!</h2>
+    <p id="elapsedTimeText" style="font-size: 18px; color: #666; margin: -20px 0 20px;">소요시간: <strong id="elapsedTime">00:00</strong></p>
+    <div class="result-actions">
+      <button class="btn-action btn-save" id="saveRecordBtn" onclick="saveRecord()" style="background: linear-gradient(135deg, #fbbf24, #f97316); color: white; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); font-weight: 700; animation: pulse-save 1.5s infinite;">🏆 기록 저장하기</button>
+      <button class="btn-action" id="aiFeedbackBtn" onclick="goToAIFeedback()" style="background: linear-gradient(135deg, #3b82f6, #06b6d4); color: white;">🤖 AI 피드백 받기</button>
+      <button class="btn-action btn-teal" onclick="location.href='concert-level.html'">난이도 선택으로</button>
+      <button class="btn-action btn-teal" onclick="restartGame()">다시하기</button>
+      <button class="btn-action btn-teal" onclick="location.href='../main-pages/choice.html'">메인으로</button>
+      <a href="../main-pages/ranking.html" class="btn-action" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; text-decoration: none; display: inline-block;">👉 순위표 보러가기</a>
+    </div>
+    <p id="saveStatus" style="margin-top: 15px; font-size: 14px; color: #888;"></p>
+    <p style="margin-top: 10px; font-size: 13px; color: #ef4444; font-weight: 600;">⚠️ 지금 저장하지 않으면 기록이 저장되지 않습니다!</p>
+  </div>
+</div>
+<style>
+  @keyframes pulse-save {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+    50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+  }
+</style>
+
+<!-- 예매 실패 모달 -->
+<div class="failure-modal" id="failureModal">
+  <div class="failure-container">
+    <div class="failure-icon" aria-hidden="true">
+      <div class="inner-box"></div>
+      <div class="mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 9l-6 6M9 9l6 6" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <h2 class="failure-title">예매에 실패했습니다..</h2>
+    <p class="failure-subtitle">좌석이 모두 매진되었어요.</p>
+    <div class="result-actions">
+      <button class="btn-action btn-teal" onclick="location.href='concert-level.html'">난이도 선택으로</button>
+      <button class="btn-action btn-teal" onclick="restartGame()">다시하기</button>
+      <button class="btn-action btn-teal" onclick="location.href='../main-pages/choice.html'">메인으로</button>
+    </div>
+  </div>
+</div>
+
+<!-- 보안문자 모달 -->
+<div class="captcha-modal" id="captchaModal">
+  <div class="captcha-container">
+    <!-- 헤더 -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
+      <div style="width: 28px; height: 28px; background: #6366f1; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2 style="margin: 0; font-size: 15px; color: #6366f1; font-weight: 600;">안심예매</h2>
+    </div>
+    
+    <h3 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #6366f1;">문자를 입력해주세요</h3>
+    <p style="margin: 0 0 16px 0; font-size: 13px; color: #666; line-height: 1.5;">
+      부정예매방지를 위해 아래의 문자를 입력해주세요.<br>
+      인증 후 좌석을 선택할 수 있습니다.
+    </p>
+    
+    <!-- 캡차 이미지 영역 -->
+    <div style="position: relative; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 3px; padding: 12px; margin-bottom: 14px;">
+      <canvas id="captchaCanvas" class="captcha-canvas" width="260" height="70" style="border: none; display: block; margin: 0 auto;"></canvas>
+      
+      <!-- 새로고침/음성 버튼 -->
+      <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 6px;">
+        <button onclick="generateCaptcha()" style="width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </button>
+        <button style="width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 입력 필드 -->
+    <input type="text" id="captchaInput" class="captcha-input" placeholder="문자를 입력해주세요" maxlength="6" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; text-align: center;">
+    
+    <!-- 버튼 영역 -->
+    <div style="display: flex; gap: 6px; margin-top: auto;">
+      <button disabled style="flex: 1; padding: 13px; background: #f5f5f5; color: #999; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; font-weight: 600; cursor: not-allowed; opacity: 0.6;">
+        달력 다시 선택
+      </button>
+      <button onclick="verifyCaptcha()" style="flex: 1; padding: 13px; background: #1f2937; color: white; border: none; border-radius: 3px; font-size: 14px; font-weight: 600; cursor: pointer;">
+        입력완료
+      </button>
+    </div>
+    
+    <div id="captchaResult" class="captcha-result"></div>
+  </div>
+</div>
+
+<script>
+  const seatMapEl = document.getElementById("seatMap");
+  const STEP_X = 10.5;
+  const STEP_Y = 11;
+  const SEAT_SIZE = 8;
+
+  // 1층 가 / 나 세로열
+  const sideCols = [
+    { col: "가", floor: "1층", baseLeft: 140, baseTop: 220, count: 14 },
+    { col: "나", floor: "1층", baseLeft: 500, baseTop: 220, count: 15 }
+  ];
+
+  // 1층 A~N열 각 행의 세그먼트 패턴 (왼쪽 / 가운데 / 오른쪽)
+  const rowPatterns = {
+    A: { left: 4, center: 11, right: 3 },
+    B: { left: 4, center: 12, right: 3 },
+    C: { left: 4, center: 11, right: 4 },
+    D: { left: 4, center: 12, right: 4 },
+    E: { left: 4, center: 11, right: 4 },
+    F: { left: 4, center: 12, right: 4 },
+    G: { left: 4, center: 11, right: 4 },
+    H: { left: 4, center: 12, right: 4 },
+    I: { left: 4, center: 12, right: 4 },
+    J: { left: 4, center: 12, right: 3 },
+    K: { left: 4, center: 12, right: 4 },
+    L: { left: 4, center: 12, right: 4 },
+    M: { left: 4, center: 12, right: 3 },
+    N: { left: 16, center: 0, right: 5 } // N열은 16 / 5
+  };
+
+  // 1층 A~N 각 행의 top 좌표
+  const rowTops = {
+    A: 185,
+    B: 195,
+    C: 205,
+    D: 215,
+    E: 225,
+    F: 236,
+    G: 247,
+    H: 258,
+    I: 268,
+    J: 290,
+    K: 300,
+    L: 310,
+    M: 321,
+    N: 331
+  };
+
+  // A~M용 좌/중/우 기본 X
+  const LEFT_FIRST_X = 200;
+  const CENTER_FIRST_12_X = 262; // 12좌석 줄의 첫 좌석
+  const CENTER_LAST_X = CENTER_FIRST_12_X + STEP_X * (12 - 1); // 항상 오른쪽 끝을 고정
+  const RIGHT_LAST_X = 440; // 오른쪽 묶음의 마지막 좌표 (4좌석 줄 기준)
+
+  // 2층 O~T
+  const horizontalRows2F = [
+    { name: "P", floor: "2층", baseLeft: 423,            baseTop: 410, count: 21 },
+    { name: "O", floor: "2층", baseLeft: 423 - STEP_X,   baseTop: 400, count: 20 },
+    { name: "Q", floor: "2층", baseLeft: 381.0,          baseTop: 421, count: 16 },
+    { name: "R", floor: "2층", baseLeft: 381.0,          baseTop: 431, count: 16 },
+    { name: "S", floor: "2층", baseLeft: 381.0,          baseTop: 442, count: 16 },
+    { name: "T", floor: "2층", baseLeft: 381.0 + STEP_X, baseTop: 452, count: 18 }
+  ];
+
+  // 공통 seat 생성 함수
+  function createSeat({ floor, rowLabel, seatNo, x, y }) {
+    const btn = document.createElement("button");
+    btn.className = "seat";
+    btn.style.left = x + "px";
+    btn.style.top = y + "px";
+    btn.style.width = SEAT_SIZE + "px";
+    btn.style.height = SEAT_SIZE + "px";
+
+    btn.dataset.floor = floor;
+    btn.dataset.row = rowLabel;
+    btn.dataset.no = String(seatNo);
+
+    // 타이틀 텍스트
+    btn.title = `${floor} ${rowLabel}열 ${seatNo}번`;
+
+    seatMapEl.appendChild(btn);
+    return btn;
+  }
+
+  // 1층 가 / 나열 생성
+  function createSideCols() {
+    sideCols.forEach(colInfo => {
+      for (let i = 0; i < colInfo.count; i++) {
+        const y = colInfo.baseTop + STEP_Y * i;
+        const x = colInfo.baseLeft;
+        const seatNo = i + 1;
+
+        createSeat({
+          floor: colInfo.floor,
+          rowLabel: colInfo.col,
+          seatNo,
+          x,
+          y
+        });
+      }
+    });
+  }
+
+  // 1층 A~M 행 생성 (N 제외)
+  function createRowsAtoM() {
+    const letters = "ABCDEFGHIJKLM".split("");
+
+    letters.forEach(letter => {
+      const pattern = rowPatterns[letter];
+      const top = rowTops[letter];
+      let seatNo = 1;
+
+      // 왼쪽 4좌석 묶음
+      for (let i = 0; i < pattern.left; i++) {
+        const x = LEFT_FIRST_X + STEP_X * i;
+        createSeat({
+          floor: "1층",
+          rowLabel: letter,
+          seatNo: seatNo++,
+          x,
+          y: top
+        });
+      }
+
+      // 가운데 묶음 (11 또는 12)
+      const centerCount = pattern.center;
+      if (centerCount > 0) {
+        // 오른쪽 끝을 CENTER_LAST_X로 맞추고, 개수에 따라 왼쪽으로 밀어냄
+        const startX = CENTER_LAST_X - STEP_X * (centerCount - 1);
+        for (let i = 0; i < centerCount; i++) {
+          const x = startX + STEP_X * i;
+          createSeat({
+            floor: "1층",
+            rowLabel: letter,
+            seatNo: seatNo++,
+            x,
+            y: top
+          });
+        }
+      }
+
+      // 오른쪽 묶음 (3 또는 4)
+      const rightCount = pattern.right;
+      if (rightCount > 0) {
+        const startX = RIGHT_LAST_X - STEP_X * (rightCount - 1);
+        for (let i = 0; i < rightCount; i++) {
+          const x = startX + STEP_X * i;
+          createSeat({
+            floor: "1층",
+            rowLabel: letter,
+            seatNo: seatNo++,
+            x,
+            y: top
+          });
+        }
+      }
+    });
+  }
+
+  // 1층 N열 생성 (16 / 5)
+  function createRowN() {
+    const letter = "N";
+    const top = rowTops[letter];
+    const pattern = rowPatterns[letter];
+    let seatNo = 1;
+
+    // 왼쪽 16좌석
+    const leftCount = pattern.left;
+    const leftStartX = LEFT_FIRST_X; // 그냥 왼쪽에서부터 쭉
+    for (let i = 0; i < leftCount; i++) {
+      const x = leftStartX + STEP_X * i;
+      createSeat({
+        floor: "1층",
+        rowLabel: letter,
+        seatNo: seatNo++,
+        x,
+        y: top
+      });
+    }
+
+    // 오른쪽 5좌석 (마지막 좌석은 다른 행의 4좌석 묶음과 같은 X)
+    const rightCount = pattern.right;
+    const rightStartX = RIGHT_LAST_X - STEP_X * (rightCount - 1);
+    for (let i = 0; i < rightCount; i++) {
+      const x = rightStartX + STEP_X * i;
+      createSeat({
+        floor: "1층",
+        rowLabel: letter,
+        seatNo: seatNo++,
+        x,
+        y: top
+      });
+    }
+  }
+
+  // 2층 O~T 생성
+  function createRows2F() {
+    horizontalRows2F.forEach(row => {
+      for (let j = 0; j < row.count; j++) {
+        const seatNo = row.count - j; // 오른쪽이 1번
+        const x = row.baseLeft - STEP_X * j;
+        const y = row.baseTop;
+
+        createSeat({
+          floor: row.floor,
+          rowLabel: row.name,
+          seatNo,
+          x,
+          y
+        });
+      }
+    });
+  }
+
+  // 실제 좌석 생성 호출
+  createSideCols();
+  createRowsAtoM();
+  createRowN();
+  createRows2F();
+
+  /* =========================
+     우측 패널 연동 로직
+     ========================= */
+
+  // 좌석 등급 추론:
+  //  - "2층" 포함되면 S석
+  //  - 나머지 1층은 R석
+  function inferGrade(btn) {
+    const title = btn.title || "";
+    if (title.includes("2층")) return "S석";
+    return "R석";
+  }
+
+  const totalByGrade = {};
+  const PRICE = { "R석": 77000, "S석": 55000 };
+
+  function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function initSeatEvents() {
+    const allSeats = document.querySelectorAll(".seat");
+
+    allSeats.forEach(btn => {
+      const grade = inferGrade(btn);
+      totalByGrade[grade] = (totalByGrade[grade] || 0) + 1;
+
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("selected");
+        updateSelectionPanel();
+      });
+    });
+
+    updateSelectionPanel();
+  }
+
+  function updateSelectionPanel() {
+    const selected = document.querySelectorAll(".seat.selected");
+    const sold = document.querySelectorAll(".seat.sold");
+    const tbody = document.getElementById("selectedTableBody");
+    const selectedCountEl = document.getElementById("selectedCount");
+    const remainREl = document.getElementById("remainR");
+    const remainSEl = document.getElementById("remainS");
+
+    const selectedByGrade = { "R석": 0, "S석": 0 };
+    const soldByGrade = { "R석": 0, "S석": 0 };
+
+    tbody.innerHTML = "";
+
+    selected.forEach(btn => {
+      const grade = inferGrade(btn);
+      selectedByGrade[grade]++;
+
+      const tr = document.createElement("tr");
+      const tdGrade = document.createElement("td");
+      const tdSeat = document.createElement("td");
+
+      tdGrade.textContent = grade;
+      tdSeat.textContent = btn.title || "좌석";
+
+      tr.appendChild(tdGrade);
+      tr.appendChild(tdSeat);
+      tbody.appendChild(tr);
+    });
+
+    // 판매된 좌석도 카운트
+    sold.forEach(btn => {
+      const grade = inferGrade(btn);
+      soldByGrade[grade]++;
+    });
+
+    const totalSelected = selected.length;
+    selectedCountEl.textContent = `${totalSelected}석`;
+
+    const remainR =
+      (totalByGrade["R석"] || 0) - (selectedByGrade["R석"] || 0) - (soldByGrade["R석"] || 0);
+    const remainS =
+      (totalByGrade["S석"] || 0) - (selectedByGrade["S석"] || 0) - (soldByGrade["S석"] || 0);
+
+    remainREl.textContent = `${remainR}석`;
+    remainSEl.textContent = `${remainS}석`;
+  }
+
+  document.getElementById("btnClearSelection")
+    .addEventListener("click", () => {
+      document.querySelectorAll(".seat.selected").forEach(btn => {
+        btn.classList.remove("selected");
+      });
+      updateSelectionPanel();
+    });
+
+  // ========== 좌석 선점 시스템 ==========
+  
+  // URL에서 난이도 가져오기
+  const urlParams = new URLSearchParams(window.location.search);
+  const level = urlParams.get('level') || 'normal';
+  
+  // 난이도별 설정
+  const difficultySettings = {
+    easy: {
+      baseSoldRatio: 0,            // 기본 초기 선점률 0%
+      sellInterval: 2000,          // 2초마다 좌석 선점
+      sellBatchSize: 1             // 한 번에 1개씩
+    },
+    normal: {
+      baseSoldRatio: 0.55,         // 기본 초기 선점률 55%
+      sellInterval: 400,           // 0.4초마다 좌석 선점
+      sellBatchSize: [3, 4]        // 한 번에 3~4개씩 랜덤
+    },
+    hard: {
+      baseSoldRatio: 0.80,         // 기본 초기 선점률 80%
+      sellInterval: 300,           // 0.3초마다 좌석 선점
+      sellBatchSize: [4, 6]        // 한 번에 4~6개씩 랜덤
+    }
+  };
+  
+  const settings = difficultySettings[level] || difficultySettings.normal;
+  
+  // 모든 좌석 가져오기
+  const allSeats = Array.from(document.querySelectorAll('.seat'));
+  
+  // 타이머 종료 후 경과 시간에 따른 추가 선점률 계산
+  const pageLoadTime = performance.now();
+  const timerEndTime = parseFloat(urlParams.get('timerEnd')) || pageLoadTime;
+  
+  function calculateInitialSoldRatio() {
+    // 타이머 종료 시점부터 현재까지 경과 시간 계산
+    const elapsedMs = pageLoadTime - timerEndTime;
+    const elapsedSec = Math.max(0, elapsedMs / 1000);
+    
+    // 10초 이후부터 0.5초마다 5% 추가
+    const delayFromTimerEnd = Math.max(0, elapsedSec - 10);
+    const additionalRatio = Math.floor(delayFromTimerEnd / 0.5) * 0.05;
+    
+    // 기본 선점률 + 추가 선점률 (최대 100%)
+    const totalRatio = Math.min(1.0, settings.baseSoldRatio + additionalRatio);
+    
+    console.log(`Initial sold ratio: ${(totalRatio * 100).toFixed(1)}% (base: ${(settings.baseSoldRatio * 100)}%, additional: ${(additionalRatio * 100).toFixed(1)}%, elapsed: ${elapsedSec.toFixed(2)}s)`);
+    
+    return totalRatio;
+  }
+  
+  // 초기 선점 처리
+  function initializeSoldSeats() {
+    const initialRatio = calculateInitialSoldRatio();
+    const soldCount = Math.floor(allSeats.length * initialRatio);
+    const shuffled = [...allSeats].sort(() => Math.random() - 0.5);
+    
+    for (let i = 0; i < soldCount; i++) {
+      shuffled[i].classList.add('sold');
+    }
+    
+    updateSelectionPanel();
+  }
+  
+  // 랜덤 좌석 선점
+  function sellRandomSeats() {
+    const availableSeats = allSeats.filter(seat => 
+      !seat.classList.contains('sold') && !seat.classList.contains('selected')
+    );
+    
+    if (availableSeats.length === 0) {
+      clearInterval(sellInterval);
+      return;
+    }
+    
+    // 배치 사이즈 결정 (배열이면 랜덤, 숫자면 고정)
+    let batchSize;
+    if (Array.isArray(settings.sellBatchSize)) {
+      const [min, max] = settings.sellBatchSize;
+      batchSize = Math.floor(Math.random() * (max - min + 1)) + min;
+    } else {
+      batchSize = settings.sellBatchSize;
+    }
+    
+    batchSize = Math.min(batchSize, availableSeats.length);
+    const shuffled = [...availableSeats].sort(() => Math.random() - 0.5);
+    
+    for (let i = 0; i < batchSize; i++) {
+      shuffled[i].classList.add('sold');
+    }
+    
+    updateSelectionPanel();
+  }
+  
+  // 초기 선점 실행
+  initializeSoldSeats();
+  
+  // 지속적인 선점 시작
+  const sellInterval = setInterval(() => {
+    sellRandomSeats();
+    checkAllSeatsSold();
+  }, settings.sellInterval);
+
+  // 모든 좌석이 매진되었는지 확인
+  function checkAllSeatsSold() {
+    const seats = document.querySelectorAll('.seat');
+    const availableSeats = Array.from(seats).filter(seat => 
+      !seat.classList.contains('sold') && !seat.classList.contains('selected')
+    );
+    
+    if (availableSeats.length === 0) {
+      clearInterval(sellInterval);
+      document.getElementById('failureModal').style.display = 'flex';
+    }
+  }
+
+  initSeatEvents();
+
+  // ========== 보안문자 시스템 ==========
+  let currentCaptcha = '';
+  let captchaVerified = false;
+  const captchaModal = document.getElementById('captchaModal');
+  const captchaCanvas = document.getElementById('captchaCanvas');
+  const captchaCtx = captchaCanvas.getContext('2d');
+  const captchaInput = document.getElementById('captchaInput');
+  const captchaResult = document.getElementById('captchaResult');
+
+  // 난이도별 보안문자 설정
+  const captchaDifficultySettings = {
+    easy: {
+      length: 4,
+      rotation: 0.05,
+      noiseLines: 5,
+      noiseDots: 10,
+      foregroundLines: 0,
+      offsetY: 2,
+      offsetX: 1,
+      fontSize: [38, 40]
+    },
+    normal: {
+      length: 6,
+      rotation: 0.5,
+      noiseLines: 80,
+      noiseDots: 150,
+      foregroundLines: 8,
+      offsetY: 12,
+      offsetX: 8,
+      fontSize: [32, 45]
+    },
+    hard: {
+      length: 6,
+      rotation: 1.0,
+      noiseLines: 180,
+      noiseDots: 400,
+      foregroundLines: 25,
+      offsetY: 25,
+      offsetX: 15,
+      fontSize: [25, 55]
+    }
+  };
+
+  const captchaSettings = captchaDifficultySettings[level] || captchaDifficultySettings.normal;
+
+  function generateRandomString(length) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  function generateCaptcha() {
+    currentCaptcha = generateRandomString(captchaSettings.length);
+    drawCaptcha();
+    captchaInput.value = '';
+    captchaInput.maxLength = captchaSettings.length;
+    captchaResult.innerHTML = '';
+    console.log('보안문자 정답:', currentCaptcha);
+  }
+
+  function drawCaptcha() {
+    const ctx = captchaCtx;
+    const canvas = captchaCanvas;
+    
+    // 배경 그리기
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 배경 노이즈 선
+    for (let i = 0; i < captchaSettings.noiseLines; i++) {
+      ctx.strokeStyle = `rgba(${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, 0.4)`;
+      ctx.lineWidth = Math.random() * 2.5 + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.stroke();
+    }
+
+    // 배경 노이즈 점
+    for (let i = 0; i < captchaSettings.noiseDots; i++) {
+      ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.3)`;
+      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+    }
+
+    // 글자 그리기
+    const spacing = canvas.width / (currentCaptcha.length + 1);
+    
+    for (let i = 0; i < currentCaptcha.length; i++) {
+      const char = currentCaptcha[i];
+      const x = spacing * (i + 1);
+      const y = canvas.height / 2;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((Math.random() - 0.5) * captchaSettings.rotation);
+      
+      const r = Math.floor(Math.random() * 80);
+      const g = Math.floor(Math.random() * 80);
+      const b = Math.floor(Math.random() * 80);
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      
+      const [minSize, maxSize] = captchaSettings.fontSize;
+      const fontSize = minSize + Math.random() * (maxSize - minSize);
+      ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+      
+      const offsetY = (Math.random() - 0.5) * captchaSettings.offsetY;
+      const offsetX = (Math.random() - 0.5) * captchaSettings.offsetX;
+      ctx.fillText(char, -10 + offsetX, offsetY);
+      
+      if (Math.random() > 0.3) {
+        ctx.strokeStyle = `rgba(${r + 50}, ${g + 50}, ${b + 50}, 0.6)`;
+        ctx.lineWidth = 1.5;
+        ctx.strokeText(char, -10 + offsetX, offsetY);
+      }
+      
+      ctx.restore();
+    }
+
+    // 전경 노이즈 선
+    for (let i = 0; i < captchaSettings.foregroundLines; i++) {
+      ctx.strokeStyle = `rgba(${Math.random() * 120}, ${Math.random() * 120}, ${Math.random() * 120}, 0.5)`;
+      ctx.lineWidth = Math.random() * 4 + 1;
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      
+      const cp1x = Math.random() * canvas.width;
+      const cp1y = Math.random() * canvas.height;
+      const cp2x = Math.random() * canvas.width;
+      const cp2y = Math.random() * canvas.height;
+      const endx = Math.random() * canvas.width;
+      const endy = Math.random() * canvas.height;
+      
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endx, endy);
+      ctx.stroke();
+    }
+  }
+
+  function verifyCaptcha() {
+    const input = captchaInput.value.toUpperCase();
+    
+    if (input === currentCaptcha) {
+      captchaVerified = true;
+      captchaModal.style.display = 'none';
+    } else {
+      captchaResult.className = 'captcha-result error';
+      captchaResult.textContent = '❌ 인증 실패! 다시 시도해주세요.';
+      setTimeout(() => generateCaptcha(), 1500);
+    }
+  }
+
+  // 엔터키로 확인
+  captchaInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      verifyCaptcha();
+    }
+  });
+
+  // 페이지 로드 시 보안문자 모달 표시
+  window.addEventListener('load', () => {
+    generateCaptcha();
+    captchaModal.style.display = 'flex';
+  });
+
+  // 보안문자 검증 전에는 좌석 클릭 불가
+  document.querySelectorAll('.seat').forEach(seat => {
+    seat.addEventListener('click', (e) => {
+      if (!captchaVerified) {
+        e.stopPropagation();
+        alert('보안문자 인증을 먼저 완료해주세요.');
+      }
+    }, true);
+  });
+
+  // ========== 예매 완료 시스템 ==========
+  const successModal = document.getElementById('successModal');
+  const btnComplete = document.getElementById('btnComplete');
+
+  btnComplete.addEventListener('click', () => {
+    const selectedSeats = document.querySelectorAll('.seat.selected');
+    
+    if (selectedSeats.length === 0) {
+      alert('좌석을 먼저 선택해주세요.');
+      return;
+    }
+
+    // 좌석 선점 중지
+    clearInterval(sellInterval);
+
+    // 성공 모달 표시
+    successModal.style.display = 'flex';
+  });
+
+  // 다시하기 - 같은 난이도와 홀로 처음부터 시작
+  function restartGame() {
+    // URL 파라미터에서 level과 hall 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const level = urlParams.get('level') || 'normal';
+    const hall = urlParams.get('hall') || 'YES24홀';
+
+    // concert-level.html로 이동 (타이머부터 다시 시작)
+    location.href = `concert-level.html?hall=${encodeURIComponent(hall)}`;
+  }
+</script>
+
+<!-- Supabase 설정 -->
+<script src="../js/supabase-config.js"></script>
+
+<script>
+// === 기록 저장 기능 ===
+let gameStartTime = Date.now(); // 게임 시작 시간
+let gameEndTime = null;
+let elapsedMs = 0;
+let recordSaved = false;
+
+// 페이지 로드 시 시작 시간 기록
+document.addEventListener('DOMContentLoaded', function() {
+  gameStartTime = Date.now();
+  sessionStorage.setItem('gameStartTime', gameStartTime.toString());
+});
+
+// 성공 모달이 표시될 때 소요시간 계산
+const originalSuccessModal = document.getElementById('successModal');
+const observer = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+      if (originalSuccessModal.style.display === 'flex') {
+        gameEndTime = Date.now();
+        elapsedMs = gameEndTime - gameStartTime;
+
+        // 소요시간 표시
+        const elapsedEl = document.getElementById('elapsedTime');
+        if (elapsedEl) {
+          elapsedEl.textContent = formatTimeSimple(elapsedMs);
+        }
+
+        // 로그인 상태 확인
+        const saveBtn = document.getElementById('saveRecordBtn');
+        const saveStatus = document.getElementById('saveStatus');
+
+        if (!isLoggedIn()) {
+          saveBtn.textContent = '🔒 로그인 필요';
+          saveBtn.style.background = '#6b7280';
+          saveStatus.innerHTML = '<a href="../main-pages/login.html" style="color: #8b5cf6;">로그인</a>하면 기록을 저장할 수 있어요!';
+        }
+      }
+    }
+  });
+});
+
+observer.observe(originalSuccessModal, { attributes: true });
+
+// 기록 저장 함수
+async function saveRecord() {
+  if (recordSaved) {
+    alert('이미 저장된 기록입니다!');
+    return;
+  }
+
+  if (!isLoggedIn()) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      // 현재 상태 저장
+      sessionStorage.setItem('pendingRecord', JSON.stringify({
+        category: 'concert',
+        difficulty: getDifficulty(),
+        elapsedMs: elapsedMs,
+        returnUrl: window.location.href
+      }));
+      window.location.href = '../main-pages/login.html';
+    }
+    return;
+  }
+
+  const saveBtn = document.getElementById('saveRecordBtn');
+  const saveStatus = document.getElementById('saveStatus');
+
+  // 버튼 비활성화
+  saveBtn.disabled = true;
+  saveBtn.textContent = '저장 중...';
+
+  try {
+    const difficulty = getDifficulty();
+    const recordId = await saveBookingRecord('concert', difficulty, elapsedMs, {
+      hall: getHallName(),
+      timestamp: new Date().toISOString()
+    });
+
+    if (recordId) {
+      recordSaved = true;
+      saveBtn.textContent = '✅ 저장 완료!';
+      saveBtn.style.background = '#10b981';
+      saveStatus.innerHTML = `기록 저장 완료! ⏱️ ${formatTimeSimple(elapsedMs)} | <a href="../main-pages/ranking.html" style="color: #8b5cf6; font-weight: bold;">순위표 보기</a>
+        <br><button onclick="goToAIFeedback()" style="margin-top: 12px; padding: 12px 24px; background: linear-gradient(135deg, #3b82f6, #06b6d4); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">다음 → AI 피드백 받기</button>`;
+    } else {
+      throw new Error('저장 실패');
+    }
+  } catch (error) {
+    console.error('기록 저장 오류:', error);
+    saveBtn.disabled = false;
+    saveBtn.textContent = '🏆 기록 저장하기';
+    saveStatus.textContent = '저장에 실패했습니다. 다시 시도해주세요.';
+    saveStatus.style.color = '#ef4444';
+  }
+}
+
+// 난이도 가져오기
+function getDifficulty() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('level') || 'normal';
+}
+
+// 홀 이름 가져오기
+function getHallName() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('hall') || 'YES24홀';
+}
+
+// 로그인 후 돌아왔을 때 대기 중인 기록 확인
+document.addEventListener('DOMContentLoaded', function() {
+  const pendingRecord = sessionStorage.getItem('pendingRecord');
+  if (pendingRecord && isLoggedIn()) {
+    const record = JSON.parse(pendingRecord);
+    sessionStorage.removeItem('pendingRecord');
+    // 자동 저장은 하지 않고, 사용자가 다시 버튼을 누르도록 함
+  }
+});
+
+// === 클릭 추적 및 AI 피드백 기능 ===
+let clickCount = 0;
+let mouseDistance = 0;
+let lastMousePos = { x: 0, y: 0 };
+let clickTimes = [];
+
+// 클릭 추적
+document.addEventListener('click', function(e) {
+  clickCount++;
+  clickTimes.push(Date.now());
+});
+
+// 마우스 이동 거리 추적
+document.addEventListener('mousemove', function(e) {
+  if (lastMousePos.x !== 0 || lastMousePos.y !== 0) {
+    const dx = e.clientX - lastMousePos.x;
+    const dy = e.clientY - lastMousePos.y;
+    mouseDistance += Math.sqrt(dx * dx + dy * dy);
+  }
+  lastMousePos = { x: e.clientX, y: e.clientY };
+});
+
+// AI 피드백 페이지로 이동
+function goToAIFeedback() {
+  // 평균 반응 시간 계산
+  let avgReactionTime = 0;
+  if (clickTimes.length > 1) {
+    let totalGap = 0;
+    for (let i = 1; i < clickTimes.length; i++) {
+      totalGap += clickTimes[i] - clickTimes[i - 1];
+    }
+    avgReactionTime = Math.floor(totalGap / (clickTimes.length - 1));
+  }
+
+  // 피드백 데이터 저장
+  const feedbackData = {
+    category: 'concert',
+    difficulty: getDifficulty(),
+    elapsedTime: elapsedMs,
+    clickCount: clickCount,
+    success: true,
+    mouseDistance: Math.floor(mouseDistance),
+    accuracy: Math.min(100, Math.floor((5 / Math.max(1, clickCount)) * 100)),
+    reactionTime: avgReactionTime
+  };
+
+  localStorage.setItem('ticketpro_feedback_data', JSON.stringify(feedbackData));
+  location.href = '../main-pages/ai-feedback.html';
+}
+</script>
+
+</body>
+</html>

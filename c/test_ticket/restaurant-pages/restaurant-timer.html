@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>티케팅 게임 — 타이머</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f8fafc;color:#111827}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:720px;max-width:92%;text-align:center}
+    #pre-count{font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em}
+    /* 타이머 숫자 대신 점점점 로딩 애니메이션 */
+    #loading-dots{height:120px;display:flex;align-items:center;justify-content:center;gap:16px}
+    .dot{width:22px;height:22px;border-radius:50%;background:#111827;opacity:0.25;animation:blink 900ms infinite}
+    .dot:nth-child(2){animation-delay:150ms}
+    .dot:nth-child(3){animation-delay:300ms}
+    @keyframes blink{0%{opacity:0.2}50%{opacity:1}100%{opacity:0.2}}
+    #result-msg{font-size:20px;font-weight:700;color:#111827;margin-bottom:12px}
+    @keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.7);transform:scale(1)}50%{box-shadow:0 0 20px 10px rgba(239,68,68,0);transform:scale(1.05)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);transform:scale(1)}}
+    .pulse-red{animation:pulse-red 1s infinite;background:#ef4444!important}
+  </style>
+</head>
+<body>
+    <!-- 카카오 알림 사운드 -->
+    <audio id="kakaoAlertSound" preload="auto">
+      <source src="../audio/까톡 소리.mp3" type="audio/mpeg">
+    </audio>
+  <!-- 레스토랑 미션+타이머 표시 (굿즈 게임 스타일, 우상단) -->
+  <div id="restQuestDisplay" style="position: fixed; top: 20px; right: 20px; background: white; border: 3px solid #00d9c8; border-radius: 12px; padding: 16px; box-shadow: 0 6px 14px rgba(2,6,23,0.25); z-index: 10000; min-width: 280px; display: none;">
+    <div style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+      <span>📋 레스토랑 미션</span>
+      <span id="restQuestBadge" style="display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; background: #2563EB; color: white;">NORMAL</span>
+    </div>
+    <div id="restQuestText" style="font-size: 13px; color: #374151; margin-bottom: 8px; line-height: 1.6; padding: 10px; background: #f9fafb; border-radius: 6px;">미션을 확인하세요!</div>
+    <div id="restQuestList" style="font-size: 13px; color: #111827;"></div>
+    <div id="restQuestTimer" style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <div style="background:#0b1220;color:#fff;border-radius:10px;padding:6px 10px;font-weight:900;min-width:64px;text-align:center;">
+        <span id="restQuestRemain">--:--</span>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <!-- 게임 UI: 3-2-1 카운트 및 10초 타이머 -->
+      <div id="game-overlay" style="display:flex;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(15,23,42,0.06);z-index:9999;">
+        <div style="width:720px;max-width:92%;background:transparent;padding:24px 20px;text-align:center;">
+          <div id="pre-count" style="font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em;"></div>
+
+          <div id="start-msg" style="display:none;font-size:18px;font-weight:700;color:#374151;margin-bottom:12px;">잠시 후 게임이 시작됩니다</div>
+
+          <div id="timer-area" style="display:none; position:relative;">
+            <div id="ready-msg" style="font-size:18px;font-weight:700;color:#374151;margin-bottom:8px;">곧 캐치테이블 예약이 시작됩니다.. 준비하세요!</div>
+              <div id="loading-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <!-- 사이트 접속하기 버튼 제거: 로딩/알림만 표시 -->
+            <!-- 알림은 시간 도래 시 중앙에 단독 표시 -->
+            <div id="kakao-alert" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;align-items:center;justify-content:center;max-width:520px;width:100%;padding:0 12px;"></div>
+            
+            <!-- Kakao alert template (inline, uses only component styles) -->
+            <template id="kakao-template">
+              <style>
+                .message-container{width:100%;max-width:480px;position:relative}
+                .profile-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;padding:0 16px;position:relative}
+                .profile-icon{width:42px;height:42px;background:#ff6b35;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;flex-shrink:0;line-height:1;padding-bottom:2px}
+                .profile-name{font-size:13px;color:#333;font-weight:600;margin-top:2px}
+                .message-bubble{background:#fff;border-radius:0 18px 18px 18px;overflow:visible;box-shadow:0 2px 6px rgba(0,0,0,0.15);margin-left:16px;margin-right:60px;max-width:calc(100% - 76px);position:relative}
+                .bubble-header{background:#fee500;padding:12px 18px;font-size:15px;font-weight:700;color:#3c1e1e;letter-spacing:-0.3px}
+                .bubble-content{padding:20px 18px}
+                .bubble-title{font-size:17px;font-weight:700;color:#000;margin-bottom:20px;line-height:1.4;letter-spacing:-0.3px}
+                .bubble-info{font-size:15px;color:#000;line-height:1.9;margin-bottom:2px;letter-spacing:-0.2px}
+                .bubble-section{margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8}
+                .bubble-section-title{font-size:15px;font-weight:700;color:#000;margin-bottom:10px;letter-spacing:-0.2px}
+                .bubble-note{font-size:14px;color:#333;line-height:1.7;margin-bottom:4px;letter-spacing:-0.2px}
+                .bubble-button{margin-top:20px;padding:14px;background:#f5f5f5;border:1px solid #ddd;border-radius:6px;text-align:center;font-size:15px;font-weight:700;color:#333;letter-spacing:-0.3px}
+              </style>
+              <div class="message-container">
+                <div class="profile-header">
+                  <div class="profile-icon">C</div>
+                  <div class="profile-name">캐치테이블</div>
+                </div>
+                <div class="message-bubble">
+                  <div class="bubble-header">알림톡 도착</div>
+                  <div class="bubble-content">
+                    <div class="bubble-title">이숙우회에 빈자리가 생겼어요!</div>
+                    <div class="bubble-info">[날짜] : 2021년 8월 7일 (토)</div>
+                    <div class="bubble-info">[시간] : 오후 7:30</div>
+                    <div class="bubble-info">[인원] : 2명</div>
+                    <div class="bubble-section">
+                      <div class="bubble-section-title">[유의사항]</div>
+                      <div class="bubble-note">* 지금 456명이 예약 도전 중이에요.</div>
+                      <div class="bubble-note">* 선착순으로 예약이 이루어지므로 빠른 시간 내에 예약해 주세요.</div>
+                    </div>
+                    <div class="bubble-button">앱으로 가기</div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div id="result-area" style="display:none;margin-top:18px;">
+            <div id="result-msg" style="font-size:20px;font-weight:700;color:#111827;margin-bottom:12px;"></div>
+            <div>
+              <button id="retry-btn" type="button" style="background:#fff;color:#2563EB;border:2px solid #2563EB;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">다시하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var overlay = document.getElementById('game-overlay');
+    var preCountEl = document.getElementById('pre-count');
+    var timerArea = document.getElementById('timer-area');
+    var loadingDots = document.getElementById('loading-dots');
+    var connectBtn = null; // 버튼 미사용
+    var resultArea = document.getElementById('result-area');
+    var resultMsg = document.getElementById('result-msg');
+    var retryBtn = document.getElementById('retry-btn');
+    var kakaoAlert = document.getElementById('kakao-alert');
+
+    var timerId = null;
+    var startTime = 0;
+    var duration = 5000;
+    var remaining = duration;
+    var isReadyToProceed = false; // 7~10초 사이 알림 등장 후 진행 가능 (앱으로 가기 버튼 활성)
+    
+    var urlParams = new URLSearchParams(window.location.search);
+    var selectedLevel = urlParams.get('level') || 'normal';
+
+    var levelConfigs = {
+      easy:   { duration: 5000, successWindow: 150 },
+      normal: { duration: 5000, successWindow: 80 },
+      hard:   { duration: 5000,  successWindow: 40 }
+    };
+
+    var effective = { duration: duration, successWindow: 0 };
+    if(levelConfigs[selectedLevel]){
+      effective.duration = levelConfigs[selectedLevel].duration;
+      effective.successWindow = levelConfigs[selectedLevel].successWindow;
+    }
+    duration = effective.duration;
+    remaining = duration;
+
+    // 레벨별 식당 후보와 강제 alias (test-catchtable-banner.html의 getShopFromURL에 맞춤)
+    var levelShops = {
+      easy: [ { name:'아티스트 베이커리', alias:'artistbakery' }, { name:'금돼지식당', alias:'goldpig' } ],
+      normal: [ { name:'도량', alias:'dolyang' }, { name:'포노 부오노', alias:'ponobouno' }, { name:'티엔미미 홍대', alias:'tianmimihongdae' } ],
+      hard: [ { name:'모수 서울', alias:'tempmosuseoul' }, { name:'밍글스', alias:'mingles' } ]
+    };
+    function pickShop(level){
+      var arr = levelShops[level] || levelShops['normal'];
+      return arr[Math.floor(Math.random()*arr.length)];
+    }
+    var picked = pickShop(selectedLevel);
+    var pickedName = picked.name;
+    var pickedAlias = picked.alias;
+
+    // 레벨별 대기 인원 랜덤 범위
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    var crowdByLevel = {
+      easy: randInt(30,50),
+      normal: randInt(90,130),
+      hard: randInt(4,600)
+    };
+    var crowd = crowdByLevel[selectedLevel] || randInt(50,120);
+
+    var startMsgEl = document.getElementById('start-msg');
+    // 페이지 시작 시 미션을 먼저 생성/표시 (카톡 알림 전에도 보이도록)
+    var initialMission = createMission(selectedLevel);
+
+    function getLimitMs(level){
+      if(level === 'easy') return 15000;
+      return 10000; // normal, hard 모두 10초
+    }
+
+    // 미션 생성: 날짜/인원/시간 조건
+    function createMission(level){
+      // 오늘/내일
+      var today = new Date();
+      var yyyy = today.getFullYear();
+      var mm = today.getMonth()+1;
+      var ddToday = today.getDate();
+      // 이번 달의 말일 계산 (오늘부터 말일까지 랜덤)
+      var lastDayOfMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+      var randPick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
+      var timePool = [ '오전 11:30','오전 12:00','오전 12:30','오후 5:30','오후 6:00','오후 6:30','오후 7:00','오후 7:30','오후 8:00' ];
+      var peoplePool = [1,2,3,4,5,6,7,8,9];
+
+      var condDate = randInt(ddToday, lastDayOfMonth);
+      var condPeople = randPick(peoplePool);
+      var condTime = randPick(timePool);
+
+      if(level === 'easy'){
+        return { type: 'any', rules: [] };
+      }
+      if(level === 'normal'){
+        // 한 가지 조건만 요구
+        var which = randPick(['date','people','time']);
+        var rule = {};
+        if(which==='date') rule = { kind:'date', value: condDate };
+        if(which==='people') rule = { kind:'people', value: condPeople };
+        if(which==='time') rule = { kind:'time', value: condTime };
+        return { type:'one', rules:[rule] };
+      }
+      // hard: 두 개 또는 세 개 조건
+      var count = randPick([2,3]);
+      var bag = [ {kind:'date', value: condDate}, {kind:'people', value: condPeople}, {kind:'time', value: condTime} ];
+      // 셔플 후 앞에서 count 선택
+      for(var i=bag.length-1;i>0;i--){ var j=Math.floor(Math.random()* (i+1)); var tmp=bag[i]; bag[i]=bag[j]; bag[j]=tmp; }
+      return { type:'multi', need: count, rules: bag.slice(0,count) };
+    }
+
+    function runPreCount(){
+      return new Promise(function(resolve){
+        if(startMsgEl) startMsgEl.style.display = 'block';
+        preCountEl.style.display = 'block';
+        timerArea.style.display = 'none';
+        resultArea.style.display = 'none';
+        var nums = ['3','2','1'];
+        var i = 0;
+        preCountEl.textContent = nums[i];
+        var pc = setInterval(function(){
+          i++;
+          if(i < nums.length){
+            preCountEl.textContent = nums[i];
+          } else {
+            clearInterval(pc);
+            preCountEl.style.display = 'none';
+            if(startMsgEl) startMsgEl.style.display = 'none';
+            resolve();
+          }
+        }, 1000);
+      });
+    }
+
+    // 숫자 표시는 사용하지 않음 (점점점 애니메이션으로 대체)
+
+    function startTenTimer(){
+      timerArea.style.display = 'block';
+      resultArea.style.display = 'none';
+      startTime = performance.now();
+      window._timerEndTime = null;
+      // 7~10초 사이 랜덤 시점에 카카오 알림 표시
+      var alertDelay = 7000 + Math.floor(Math.random() * 3001); // 7000~10000ms
+      var alertShown = false;
+      function tick(){
+        var now = performance.now();
+        var elapsed = now - startTime;
+        remaining = Math.max(0, duration - elapsed);
+        if(!alertShown && elapsed >= alertDelay){
+          alertShown = true;
+          isReadyToProceed = true;
+          // 알림 사운드 재생 (전역 음소거 상태가 아닐 때만)
+          try {
+            var audio = document.getElementById('kakaoAlertSound');
+            var globalMute = localStorage.getItem('globalSound') === 'off';
+            if(audio && !globalMute){ audio.currentTime = 0; audio.play().catch(function(){}); }
+          } catch(e){}
+          // 카카오 알림 콘텐츠 로드 및 삽입
+          // 템플릿을 클론하여 삽입 (파일 페치 없이 동작)
+          var tpl = document.getElementById('kakao-template');
+          kakaoAlert.innerHTML = '';
+          kakaoAlert.appendChild(tpl.content.cloneNode(true));
+          kakaoAlert.style.display = 'flex';
+          // 로딩/안내문 완전 숨김 처리로 알림만 중앙에 표시
+          var readyMsgEl = document.getElementById('ready-msg');
+          if(readyMsgEl) readyMsgEl.style.display = 'none';
+          loadingDots.style.display = 'none';
+          // 템플릿 내 '앱으로 가기' 버튼을 네비게이션 버튼으로 바인딩
+          var goBtn = kakaoAlert.querySelector('.bubble-button');
+          // 텍스트/콘텐츠 업데이트: 식당명/안내/대기 인원
+          var bubbleHeader = kakaoAlert.querySelector('.bubble-header');
+          var bubbleContent = kakaoAlert.querySelector('.bubble-content');
+          if(bubbleHeader) bubbleHeader.textContent = '알림톡 도착';
+          if(bubbleContent){
+            bubbleContent.innerHTML = ''+
+              '<div class="bubble-title">지금 '+pickedName+'의 예약이 시작됐어요!</div>'+
+              '<div class="bubble-info">지금 바로 예약을 시작해주세요!</div>'+
+              '<div class="bubble-section">'+
+              '  <div class="bubble-section-title">[유의사항]</div>'+
+              '  <div class="bubble-note">* 지금 '+crowd+'명이 예약 도전 중이에요.</div>'+
+              '  <div class="bubble-note">* 선착순으로 예약이 이루어지므로 빠른 시간 내에 예약해 주세요.</div>'+
+              '</div>'+
+              '<div class="bubble-button">앱으로 가기</div>';
+          }
+          // innerHTML로 교체 후 버튼을 다시 선택
+          goBtn = kakaoAlert.querySelector('.bubble-button');
+          if(goBtn){
+            // 캐치테이블 테마색(주황) 적용
+            goBtn.style.cursor = 'pointer';
+            goBtn.style.background = '#ff6a00';
+            goBtn.style.color = '#fff';
+            goBtn.style.border = '0';
+            goBtn.style.boxShadow = '0 8px 20px rgba(255,106,0,0.3)';
+            // 이미 초기 생성된 미션 사용 (초기부터 표시되어 있어야 함)
+            var mission = initialMission || createMission(selectedLevel);
+            var limitMs = getLimitMs(selectedLevel);
+            var endAt = Date.now() + limitMs; // 알림 뜬 시점부터 카운트
+            // 로컬스토리지로 전달 (banner 페이지에서 검증)
+            try {
+              var payload = { shopAlias: pickedAlias, mission: mission, endAt: endAt };
+              localStorage.setItem('ct_mission', JSON.stringify(payload));
+            } catch(e) {}
+            // 타이머 페이지에서도 미션 표시/카운트다운 시작
+            showRestMissionOverlay(selectedLevel, mission, endAt);
+            goBtn.addEventListener('click', function(){
+              // 레스토랑 메인 배너 페이지로 이동 (동일 폴더)
+              window.location.href = './restaurant-main.html?shop='+encodeURIComponent(pickedAlias)+'&level='+encodeURIComponent(selectedLevel);
+            });
+          }
+        }
+        // 초기 대기 로직은 알림 표시 전까지는 계속 진행되어야 함
+        if(alertShown && remaining <= 0){
+          cancelAnimationFrame(timerId);
+          timerId = null;
+          if(!window._timerEndTime) window._timerEndTime = performance.now();
+          return;
+        }
+        timerId = requestAnimationFrame(tick);
+      }
+      timerId = requestAnimationFrame(tick);
+    }
+
+    function stopTenTimer(){ if(timerId) { cancelAnimationFrame(timerId); timerId = null; } }
+
+    function showResult(msg){
+      resultMsg.textContent = msg;
+      resultArea.style.display = 'block';
+      timerArea.style.display = 'none';
+    }
+
+    async function startGame(){
+      // 알림 전에도 미션 패널은 보여야 함
+      showRestMissionOverlay(selectedLevel, initialMission, null);
+      await runPreCount();
+      startTenTimer();
+    }
+
+    // 별도의 접속 버튼 로직은 제거 (알림의 '앱으로 가기'를 사용)
+
+    retryBtn.addEventListener('click', function(){
+      resultArea.style.display = 'none';
+      // 버튼 효과 없음
+      kakaoAlert.style.display = 'none';
+      // 로딩/안내문 복구
+      var readyMsgEl2 = document.getElementById('ready-msg');
+      if(readyMsgEl2) readyMsgEl2.style.display = '';
+      loadingDots.style.display = '';
+      isReadyToProceed = false;
+      remaining = duration;
+      startGame();
+    });
+
+    // 페이지 로드 시 자동 시작
+    window.addEventListener('DOMContentLoaded', function(){
+      startGame();
+    });
+  })();
+  </script>
+  <script>
+  // 미션 오버레이 표시/타이머 (굿즈 게임 흐름과 유사)
+  (function(){
+    var badge = document.getElementById('restQuestBadge');
+    var textEl = document.getElementById('restQuestText');
+    var listEl = document.getElementById('restQuestList');
+    var panel = document.getElementById('restQuestDisplay');
+    var remainEl = document.getElementById('restQuestRemain');
+    var reqAnimId = null;
+
+    window.showRestMissionOverlay = function(level, mission, endAt){
+      if(!panel) return;
+      // 배지 색상
+      badge.textContent = level.toUpperCase();
+      if(level==='easy') badge.style.background = '#22c55e';
+      else if(level==='normal') badge.style.background = '#2563EB';
+      else badge.style.background = '#ef4444';
+      // 텍스트/리스트
+      // 레벨별 안내 문구
+      if(level==='easy'){
+        textEl.textContent = '어떤 조건이든 예약을 성공시켜보세요!';
+      } else {
+        textEl.textContent = '다음 조건을 만족해주세요.';
+      }
+      // 체크리스트 시각(굿즈 미션창과 동일 스타일)으로 표시
+      function checklistItem(rule, idx){
+        return (
+          '<div class="quest-item" id="rest-quest-item-'+idx+'" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:#f3f4f6;border-radius:6px;">'
+          + '<div class="quest-checkbox" style="width:18px;height:18px;border:2px solid #9ca3af;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;"></div>'
+          + '<div>'+formatRestRule(rule)+'</div>'
+          + '</div>'
+        );
+      }
+      if(mission.type==='any'){
+        listEl.innerHTML = '';
+      } else if(mission.type==='one'){
+        listEl.innerHTML = checklistItem(mission.rules[0], 0);
+      } else {
+        listEl.innerHTML = mission.rules.map(function(r,i){ return checklistItem(r,i); }).join('');
+      }
+      // 카운트다운 (endAt 없으면 --:-- 유지)
+      function tick(){
+        if(!endAt){ remainEl.textContent = '--:--'; return; }
+        var r = Math.max(0, endAt - Date.now());
+        var s = Math.floor(r/1000);
+        var mm = String(Math.floor(s/60)).padStart(2,'0');
+        var ss = String(s%60).padStart(2,'0');
+        remainEl.textContent = mm+':'+ss;
+        if(r<=0){ cancelAnimationFrame(reqAnimId); reqAnimId=null; }
+        else { reqAnimId = requestAnimationFrame(tick); }
+      }
+      if(reqAnimId) cancelAnimationFrame(reqAnimId);
+      reqAnimId = requestAnimationFrame(tick);
+      panel.style.display = 'block';
+    };
+
+    function formatRestRule(rule){
+      if(rule.kind==='date') return '날짜: '+rule.value+'일';
+      if(rule.kind==='people') return '인원: '+rule.value+'명';
+      if(rule.kind==='time') return '시간: '+rule.value;
+      return '알 수 없는 조건';
+    }
+  })();
+  </script>
+  
+</body>
+</html>

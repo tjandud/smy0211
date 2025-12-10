@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>리디렉트 중…</title>
+  <meta name="robots" content="noindex">
+  <script>
+    // 항상 루트 접속 시 메인(랜딩) 페이지로 이동하도록 변경
+    (function () {
+      try {
+        window.location.replace('main.html');
+      } catch (e) {
+        // 안전하게 메타 리프레시 폴백
+        var meta = document.createElement('meta');
+        meta.httpEquiv = 'refresh';
+        meta.content = '0;url=main.html';
+        document.head.appendChild(meta);
+      }
+    })();
+  </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0;url=main.html">
+  </noscript>
+</head>
+<body>
+  <p>잠시만요 — 홈페이지로 이동합니다...</p>
+</body>
+</html>

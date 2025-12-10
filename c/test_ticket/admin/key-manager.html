@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Manager - TicketPro Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: rgba(18, 18, 25, 0.95);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-orange: #f97316;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* Auth Section */
+        #auth-section {
+            text-align: center;
+        }
+
+        #auth-section input {
+            max-width: 300px;
+            margin: 0 auto 16px;
+        }
+
+        /* Admin Section (hidden by default) */
+        #admin-section {
+            display: none;
+        }
+
+        /* Key List Table */
+        .key-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            table-layout: fixed;
+        }
+
+        .key-table th,
+        .key-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .key-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .key-table th:nth-child(1) { width: 15%; }
+        .key-table th:nth-child(2) { width: 45%; }
+        .key-table th:nth-child(3) { width: 15%; }
+        .key-table th:nth-child(4) { width: 25%; }
+
+        .key-table td {
+            font-size: 14px;
+        }
+
+        .key-value {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            word-break: break-all;
+            display: inline-block;
+            max-width: 200px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        /* Radio buttons */
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-item input[type="radio"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        /* Message */
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .message-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .message-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Toggle Key Visibility */
+        .key-toggle {
+            cursor: pointer;
+            color: var(--accent-purple);
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .key-toggle:hover {
+            text-decoration: underline;
+        }
+
+        /* Back button */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+
+        .key-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Custom key name input */
+        #custom-key-name {
+            display: none;
+            margin-top: 8px;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../../../a/index.html" class="back-link">← 메인으로 돌아가기</a>
+
+        <h1>API Key Manager</h1>
+
+        <!-- 인증 섹션 -->
+        <div id="auth-section" class="card">
+            <div class="card-title">관리자 인증</div>
+            <div id="auth-message"></div>
+            <div class="form-group">
+                <label for="admin-password">관리자 비밀번호</label>
+                <input type="password" id="admin-password" placeholder="비밀번호를 입력하세요" autocomplete="off">
+            </div>
+            <button class="btn btn-primary" onclick="authenticate()">인증하기</button>
+        </div>
+
+        <!-- 관리자 섹션 (인증 후 표시) -->
+        <div id="admin-section">
+            <!-- 새 키 등록 -->
+            <div class="card">
+                <div class="card-title">새 API 키 등록</div>
+                <div id="save-message"></div>
+
+                <div class="form-group">
+                    <label>서비스 선택</label>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="key-type" value="gemini" checked onchange="toggleCustomName()">
+                            <span>Gemini</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="key-type" value="openai" onchange="toggleCustomName()">
+                            <span>OpenAI</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="key-type" value="custom" onchange="toggleCustomName()">
+                            <span>기타</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="custom-key-name">
+                    <label for="custom-name">서비스 이름</label>
+                    <input type="text" id="custom-name" placeholder="예: claude, anthropic">
+                </div>
+
+                <div class="form-group">
+                    <label for="api-key-input">API 키</label>
+                    <input type="password" id="api-key-input" placeholder="API 키를 입력하세요">
+                    <p class="info-text">Gemini: AIza... / OpenAI: sk-...</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="key-description">설명 (선택)</label>
+                    <input type="text" id="key-description" placeholder="예: 메인 프로젝트용">
+                </div>
+
+                <button class="btn btn-primary" onclick="saveApiKey()">저장하기</button>
+            </div>
+
+            <!-- 등록된 키 목록 -->
+            <div class="card">
+                <div class="card-title">등록된 API 키 목록</div>
+                <div id="key-list">
+                    <div class="loading">키 목록을 불러오는 중...</div>
+                </div>
+            </div>
+
+            <!-- 마이그레이션 섹션 -->
+            <div class="card">
+                <div class="card-title">🔐 보안 설정</div>
+                <div id="migrate-message"></div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                    기존에 암호화되지 않은 API 키가 있다면 아래 버튼을 눌러 암호화하세요.
+                </p>
+                <button class="btn btn-primary" onclick="migrateKeys()">
+                    🔒 기존 키 암호화
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/api-manager.js"></script>
+
+    <script>
+        let currentPassword = '';
+
+        // 인증
+        async function authenticate() {
+            const password = document.getElementById('admin-password').value;
+            const messageEl = document.getElementById('auth-message');
+
+            if (!password) {
+                showMessage(messageEl, '비밀번호를 입력하세요.', 'error');
+                return;
+            }
+
+            const isValid = await verifyAdminPassword(password);
+
+            if (isValid) {
+                currentPassword = password;
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('admin-section').style.display = 'block';
+                loadKeyList();
+            } else {
+                showMessage(messageEl, '비밀번호가 올바르지 않습니다.', 'error');
+            }
+        }
+
+        // Enter 키로 인증
+        document.getElementById('admin-password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') authenticate();
+        });
+
+        // 커스텀 키 이름 토글
+        function toggleCustomName() {
+            const customType = document.querySelector('input[name="key-type"]:checked').value;
+            const customNameDiv = document.getElementById('custom-key-name');
+            customNameDiv.style.display = customType === 'custom' ? 'block' : 'none';
+        }
+
+        // API 키 저장
+        async function saveApiKey() {
+            const messageEl = document.getElementById('save-message');
+            const keyType = document.querySelector('input[name="key-type"]:checked').value;
+            const customName = document.getElementById('custom-name').value;
+            const keyValue = document.getElementById('api-key-input').value;
+            const description = document.getElementById('key-description').value;
+
+            const keyName = keyType === 'custom' ? customName : keyType;
+
+            if (!keyName) {
+                showMessage(messageEl, '서비스 이름을 입력하세요.', 'error');
+                return;
+            }
+
+            if (!keyValue) {
+                showMessage(messageEl, 'API 키를 입력하세요.', 'error');
+                return;
+            }
+
+            // 키 형식 검증
+            const validation = validateApiKey(keyName, keyValue);
+            if (!validation.valid) {
+                showMessage(messageEl, validation.message, 'error');
+                return;
+            }
+
+            const result = await setApiKey(keyName, keyValue, currentPassword, description);
+
+            if (result.success) {
+                showMessage(messageEl, result.message, 'success');
+                document.getElementById('api-key-input').value = '';
+                document.getElementById('key-description').value = '';
+                document.getElementById('custom-name').value = '';
+                loadKeyList();
+            } else {
+                showMessage(messageEl, result.message, 'error');
+            }
+        }
+
+        // 키 목록 로드
+        async function loadKeyList() {
+            const listEl = document.getElementById('key-list');
+            listEl.innerHTML = '<div class="loading">키 목록을 불러오는 중...</div>';
+
+            const result = await listApiKeys(currentPassword);
+
+            if (!result.success) {
+                listEl.innerHTML = `<div class="message message-error">${result.message}</div>`;
+                return;
+            }
+
+            if (result.data.length === 0) {
+                listEl.innerHTML = '<div class="loading">등록된 API 키가 없습니다.</div>';
+                return;
+            }
+
+            let html = `
+                <table class="key-table">
+                    <thead>
+                        <tr>
+                            <th>서비스</th>
+                            <th>API 키</th>
+                            <th>상태</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            result.data.forEach(key => {
+                const statusClass = key.is_active ? 'status-active' : 'status-inactive';
+                const statusText = key.is_active ? '활성' : '비활성';
+                const escapedFull = key.key_value_full.replace(/'/g, "\\'");
+                const escapedMasked = key.key_value_masked.replace(/'/g, "\\'");
+
+                html += `
+                    <tr>
+                        <td><strong>${key.key_name}</strong></td>
+                        <td>
+                            <div class="key-cell">
+                                <span class="key-value" id="key-${key.id}">${key.key_value_masked}</span>
+                                <span class="key-toggle" onclick="toggleKeyVisibility('${key.id}', '${escapedFull}', '${escapedMasked}')">보기</span>
+                            </div>
+                        </td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-danger btn-sm" onclick="deleteKey('${key.key_name}')">삭제</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            listEl.innerHTML = html;
+        }
+
+        // 키 값 보기/숨기기 토글
+        function toggleKeyVisibility(id, fullKey, maskedKey) {
+            const el = document.getElementById(`key-${id}`);
+            const toggleEl = el.nextElementSibling;
+
+            if (el.textContent === maskedKey) {
+                el.textContent = fullKey;
+                toggleEl.textContent = '숨기기';
+            } else {
+                el.textContent = maskedKey;
+                toggleEl.textContent = '보기';
+            }
+        }
+
+        // 키 삭제 (완전 삭제)
+        async function deleteKey(keyName) {
+            if (!confirm(`'${keyName}' 키를 정말 삭제하시겠습니까?\n\n⚠️ DB에서 완전히 삭제됩니다.`)) {
+                return;
+            }
+
+            const result = await permanentDeleteApiKey(keyName, currentPassword);
+
+            if (result.success) {
+                alert(result.message);
+                loadKeyList();
+            } else {
+                alert(result.message);
+            }
+        }
+
+        // 메시지 표시
+        function showMessage(el, message, type) {
+            el.innerHTML = `<div class="message message-${type}">${message}</div>`;
+            setTimeout(() => {
+                el.innerHTML = '';
+            }, 5000);
+        }
+
+        // 기존 키 암호화 마이그레이션
+        async function migrateKeys() {
+            const messageEl = document.getElementById('migrate-message');
+
+            if (!confirm('기존에 암호화되지 않은 API 키들을 암호화하시겠습니까?')) {
+                return;
+            }
+
+            showMessage(messageEl, '암호화 진행 중...', 'success');
+
+            const result = await migrateUnencryptedKeys(currentPassword);
+
+            if (result.success) {
+                showMessage(messageEl, result.message, 'success');
+                loadKeyList(); // 목록 새로고침
+            } else {
+                showMessage(messageEl, result.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

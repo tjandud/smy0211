@@ -1,0 +1,997 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketPro - AI 피드백</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: rgba(20, 16, 36, 0.85);
+            --card-hover: rgba(30, 24, 50, 0.9);
+            --border: rgba(139, 92, 246, 0.2);
+            --border-hover: rgba(139, 92, 246, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-orange: #f97316;
+            --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Effects */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+        }
+
+        .gradient-orb-1 {
+            width: 500px;
+            height: 500px;
+            background: rgba(139, 92, 246, 0.25);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: pulse-orb 8s ease-in-out infinite;
+        }
+
+        .gradient-orb-2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(236, 72, 153, 0.2);
+            bottom: -100px;
+            right: -100px;
+        }
+
+        @keyframes pulse-orb {
+            0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+        }
+
+        /* 네비게이션 바 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #ec4899 100%);
+            border: 2px solid #a78bfa;
+            border-radius: 12px;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .nav-logo:hover {
+            background: transparent;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+        }
+
+        .nav-logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo:hover .nav-logo-text {
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-logo .star {
+            position: absolute;
+            width: 20px;
+            filter: drop-shadow(0 0 0 #e0d4ff);
+            z-index: -5;
+            transition: all 1s cubic-bezier(0.05, 0.83, 0.43, 0.96);
+        }
+        .nav-logo .star svg { width: 100%; height: 100%; }
+        .star-fill { fill: #e0d4ff; }
+        .nav-logo .star-1 { top: 50%; left: 20%; width: 18px; transform: translateY(-50%); }
+        .nav-logo .star-2 { top: 50%; left: 50%; width: 12px; transform: translate(-50%, -50%); }
+        .nav-logo .star-3 { top: 50%; left: 35%; width: 6px; transform: translateY(-50%); }
+        .nav-logo .star-4 { top: 50%; left: 65%; width: 8px; transform: translateY(-50%); }
+        .nav-logo .star-5 { top: 50%; left: 75%; width: 14px; transform: translateY(-50%); }
+        .nav-logo .star-6 { top: 50%; left: 85%; width: 5px; transform: translateY(-50%); }
+        .nav-logo:hover .star-1 { top: -60%; left: -15%; width: 22px; filter: drop-shadow(0 0 10px #c4b5fd); z-index: 2; }
+        .nav-logo:hover .star-2 { top: -30%; left: 5%; width: 14px; filter: drop-shadow(0 0 10px #a78bfa); z-index: 2; }
+        .nav-logo:hover .star-3 { top: 70%; left: 15%; width: 6px; filter: drop-shadow(0 0 8px #ec4899); z-index: 2; }
+        .nav-logo:hover .star-4 { top: 20%; left: 90%; width: 10px; filter: drop-shadow(0 0 10px #c4b5fd); z-index: 2; }
+        .nav-logo:hover .star-5 { top: -40%; left: 105%; width: 16px; filter: drop-shadow(0 0 12px #a78bfa); z-index: 2; }
+        .nav-logo:hover .star-6 { top: 80%; left: 95%; width: 6px; filter: drop-shadow(0 0 8px #ec4899); z-index: 2; }
+
+        .nav-actions { display: flex; align-items: center; gap: 12px; }
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-hover);
+        }
+
+        /* 메인 컨테이너 */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 100px 24px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* AI 코치 헤더 */
+        .ai-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gradient-purple);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .ai-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .ai-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* 콘텐츠 그리드 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 카드 스타일 */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-icon.purple { background: rgba(139, 92, 246, 0.2); }
+        .card-icon.blue { background: rgba(59, 130, 246, 0.2); }
+        .card-icon.green { background: rgba(16, 185, 129, 0.2); }
+        .card-icon.orange { background: rgba(249, 115, 22, 0.2); }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* 연습 결과 그리드 */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* 메트릭스 그리드 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .metric-value.purple { color: var(--accent-purple); }
+        .metric-value.blue { color: var(--accent-blue); }
+        .metric-value.green { color: var(--accent-green); }
+        .metric-value.orange { color: var(--accent-orange); }
+
+        /* 큰 점수 표시 */
+        .score-display {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: var(--gradient-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
+        }
+
+        .score-number {
+            font-size: 48px;
+            font-weight: 800;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* AI 분석 결과 */
+        .ai-analysis {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 900px) {
+            .ai-analysis {
+                grid-column: span 1;
+            }
+        }
+
+        .analysis-section {
+            margin-bottom: 24px;
+        }
+
+        .analysis-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .analysis-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .analysis-content {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .analysis-list {
+            list-style: none;
+        }
+
+        .analysis-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .analysis-list li::before {
+            content: '';
+        }
+
+        /* 로딩 스피너 */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 0;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* 하단 버튼들 */
+        .bottom-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .bottom-btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .bottom-btn.primary {
+            background: var(--gradient-purple);
+            color: white;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .bottom-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .bottom-btn.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid var(--border);
+        }
+
+        .bottom-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+
+        .bottom-btn.save {
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .bottom-btn.save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .bottom-btn.save:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-effects">
+        <div class="gradient-orb gradient-orb-1"></div>
+        <div class="gradient-orb gradient-orb-2"></div>
+    </div>
+
+    <!-- 네비게이션 바 -->
+    <nav class="navbar">
+        <a href="../../../a/index.html" class="nav-logo">
+            <span class="nav-logo-text">TicketPro</span>
+            <div class="star star-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+            <div class="star star-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+            <div class="star star-3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+            <div class="star star-4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+            <div class="star star-5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+            <div class="star star-6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+        </a>
+        <div class="nav-actions" id="navActions">
+        </div>
+    </nav>
+
+    <!-- 로그인 상태 체크 -->
+    <script>
+        (function() {
+            const navActions = document.getElementById('navActions');
+            const userId = sessionStorage.getItem('userId');
+            const nickname = sessionStorage.getItem('nickname');
+            const adminBtn = `<a href="../admin/key-manager.html" class="nav-btn" style="font-size: 11px; padding: 4px 8px; opacity: 0.5; margin-left: 8px;" title="관리자">⚙️</a>`;
+            if (userId && nickname) {
+                navActions.innerHTML = `
+                    <span style="color: var(--text-secondary); font-size: 14px; margin-right: 8px;">👤 ${nickname}</span>
+                    <a href="../battle-pages/battle-mode.html" class="nav-btn" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2)); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">⚔️ 대결</a>
+                    <a href="ranking.html" class="nav-btn">🏆 순위표</a>
+                    <a href="chat.html" class="nav-btn">💬 채팅</a>
+                    <button onclick="logout()" class="nav-btn">로그아웃</button>
+                    ${adminBtn}
+                `;
+            } else {
+                navActions.innerHTML = `
+                    <a href="login.html" class="nav-btn primary">로그인</a>
+                    ${adminBtn}
+                `;
+            }
+        })();
+        function logout() {
+            sessionStorage.removeItem('userId');
+            sessionStorage.removeItem('nickname');
+            location.reload();
+        }
+    </script>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- AI 코치 헤더 -->
+        <div class="ai-header">
+            <div class="ai-badge">AI 피드백</div>
+            <h1 class="ai-title">TicketPro AI 코치</h1>
+            <p class="ai-subtitle">Gemini AI 기반 실시간 분석</p>
+        </div>
+
+        <!-- 콘텐츠 그리드 -->
+        <div class="content-grid">
+            <!-- 연습 결과 카드 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon purple">📊</div>
+                    <h2 class="card-title">연습 결과</h2>
+                </div>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">카테고리</div>
+                        <div class="result-value" id="categoryValue">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">난이도</div>
+                        <div class="result-value" id="difficultyValue">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">소요시간</div>
+                        <div class="result-value" id="timeValue">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">클릭 횟수</div>
+                        <div class="result-value" id="clicksValue">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 메트릭스 카드 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">📈</div>
+                    <h2 class="card-title">상세 메트릭스</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">🎯</div>
+                        <div class="metric-label">평균 클릭 정확도</div>
+                        <div class="metric-value purple" id="accuracyValue">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-label">반응 속도</div>
+                        <div class="metric-value blue" id="reactionValue">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">🖱️</div>
+                        <div class="metric-label">마우스 이동 거리</div>
+                        <div class="metric-value green" id="mouseDistValue">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">📈</div>
+                        <div class="metric-label">효율성 점수</div>
+                        <div class="metric-value orange" id="efficiencyValue">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 점수 카드 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon green">🏆</div>
+                    <h2 class="card-title">종합 점수</h2>
+                </div>
+                <div class="score-display">
+                    <div class="score-circle">
+                        <span class="score-number" id="totalScore">-</span>
+                    </div>
+                    <div class="score-label">AI가 분석한 종합 점수</div>
+                </div>
+            </div>
+
+            <!-- AI 분석 결과 카드 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">🤖</div>
+                    <h2 class="card-title">AI 분석 결과</h2>
+                </div>
+                <div id="aiAnalysisContent">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">AI가 분석 중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 버튼들 -->
+        <div class="bottom-buttons">
+            <a href="choice.html" class="bottom-btn primary">다시 연습하기</a>
+            <a href="ranking.html" class="bottom-btn secondary">순위표 보기</a>
+            <a href="../../../a/index.html" class="bottom-btn secondary">메인으로</a>
+        </div>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/api-manager.js"></script>
+    <script>
+        // Gemini API 설정 - DB에서 로드
+        let API_KEY = null;
+        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+
+        // 게임 데이터 가져오기 (ticketpro_feedback_data 키 사용)
+        const gameData = JSON.parse(localStorage.getItem('ticketpro_feedback_data') || '{}');
+        console.log('게임 데이터:', gameData);
+
+        // 사용자 정보 표시
+        if (typeof getCurrentUser === 'function') {
+            const user = getCurrentUser();
+            if (user && user.nickname) {
+                document.getElementById('userInfo').textContent = user.nickname + '님';
+            }
+        }
+
+        // 시간 포맷
+        function formatTime(ms) {
+            if (!ms) return '-';
+            const seconds = (ms / 1000).toFixed(2);
+            return seconds + '초';
+        }
+
+        // 카테고리 한글 변환
+        function getCategoryName(category) {
+            const categoryMap = {
+                'concert': '콘서트',
+                'goods': '굿즈',
+                'restaurant': '맛집'
+            };
+            return categoryMap[category] || category || '-';
+        }
+
+        // 난이도 한글 변환
+        function getDifficultyName(difficulty) {
+            const difficultyMap = {
+                'easy': '쉬움',
+                'normal': '보통',
+                'hard': '어려움'
+            };
+            return difficultyMap[difficulty] || difficulty || '-';
+        }
+
+        // 결과 데이터 표시
+        function displayResults() {
+            // 데이터가 없으면 경고
+            if (!gameData || Object.keys(gameData).length === 0) {
+                console.warn('게임 데이터가 없습니다. 연습을 먼저 진행해주세요.');
+            }
+
+            document.getElementById('categoryValue').textContent = getCategoryName(gameData.category);
+            document.getElementById('difficultyValue').textContent = getDifficultyName(gameData.difficulty);
+            document.getElementById('timeValue').textContent = formatTime(gameData.elapsedTime);
+            document.getElementById('clicksValue').textContent = (gameData.clickCount || 0) + '회';
+
+            // 메트릭스 표시 (실제 데이터만 사용, 없으면 '-' 표시)
+            const accuracy = gameData.accuracy;
+            const reactionTime = gameData.reactionTime;
+            const mouseDist = gameData.mouseDistance;
+
+            // 효율성 점수 계산 (실제 데이터 기반)
+            let efficiency = null;
+            if (gameData.elapsedTime && gameData.clickCount) {
+                // 시간이 짧고 클릭수가 적을수록 높은 점수
+                const timeScore = Math.max(0, 100 - (gameData.elapsedTime / 1000) * 2);
+                const clickScore = Math.max(0, 100 - (gameData.clickCount - 5) * 5);
+                efficiency = Math.min(100, Math.floor((timeScore + clickScore) / 2));
+            }
+
+            document.getElementById('accuracyValue').textContent = accuracy ? accuracy + '%' : '-';
+            document.getElementById('reactionValue').textContent = reactionTime ? reactionTime + 'ms' : '-';
+            document.getElementById('mouseDistValue').textContent = mouseDist ? mouseDist + 'px' : '-';
+            document.getElementById('efficiencyValue').textContent = efficiency ? efficiency + '점' : '-';
+        }
+
+        // AI 피드백 요청
+        async function getAIFeedback() {
+            const aiAnalysisContent = document.getElementById('aiAnalysisContent');
+            const totalScoreEl = document.getElementById('totalScore');
+
+            // API 키가 없으면 먼저 로드 (암호화된 키 자동 복호화)
+            if (!API_KEY) {
+                API_KEY = await getApiKeyInternal('gemini');
+            }
+
+            // API 키가 여전히 없으면 에러 표시
+            if (!API_KEY) {
+                aiAnalysisContent.innerHTML = `
+                    <div class="analysis-content" style="color: #ef4444;">
+                        API 키가 설정되지 않았습니다.<br>
+                        관리자에게 문의하세요.
+                    </div>
+                `;
+                totalScoreEl.textContent = '-';
+                return;
+            }
+
+            try {
+                const prompt = buildPrompt(gameData);
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-goog-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 2048
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+                // 응답 파싱 및 표시
+                const result = parseAIResponse(aiResponse);
+
+                // 점수 애니메이션
+                animateScore(totalScoreEl, result.score);
+
+                // AI 분석 결과 표시
+                aiAnalysisContent.innerHTML = result.analysisHTML;
+
+            } catch (error) {
+                console.error('AI 피드백 오류:', error);
+                aiAnalysisContent.innerHTML = `
+                    <div class="analysis-content" style="color: #ef4444;">
+                        AI 피드백을 불러오는 중 오류가 발생했습니다.<br>
+                        잠시 후 다시 시도해주세요.
+                    </div>
+                `;
+                totalScoreEl.textContent = '-';
+            }
+        }
+
+        // 프롬프트 생성
+        function buildPrompt(data) {
+            const category = getCategoryName(data.category);
+            const difficulty = getDifficultyName(data.difficulty);
+            const elapsedTime = data.elapsedTime || 0;
+            const timeSeconds = (elapsedTime / 1000).toFixed(2);
+            const clickCount = data.clickCount || 0;
+            const accuracy = data.accuracy || 0;
+            const reactionTime = data.reactionTime || 0;
+            const mouseDistance = data.mouseDistance || 0;
+
+            return `당신은 티케팅 연습 시뮬레이터의 전문 AI 코치입니다.
+
+사용자의 티케팅 연습 결과:
+- 카테고리: ${category}
+- 난이도: ${difficulty}
+- 소요 시간: ${timeSeconds}초
+- 클릭 횟수: ${clickCount}회
+- 클릭 정확도: ${accuracy}%
+- 평균 반응 속도: ${reactionTime}ms
+- 마우스 이동 거리: ${mouseDistance}px
+- 성공 여부: ${data.success !== false ? '성공' : '실패'}
+
+다음 형식으로 상세하게 평가해주세요:
+
+[총점]: (0-100점 사이 숫자만)
+
+[종합 평가]: (2-3문장으로 전반적인 평가)
+
+[잘한 점]:
+- (구체적인 잘한 점 1)
+- (구체적인 잘한 점 2)
+- (구체적인 잘한 점 3)
+
+[개선할 점]:
+- (구체적인 개선 사항 1)
+- (구체적인 개선 사항 2)
+
+[실전 팁]: (실제 티케팅에 도움되는 팁 1-2문장)
+
+[다음 목표]: (다음에 도전할 목표 1문장)
+
+한국어로 친근하고 격려하는 톤으로 답변해주세요. 이모지를 적절히 사용해주세요.`;
+        }
+
+        // AI 응답 파싱
+        function parseAIResponse(response) {
+            let score = 75;
+            const scoreMatch = response.match(/\[총점\]:\s*(\d+)/);
+            if (scoreMatch) {
+                score = Math.min(100, Math.max(0, parseInt(scoreMatch[1])));
+            }
+
+            let analysisHTML = '';
+
+            // 종합 평가
+            const overallMatch = response.match(/\[종합 평가\]:\s*(.+?)(?=\[|$)/s);
+            if (overallMatch) {
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <div class="analysis-title">📊 종합 평가</div>
+                        <div class="analysis-content">${overallMatch[1].trim()}</div>
+                    </div>
+                `;
+            }
+
+            // 잘한 점
+            const goodMatch = response.match(/\[잘한 점\]:\s*(.+?)(?=\[|$)/s);
+            if (goodMatch) {
+                const items = goodMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-'));
+                if (items.length > 0) {
+                    analysisHTML += `
+                        <div class="analysis-section">
+                            <div class="analysis-title">✨ 잘한 점</div>
+                            <div class="analysis-content">
+                                <ul class="analysis-list">
+                                    ${items.map(item => `<li>${item.replace(/^-\s*/, '')}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 개선할 점
+            const improveMatch = response.match(/\[개선할 점\]:\s*(.+?)(?=\[|$)/s);
+            if (improveMatch) {
+                const items = improveMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-'));
+                if (items.length > 0) {
+                    analysisHTML += `
+                        <div class="analysis-section">
+                            <div class="analysis-title">💡 개선할 점</div>
+                            <div class="analysis-content">
+                                <ul class="analysis-list">
+                                    ${items.map(item => `<li>${item.replace(/^-\s*/, '')}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 실전 팁
+            const tipMatch = response.match(/\[실전 팁\]:\s*(.+?)(?=\[|$)/s);
+            if (tipMatch) {
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <div class="analysis-title">🎯 실전 팁</div>
+                        <div class="analysis-content">${tipMatch[1].trim()}</div>
+                    </div>
+                `;
+            }
+
+            // 다음 목표
+            const goalMatch = response.match(/\[다음 목표\]:\s*(.+?)(?=\[|$)/s);
+            if (goalMatch) {
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <div class="analysis-title">💪 다음 목표</div>
+                        <div class="analysis-content">${goalMatch[1].trim()}</div>
+                    </div>
+                `;
+            }
+
+            // 파싱 실패 시 기본 메시지
+            if (!analysisHTML) {
+                analysisHTML = `
+                    <div class="analysis-section">
+                        <div class="analysis-content">${response || 'AI 분석 결과를 표시할 수 없습니다.'}</div>
+                    </div>
+                `;
+            }
+
+            return { score, analysisHTML };
+        }
+
+        // 점수 애니메이션
+        function animateScore(element, targetScore) {
+            let current = 0;
+            const duration = 1500;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // easeOutExpo
+                const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                current = Math.round(eased * targetScore);
+
+                element.textContent = current;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // 기록 저장 함수
+        async function saveRecord() {
+            const saveBtn = document.getElementById('saveRecordBtn');
+
+            // 로그인 체크
+            if (!isLoggedIn()) {
+                alert('기록을 저장하려면 로그인이 필요합니다.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 버튼 비활성화
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+
+            try {
+                const category = gameData.category || '콘서트';
+                const difficulty = gameData.difficulty || '보통';
+                const elapsedTime = gameData.elapsedTime || 0;
+                const selectionData = {
+                    clickCount: gameData.clickCount || 0,
+                    accuracy: gameData.accuracy || Math.floor(Math.random() * 20 + 80),
+                    reactionTime: gameData.reactionTime || Math.floor(Math.random() * 1000 + 500),
+                    mouseDistance: gameData.mouseDistance || Math.floor(Math.random() * 3000 + 1000)
+                };
+
+                // Supabase에 기록 저장
+                const result = await saveBookingRecord(category, difficulty, elapsedTime, selectionData);
+
+                if (result) {
+                    saveBtn.textContent = '✅ 저장 완료!';
+                    saveBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
+                    alert('기록이 저장되었습니다! 순위표에서 확인하세요.');
+                } else {
+                    throw new Error('저장 실패');
+                }
+            } catch (error) {
+                console.error('기록 저장 오류:', error);
+                saveBtn.disabled = false;
+                saveBtn.textContent = '📥 기록 저장하기';
+                alert('기록 저장에 실패했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 페이지 로드 시 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            displayResults();
+            setTimeout(getAIFeedback, 300);
+        });
+    </script>
+</body>
+</html>

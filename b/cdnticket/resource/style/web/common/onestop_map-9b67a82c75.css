@@ -1,0 +1,109 @@
+@charset "utf-8";
+#wrapper {
+    position: absolute;
+    overflow: hidden;
+
+    /* Prevent native touch events on Windows */
+    -ms-touch-action: none;
+
+    /* Prevent the callout on tap-hold and text selection */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    /* Prevent text resize on orientation change, useful for web-apps */
+    -webkit-text-size-adjust: none;
+    -moz-text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    -o-text-size-adjust: none;
+    text-size-adjust: none;
+}
+
+/**
+*/
+#minimap {
+    position: absolute;
+    z-index: 11;
+    width:inherit;
+    height:inherit;
+    top: 0px;
+    left: 0px;
+}
+#minimap-indicator {
+    position: absolute;
+    z-index: 11;
+    width:inherit;
+    height:inherit;
+    border: 1px solid #f01717;
+    background: rgba(255,255,255,0);
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+#scroller {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+
+    /* Prevent elements to be highlighted on tap */
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+
+    /* Put the scroller into the HW Compositing layer right from the start */
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+.minimap_scroller {     /* 2016.10.13 좌측 미니맵*/
+    position: relative;
+    width: 245px;
+    height: 180px;
+    overflow: hidden;
+}
+
+#iez_canvas { /* 2016.10.13 좌측 미니맵*/
+    position: absolute;
+    width: inherit;
+    height: inherit;
+
+    /* Prevent elements to be highlighted on tap */
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+
+    /* Put the scroller into the HW Compositing layer right from the start */
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+.wrap_seat .stage_img .seat_block svg {
+	-webkit-transform: scale(0.5);
+    -moz-transform: scale(0.5);
+    -ms-transform: scale(0.5);
+    -o-transform: scale(0.5);
+    transform: scale(0.5);
+    
+    -ms-transform-origin:0 0;
+	transform-origin:0 0;
+}
+
+.wrap_ticket_info .box_map .map_seat svg {
+	-webkit-transform: scale(0.2);
+    -moz-transform: scale(0.2);
+    -ms-transform: scale(0.2);
+    -o-transform: scale(0.2);
+    transform: scale(0.2);
+    
+    -ms-transform-origin:0 0;
+	transform-origin:0 0;
+	
+	z-index: 12;
+}

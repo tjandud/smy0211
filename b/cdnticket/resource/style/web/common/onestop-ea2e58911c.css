@@ -1,0 +1,809 @@
+@charset "utf-8";
+.section_onestop{width:950px;heigth:652px;position: relative;}
+.section_onestop:after{content: ""; display: block;clear: both;}
+.wrap_select{float:left;width:682px;}
+.wrap_ticket_info{position:relative;float: left;width: 245px;padding: 14px 10px 14px 13px;height: 624px;background-color: #fafafa;}
+.box_r {overflow-y:auto; width:636px;height:574px;padding:29px 16px 0 30px;}
+.box_gray{width:580px;margin-top:20px;padding:14px 20px 22px;background-color:#fafafa;line-height:30px;}
+.box_gray input, .box_gray select{height:22px}
+.wrap_sel .btn_sel .sel_cate{padding-left:5px;line-height:24px;text-align:left;border: 1px solid #ddd;}	
+.txt_gray{font-weight:normal;color:#888;}
+.txt_og{color:#f28e47;}
+.txt_gr{color:#00b523;}
+.txt_bd{font-weight:bold;}
+.tit_gr{padding-bottom:10px;font-size:30px;color:#00b523;}
+.txt_frt{font-size:17px;color:#333;padding-bottom:3px;letter-spacing:-2px}
+.txt_sm{font-size:13px;}
+.txt_mid{font-size:17px;color:#333;}
+.txt_lst{display:inline-block;margin-right:10px;font-size:18px;}
+.txt_suc{font-size:18px;}
+
+.box_r .time_out {padding: 8px 0; margin-bottom: 15px; background-color: #fafafa; color: #f22664; font-size: 15px; text-align: center;}
+
+.box_select_t {position: relative;}
+.box_select_t .btn_flexible {position: absolute; top: -5px; left: 488px;}
+.box_select_t .btn_flexible span {padding-top: 5px; line-height: 18px; font-size: 14px; font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;}
+.layerPop.camping .la_header, 
+.layerPop.camping .la_header .la_header1 {background-image:url(//cdnticket.melon.co.kr/resource/image/web/common/bg_layerpopup_0.png);}
+.layerPop.camping .la_middle, 
+.layerPop.camping .la_middle .la_middle1 {background-image:url(//cdnticket.melon.co.kr/resource/image/web/common/bg_layerpopup_01.png);}
+.layerPop.camping .la_footer, 
+.layerPop.camping .la_footer .la_footer1 {background-image:url(//cdnticket.melon.co.kr/resource/image/web/common/bg_layerpopup_0.png);} 
+
+.select_tit{padding-bottom:6px;font-weight: bold;font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;font-size: 16px;color: #333;}
+.select_tit .tit_sm{font-weight:normal;font-size:12px;color:#888;}
+.tit_reserve{padding-bottom:6px;font-weight:normal;font-size:18px;color: #404040;}
+.one_list li{position:relative; font-size:12px;}
+.one_list .btn_detail{margin-left:0}
+.one_list .specCancel:hover + .floating_hover_box{display:block;}
+.btn_onestop{position:absolute;left:15px;bottom:10px;}
+.btn_onestop .button{display: inline-block;position:relative;line-height:48px;font-size: 14px;}
+.btn_onestop .buttonOne{width:243px;padding:0;text-align:center;}
+.btn_onestop .button.frt{ margin-right:-3px;}
+.btn_onestop .button.btNext .btnOne{color:#fff;}
+.btn_onestop .button.btWhite a{border: 1px solid #cccccc;background: #fff;}
+.btn_onestop .button.btWhite a:hover{border: 1px solid #666;border-right:1px solid #fff;color:#000;background: #fff;}
+.btn_onestop .button.btNext{border: 1px solid #888888;background:#888888;}
+.btn_onestop .button.btNext.on{border: none;background: #41d26b;}
+.btn_onestop .button.btNext.on a{border: 1px solid #41d26b;background: #41d26b;}
+.btn_onestop .button.btNext.on a:hover{border: 1px solid #00b523;background: #00b523;}
+.btn_onestop .button .btnOne{display:block;width:118px;height:48px;text-decoration:none;}
+.btn_onestop .button .btnOne.btnOneB{width:243px;}
+.btn_onestop .button.btchange .btnOne.btnOneB:hover{background-color:#00b523}
+.btn_onestop .button .btnOne.btnOneCen{width:243px;padding:0;text-align:center;}
+.btn_onestop .button .btnOne .one_arr{display: inline-block;overflow:hidden;width:6px;height:17px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop.png) no-repeat;background-size:100px auto;text-indent: -9999px;}
+.btn_onestop .button .btnOne .one_arr.prav_ar{position:absolute;top:17px;left:20px; background-position:-30px 0;}
+.btn_onestop .button .btnOne .one_arr.next_ar{position:absolute;top:18px;right:20px; background-position:-30px -20px;}
+input.inp_w198{width:196px;}
+input.inp_w190{width:168px;padding:0 10px;}
+input.inp_w187{width:165px;margin-left:4px;padding:0 10px}
+input.inp_w150{width:128px;padding:0 10px;}
+input.inp_w52{width:30px;padding:0 10px}
+input.inp_w77{width:55px;padding:0 10px}
+input.inp_w60{width:38px;padding:0 10px}
+
+/*상단영역*/
+.location_step .list_step{display:block;overflow:hidden;position:relative;height:50px;background: #f9f9f9}
+.location_step .list_step .btn_o_menu{display:block;overflow:hidden;height:50px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop_tit.jpg) no-repeat 0 0;font-size:0;}
+.location_step .list_step .btn_o_menu01{position:absolute;top:0;left:0;width:240px;background-position:0 0; }
+.location_step .list_step .btn_o_menu02{position:absolute;top:0;left:240px;width:240px;background-position:-240px 0; }
+.location_step .list_step .btn_o_menu03{position:absolute;top:0;left:480px;width:202px;background-position:-478px 0; }
+.location_step .list_step .btn_o_menu01.on{background-position:0 -50px;}
+.location_step .list_step .btn_o_menu02.on{background-position:-240px -50px;}
+.location_step .list_step .btn_o_menu03.on{background-position:-478px -50px;}
+
+/*가격선택*/
+.box_select .box_ticket {width: 620px;}
+.box_select .box_ticket h4 {display:block;overflow:hidden;position:relative;height: 40px;border-top: 1px solid #ddd;border-bottom: 1px solid #ddd;background-color: #fafafa;}
+.box_select .box_ticket h4 .tit_ticket {display:block;font-size:14px;line-height: 38px;margin: 0 8px;color:#333;}
+.box_select .box_ticket h4 .txt {display:block;position:absolute;top:0;right: 20px;font-weight:normal;font-size:14px;line-height: 38px;letter-spacing: 0;color:#333}
+.box_select .box_ticket h4 .txt em {font-weight:bold;color:#00b523;}
+.box_select .list_ticket {display:block;background-color:#fff;border-bottom:1px solid #eee;font-size:13px;line-height: 38px;}
+.box_select .list_ticket .box_ticket_t {display:block;overflow:hidden;margin: 0 8px;}
+.box_select .list_ticket .box_ticket_t .tit_tk {display:inline-block;width:270px;color:#333;height: 38px;vertical-align:top;margin-top:-3px}
+.box_select .list_ticket .box_ticket_t .tit_tk.base_pr{font-weight:bold;width:373px;margin-top:0}
+.box_select .list_ticket .box_ticket_t dd.price{display:inline-block;text-align: right;}
+.box_select .list_ticket .box_ticket_t .price.price_sale{width: 100px;vertical-align:top;letter-spacing:0}
+.box_select .list_ticket .box_ticket_t .price.price_sale_r{width: 96px;vertical-align:top;letter-spacing:0}
+.box_select .list_ticket .box_ticket_t .price.price_sale_r.txt_bd{color:#000}
+.box_select .list_ticket .box_ticket_t .price.wrap_sel{width: 113px;vertical-align:middle}
+.box_select .list_ticket .box_ticket_t dd.wrap_sel .sel_cate{overflow:hidden;width:64px;height:24px;padding-left:18px;border:1px solid #ddd;margin-top:-1px;letter-spacing:0;color:#333}
+.box_select .list_ticket.soldout .box_ticket_t{opacity:0.4;}
+.box_select .list_ticket.soldout .box_ticket_t .tit_tk{margin-top:0;}
+.box_select .list_ticket.soldout .box_ticket_t .price.wrap_sel{width:92px;}
+.box_select .list_coupon{display:block;background-color:#fff;border-bottom:1px solid #eee;line-height:40px;}
+.box_select .list_coupon .list_coupon_t.frt{border-top:1px solid #eee;}
+.box_select .list_coupon .box_coupon_t {display:block;overflow:hidden;}
+.box_select .list_coupon .box_coupon_t .tit_cp {display:inline-block;width:320px;font-weight:bold;font-size:14px;color:#333;}
+.box_select .list_coupon .box_coupon_t  .box_coupon_more{display:none;}
+
+.box_top{padding-top:30px;}
+.box_coupon_more .box_coupon{padding:12px 0;}
+.box_coupon_more .box_coupon td{padding:8px 30px 8px 0;font-size:13px; text-align: right; white-space: nowrap;}
+.box_coupon_more .box_coupon td.coupon{padding-right: 10px; color:#333; text-align: left; white-space: inherit;}
+.box_coupon_more .box_coupon td .txt_coup{margin-left:7px;}
+.box_coupon_more .box_coupon .no_result{ text-align:center;}
+.box_coupon_more .coupon_register{text-align:left;padding-left:70px}
+.box_coupon_more .coupon_register .coupon_use{padding-top:17px;font-size:12px;color:#888;line-height:18px;letter-spacing:0}
+.box_coupon_more .coupon_register .coupon_use span{color: #464646;}
+.box_coupon_more .coupon_register .wrap_form_input .coupon_sch{display:inline-block;}
+.box_coupon_more .coupon_register input.top_search{width:344px;padding:5px 10px 6px;margin-right: 3px;}
+.box_coupon_more .coupon_register .wrap_form_input .top_search + .place_holder{top:4px;color:#888;letter-spacing:0}
+.box_coupon_more .coupon_register .btn_coupon{display:inline-block;}
+.box_coupon_more .coupon_register .btn_coupon .button{padding:1px 20px 2px;}
+/* MELONUIT-462 190516 */
+.box_coupon_more .coupon_register.type02{text-align:left;padding:0 0 0 100px;}
+.box_coupon_more .coupon_register.type02 input.top_search{width:282px;margin-right:0;}
+.box_coupon_more .coupon_register.type02 .coupn_select label{padding-right:48px;padding-left:6px}
+.box_coupon_more .coupon_register .wrap_form_input .coupon_sch .tit_num{display:inline-block;min-width:70px;font-size:13px;color:#666666;}
+.box_coupon_more .coupon_register .btn_coupon.type02{display:block;margin:15px 0 0 156px;}
+.mt10{margin-top:10px !important;}
+/* // MELONUIT-462 190516 */
+
+.ticket_btn{width:605px;height: 38px;}
+.ticket_btn dl{height: 38px;}
+.ticket_btn_cp{width:605px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_onestop_arr.png) right 0 no-repeat;background-size:31px auto; cursor:pointer}
+.open .ticket_btn_cp {background-position:right -42px;}
+.list_ticket .box_ticket_t .ticket_btn .tit_tk .arr{overflow:hidden;display:inline-block;width:24px;height:26px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_onestop_arr.png) 0 0 no-repeat;background-size:31px 84px;text-indent: -9999px;}
+.list_ticket .box_ticket_t .ticket_btn .tit_tk .arr.more{background-position:0 -42px;}
+.list_ticket .box_ticket_t.on .ticket_btn .tit_tk, 
+.list_ticket .box_ticket_t.on .ticket_btn .price, 
+.list_ticket .box_ticket_t.on .ticket_btn .sel_cate{color: #00b523;}/*선택시 on 생성*/
+.box_ticket_more, .box_coupon_more{display:none;}
+.box_ticket_more.open, .open .box_coupon_more{display:block;}
+.box_ticket_more .tit_more_info{padding-bottom:15px;color:#888;line-height:23px;}
+
+/*좌석선택*/
+.box_seat_top{height:49px;border-bottom:1px solid #ccc;background-color:#fff;}
+.box_seat_top .tit_seat{position:relative;padding: 11px 0 0 28px;font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;font-size: 16px;color: #404040;height: 38px;width: 655px;overflow: hidden;}
+.box_seat_top .tit_seat .tit_s{font-weight:normal;margin-left: 18px; vertical-align:top;display:inline-block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:52%}
+.box_seat_top .tit_seat .sub_seat{font-size:14px;margin-left:3px;}
+.box_seat_top .seat_wrap_sel{position:absolute;top: 9px;right:1px;border:1px solid #ccc;height:31px;}
+.box_seat_top .seat_wrap_sel .sel_cate{width: 218px;height:100%;font-weight:bold;font-size:14px;color:#333;letter-spacing:0;border:0 none;padding-left:3px}
+
+.wrap_seat{position:relative;height:602px;background-color:#e2e2e2; }
+.wrap_seat .box_stage{text-align:center;padding-top: 10px;}/*구역좌석-구역설명 영역*/
+.wrap_seat .box_stage .stage{width:485px;height:40px;margin-left: 98px;background-color:#c8c8c8;}
+.wrap_seat .box_stage .stage span{font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;font-size:16px;color:#fff;line-height:40px;}
+.wrap_seat_box{position:absolute;bottom:0;left:0;width:682px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_seat.png) repeat;}/*하단 좌석선택부분*/
+.wrap_seat .box_stage .txt_stage{margin-top:5px;font-size:14px;}
+.seat_box .seat_choice{display:none;}
+.seat_box.open .seat_choice{display:block;}
+.seat_box .seat_btn{height: 35px;padding: 0 10px 0 30px;font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;font-size: 16px;color:#fff;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_onestop_bigarr.png) right -34px no-repeat;background-size:40px auto;line-height: 35px; cursor:pointer}
+.seat_box.open .seat_btn {background-position:right 0;}
+.seat_box .seat_btn .txt_seat{margin-left:5px;color:#00b523;}
+.seat_box .seat_btn .txt_seat_s{margin-left:5px;font-size:14px;color:#cccccc;}
+
+.seat_box.open .seat_btn .txt_seat{text-decoration:underline;}
+.seat_box .seat_choice .seat_info {padding: 10px 18px;}
+.seat_box .seat_choice .seat_info li{display: inline-block;/*min-width:114px;*/padding: 0 10px 0 14px;margin: 5px 10px 0;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_seat_bg.png) repeat-x;color:#fff;line-height:24px;}
+.seat_box .seat_choice .seat_info li.frt{margin-left:0;}
+
+/*배송결제*/
+.box_how{letter-spacing: 0;}
+.box_check{font-size:12px;color:#888;vertical-align:top;}
+.box_inp_opt th{text-align:left;}
+.box_inp_opt th.txt_top{padding-top:8px;vertical-align:top;}
+.box_inp_opt td{padding:8px 0;letter-spacing:0}
+.box_inp_opt td.td_pd{padding:0;}
+.box_inp_opt select{width:490px;height:24px;}
+.box_inp_opt .text_area {width: 468px; height:68px; padding: 5px 10px; font-size: 14px; border: 1px solid #ddd; resize: none;}
+.box_inp_opt .text_area::-webkit-input-placeholder {color: #888;}
+.box_inp_opt .text_area:-ms-input-placeholder {color: #888;}
+.tit_receipt{font-weight:normal;font-size:14px;color:#333;}
+.tit_receipt .tit_info{font-size:12px;color:#888;}
+.tit_receipt .tit_sub{font-size:13px;color:#888;}
+.tit_receipt .tit_info.date{color:#00cd3c;}
+.tit_receipt .box_check{display:inline-block;margin-left:10px }
+/* S : [FTTICKET-350] LG아트센터 연동 */
+.area_selbirth .sel_cate {margin-right: 10px;padding-left: 5px;line-height: 24px;text-align: left;
+border: 1px solid #ddd;}
+.area_selbirth .sel_cate + .sec_cate {margin-left: }
+.area_selbirth .birth-yy {width: 80px;}
+.area_selbirth .birth-mm {width: 60px;}
+.area_selbirth .birth-dd {width: 60px;}
+/* E : [FTTICKET-350] LG아트센터 연동 */
+
+.list_receipt{padding-top:6px;padding-left:4px;}
+.list_receipt_how{padding: 10px 0 0 6px;}
+.list_receipt_how li {display:inline-block;vertical-align:top;}
+.list_receipt_how label {line-height:18px;padding-right: 38px;}
+.list_receipt_how label input, .list_receipt_how label span {vertical-align: middle;}
+.list_receipt_how .txt_lab {display:inline-block;font-size:14px;line-height:18px;color:#333;vertical-align: bottom;}
+.list_receipt_how.receipt_s label{padding-right:20px;}
+.list_receipt_how.receipt_s .txt_lab {font-size:12px;vertical-align:middle;}
+.box_how .txt{padding:7px 0 0 6px;color:#888}
+/* FTTICKET-185 */
+.box_how .account{padding:20px 0}
+.box_how .account .inner_account{display:table;margin-bottom:13px}
+.box_how .account .info_account{display:table-cell;width:560px;padding-top:3px;vertical-align:middle}
+.box_how .account .thumb_account{display:inline-block;width:42px;height:42px;margin-right:10px;border-radius:17px;background-position:center;background-repeat:no-repeat;background-size:cover;vertical-align:middle}
+.box_how .account .txt_nickname{display:inline-block;position:relative;padding-right:17px;color:#888}
+.box_how .account .txt_bar{display:block;position:absolute;right:8px;top:1px;border-left:1px solid #ddd;height:13px}
+.box_how .account .txt_id{color:#9F9F9B;word-wrap:break-word;word-break:break-all}
+.box_how .account .list_account{padding-left:3px}
+.box_how .account .list_account li{line-height:20px;color:#999}
+/* //FTTICKET-185 */
+
+.box_info_use{padding:0px 20px 0 15px;line-height:46px;}
+.box_info_use .use_name{font-size:14px;padding-top:10px}
+.box_inp_opt .inp_l{width:293px;margin-left: 5px;}
+.box_inp_opt .inp_l2{width:271px;padding:0 10px}
+.box_inp_opt .box_inp_btn{height:24px;padding:0 10px;margin-left:5px;border:1px solid #dddddd;background-color:#fff;color:#888;}
+.box_inp_opt .re_num input{width:38px;padding:0 10px;}
+
+.box_payment{margin-top:24px;}
+.box_payment select{width:198px;height:24px;}
+.box_payment .wrap_sel.type02 select {width: 70px} /* FTTICKET-427 */
+.box_payment .box_card .txt_more_card{padding-top:4px;color:#888;line-height:25px;letter-spacing:0}
+.box_payment .box_card {padding: 14px 20px 14px;} /* FTTICKET-427 */
+.box_payment .box_card .txt_more {padding-left: 70px;} /* FTTICKET-427 */
+.box_payment .list_receipt_how label {padding-right: 28px;}
+/* S : FTTICKET-402 */
+.box_payment .btn_arr_down {height: 25px;margin-bottom: -6px;background-position: right -285px;}
+.box_payment .btn_arr_down span {background-position: left -285px; line-height: 13px;}
+table.tbl_charge_list {overflow:hidden; width:100%;font-family:AppleSDGothicNeo-Regular, "돋움",Dotum; font-size:14px;border: 1px solid #e9e9e9}
+/* //MELONUIT-977 */
+table.tbl_charge_list th, table.tbl_charge_list td {letter-spacing:0; font-size:14px;}
+table.tbl_charge_list tbody th {width:114px;padding:10px; border-right:1px solid #eeeeee;font-weight:normal; color:#333; background:#f6f6f6;text-align:left}
+table.tbl_charge_list tbody td { padding:10px;color:#666;} 
+table.tbl_charge_list tbody th.lst {border-bottom:0} 
+table.tbl_charge_list tbody td.lst {border-bottom:0} 
+.tbl_charge_comm{color:#888;margin-top: 10px}
+/* E : FTTICKET-402 */
+
+.box_bankbook .box_inp_opt .list_receipt_how.receipt_s {padding:0;}
+.box_bankbook .box_inp_opt .re_num{padding-top:5px;line-height:25px;}
+
+.box_receipt{margin:20px 0;}
+.box_receipt .box_agree{font-size:13px;line-height:38px;}
+.box_receipt .box_agree .list_agree{border-top: 1px solid #dddddd;}
+.box_receipt .box_agree .list_agree.frt{border-top:0;}
+.box_receipt .box_agree .list_agree .select_tit{position:relative;}
+.box_receipt .box_agree .list_agree .tit_check_r{display:block;position:absolute;top:0;right:10px;font-weight:normal;color:#333;font-size:14px;font-family:AppleSDGothicNeo-Regular, "돋움",Dotum}
+.box_receipt .box_agree .list_agree .txt_lab{vertical-align: middle;}
+.box_receipt .box_agree .list_agree .box_ar_info{padding: 0 20px;margin: 0 0 18px;}
+.box_receipt .box_agree .list_agree .box_ar_info .tb_date{width:552px;padding:5px 0;text-align:center;background-color:#fafafa; }
+.box_receipt .box_agree .list_agree .box_ar_info .tb_date .tb_date_th{border-bottom:1px solid #eee;}
+.box_receipt .box_agree .list_agree .box_ar_info .list_ds{padding-top:10px;color:#888;line-height:24px;}
+.box_receipt .box_agree .list_agree .box_ar_info .list_ds .st{color:#f0780a;}
+.box_receipt .box_agree .list_agree .box_ar_info .tb_date th{padding: 5px 0;color:#999;}
+.box_receipt .box_agree .list_agree .box_ar_info .tb_date td{padding: 4px 0;color:#888;letter-spacing: 0;}
+.box_receipt .box_agree .list_agree:after{content: ""; display: block;clear: both;}
+.box_receipt .box_agree .list_agree .float_l{float:left;width:50%;}
+.box_receipt .box_agree .list_agree .float_R{float:left;width:50%;}
+.box_receipt .box_agree .list_agree .tit_check{line-height:40px;}
+.btn_detail{margin-left:5px;margin-bottom:2px;vertical-align:middle;background-color: #fff;}
+
+/* 2016.02.29 현행 시행일자 추가 */
+.box_userow{margin-top:24px; position: relative;}
+.box_userow .select_design_w100 {width:462px;}
+.box_userow .row_selectbox .select_design_w100 .select_box{width:450px;}
+.box_userow .wrap_sel .btn_sel .sel_cate{padding-top:10px;padding-left:5px;line-height:50px;text-align:left;}	
+.box_userow .btColorGreen{position: absolute;right: 20px; top: 0}
+.box_userow .btColorGreen .btSizeM{width:100px;}
+
+/*개인정보 제공 팝업*/
+.layer_personal_info .box_personal{font-size:14px; color:#888; line-height:24px; letter-spacing: -0.6px;}
+/*#personal3.layer_personal_info .box_personal, #personal4.layer_personal_info .box_personal{font-size:13px;line-height:18px;}*/
+.layer_personal_info h3{color:#333}
+.layer_personal_info .layerPop .popClose{top:28px}
+.layer_personal_info .wrap_soting{width:394px; height:40px; background:url(//cdnticket.melon.co.kr/resource/image/web/common/bg_soting4.png) no-repeat 0 0;font-size:0}
+.layer_personal_info .wrap_soting_n5 .btn_soting{color:#888;font-size:14px;width:197px; height:40px;line-height:40px;padding-top:1px;position:absolute;text-align:center}
+.layer_personal_info .wrap_soting_n5 .btn_soting.nth2{left:197px;top:0}
+.layer_personal_info .wrap_soting_n5.nth2_on{background-position:0 -42px}
+.layer_personal_info .wrap_soting_n5.nth1_on button.nth1{color:#333; }
+.layer_personal_info .wrap_soting_n5.nth2_on button.nth2{color:#333}
+.box_personal{padding:25px 17px 0 0;line-height: 1.5em;}
+.box_personal .inner{overflow-x:hidden; overflow-y:auto; max-height:290px;padding-right:10px;font-size:13px;line-height:18px;}
+.box_personal .inner_default{overflow-x:hidden; overflow-y:auto; max-height:360px;padding-right:10px;font-size:13px;line-height:18px;}
+.box_personal .inner_default .emph_g{font-weight:bold;font-size:16px} /* FTTICKET-238 */
+.box_personal .wrap_tap{margin-bottom:30px;}
+.list_personal li{padding: 8px 0;}
+.list_personal li.frt{padding-top: 20px;}
+.list_personal li .li_per{padding:0;margin-left:8px;}
+.list_personal li .txt_per{display:block;margin-left:8px;}
+
+/* FTTICKET-452 //*/
+.box_personal .area_tab {display: flex;}
+.box_personal .area_tab .tab_g {display: inline-flex;align-items:center; justify-content: center;width: 50%;height: 40px;border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;}
+.box_personal .area_tab .tab_g:first-child {border-left: 1px solid #ccc;border-radius: 30px 0 0 30px;}
+.box_personal .area_tab .tab_g:last-child {border-right: 1px solid #ccc;border-radius: 0 30px 30px 0;}
+.box_personal .area_tab .tab_g .link_tab {display: inline-flex;align-items:center; justify-content: center; width: 100%;height: 100%;color: #888;}
+.box_personal .area_tab .tab_g.on .link_tab {position: relative;border: 1px solid #666;border-radius: 30px;}
+.box_personal .wrap_cont {height: 420px;}
+.box_personal .wrap_cont .cont_tab {display: none; margin-top: 20px;}
+.box_personal .wrap_cont .cont_tab.on  {display: block}
+.box_personal .list_cont .list_term.on .cont_term {display: block}
+.box_personal .list_cont .list_term .cont_term {display: none}
+.box_personal .list_cont .list_term .tits_term {height: 40px;}
+.box_personal .list_cont .list_term:first-child .link_term {border-top: 1px solid #ccc;}
+.box_personal .list_cont .list_term .link_term {position: relative;display: flex;align-items: center;height: 100%;padding-left: 10px;border-bottom: 1px solid #ccc;font-size: 14px;line-height: 20px;}
+.box_personal .list_cont .list_term .link_term .ico_arr{position: absolute;top: 50%;right: 16px;display: flex;justify-content: center;width: 20px;transform: translate(0, -50%);}
+.box_personal .list_cont .list_term .link_term .ico_arr:before {position: relative;transform: rotate(-45deg);display: inline-block;width: 1px;height: 10px;background-color: #ccc;content: ''}
+.box_personal .list_cont .list_term .link_term .ico_arr:after {position: relative;left: 6px;transform: rotate(45deg);display: inline-block;width: 1px;height: 10px;background-color: #ccc;content: ''}
+.box_personal .list_cont .list_term.on .link_term .ico_arr {top: 38%;right: 10px;transform: rotate(180deg);}
+.box_personal .list_cont .cont_term iframe {width: 100%;height: 290px;margin-top: 2px;}
+/*// FTTICKET-452 */
+
+.layer_personal_info .txt_personal01{font-size: 14px;}
+.layer_personal_info .sub_personal li{font-size: 13px;line-height: 1.5em;position: relative;}
+.layer_personal_info .sub_personal li .bu{display:block; width:10px; position: absolute;}
+.layer_personal_info .sub_personal li .para{margin-left:10px;display: inline-block;}
+.layer_personal_info .sub_personal .txt_personal02{font-size: 13px;margin:5px 0 0 0;}
+.layer_personal_info .sub_personal .line{text-decoration: underline;}
+
+.layer_personal_info .tbl_personal{margin:25px 0;border:1px solid #eee;font-size:13px;color:#333333;background-color:#fff;}
+.layer_personal_info .tbl_personal th{height:40px;line-height:40px;background-color:#fafafa;font-weight:normal;text-align:left;font-size:13px;padding:0 0 0 60px;}
+.layer_personal_info .tbl_personal th.lst{padding:0 0 0 14px;text-align:left;}
+.layer_personal_info .tbl_personal td{padding:15px 0 15px 14px;font-size:13px;vertical-align: top}
+.layer_personal_info .tbl_personal.type02 th{padding:0 0 0 30px;}
+.layer_personal_info .tbl_personal.type03 th{padding:0;text-align:center;} /*MELONUIT-271*/
+
+/*원스탑 우편번호*/
+.layer_personal_info .post_section{padding-right:30px; line-height:normal; font-size:13px; letter-spacing:0}
+.layer_personal_info .input_area{overflow:hidden; padding:20px; background:#f6f6f6; margin-bottom:15px; margin-top:15px}
+.layer_personal_info .inputType{float:left; width:344px; height:32px; line-height:32px; text-indent:16px; border:1px solid #dadada;}
+.layer_personal_info .place_holder{color:#888}
+.layer_personal_info .post_button{float:right; width:74px; height:34px; color:#fff; background:#41d26b;}
+.layer_personal_info .post_notice{margin-bottom:20px}
+.layer_personal_info .post_notice li{margin-top:10px; font-size:13px; color:#666}
+.layer_personal_info .post_notice li span{color:#333}
+.layer_personal_info .post_notice li:first-child{margin-top:0}
+.layer_personal_info .post_result_no{text-align:center; font-size:16px; color:#333; padding:40px 0 60px}
+.layer_personal_info .post_result_no span{color:#41d26b}
+.layer_personal_info .post_result_ok{}
+.layer_personal_info .post_result_ok>p{font-size:16px; color:#333; margin-bottom:8px}
+.layer_personal_info .post_result_ok>p span{color:#41d26b}
+.layer_personal_info .post_table{margin-bottom:20px;height:230px; overflow:auto;}
+.layer_personal_info .post_table table{width:100%;border-collapse:collapse;border-top:1px solid #e9e9e9;}
+.layer_personal_info .post_table table th{border-bottom:1px solid #e9e9e9; font-weight:normal; color:#333; padding:11px 0}
+.layer_personal_info .post_table table td{border-bottom:1px solid #e9e9e9; color:#333; padding:18px 0;padding-left:20px; letter-spacing:0}
+.layer_personal_info .post_table table td a{color:#333}
+
+.layer_personal_info .post_table table td a span{display:block;color:#666}
+.layer_personal_info .post_table table td a:hover span{color:#333}
+.layer_personal_info .post_table table tr td:last-child{font-size:14px; vertical-align:top;text-align:center; padding-left:0}
+
+
+/*예매완료*/
+.wrap_reserve{position:relative;height:625px;padding: 27px 30px 0;overflow:hidden;overflow-y:auto}
+.wrap_reserve .box_success{font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;}
+.wrap_reserve .txt_friend{padding-top: 50px;}
+.wrap_reserve .txt_friend.package{padding-top: 22px;}
+.wrap_reserve .txt_friend.finish{padding-top: 22px;}
+.wrap_reserve .txt_friend .btn_friend{display:inline-block;vertical-align:middle;}
+.wrap_reserve .box_success{text-align:center;}
+.wrap_reserve .box_reserve{position: relative;margin:20px 0}
+.wrap_reserve .box_reserve_info th{border-bottom:1px solid #eee;font-size:14px;text-align:left;padding:9px 10px 8px 20px;font-weight:normal;background-color:#fafafa;vertical-align:top}
+.wrap_reserve .box_reserve_info td{padding: 9px 0 8px 20px;border-bottom:1px solid #eee;font-size:14px;color:#333333;letter-spacing:0}
+.wrap_reserve .box_reserve_info th.frt,
+.wrap_reserve .box_reserve_info td.frt{border-top:1px solid #eee;}
+.wrap_reserve .box_reserve_info td.view{padding:5px 0 6px 20px;}
+.wrap_reserve .box_reserve_info td .btn_view{display:inline-block;margin-left:5px;height:26px;vertical-align:bottom;}
+.wrap_reserve .box_reserve_info td .btn_view .btn_arr span{padding:6px 0 0 10px;height:26px;}
+.bnr_onestop{display:block;overflow:hidden;width:620px;height:80px;padding-top:20px}
+
+/*친구좌석 찜하기-메시지보내기*/
+.wrap_message{padding:15px 0;}
+.box_message_info{padding-top:8px;padding-bottom:22px;text-align:center;line-height:30px;font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;}
+.box_message_info .txt_suc, .box_message_info .txt_mid{font-size:16px;color:#333;line-height:26px}
+.box_message{margin-top:0;}
+.box_message .box_inp_opt th, .box_message .box_inp_opt td{font-size:14px;}
+.box_message  .fri_name{font-size:14px;}
+.box_message .txtar{padding:10px;width: 468px;height:50px;font-size:14px;border:1px solid #dddddd;}
+.box_message .place_holder{color:#888;}
+.box_message .txt_more{padding:0;}
+
+/*공유하기 팝업*/
+.layerPop.lay_share  .la_header, .layerPop.lay_share  .la_header .la_header1{height:20px;}
+.layerPop.lay_share  .la_footer{width:100%;height:30px;padding:0 0 0 15px;background-position:0 -60px;}
+.layerPop.lay_share  .la_footer .la_footer1{width:100%;height:30px;padding:0 0 0 15px;background-position:right -60px;}
+.layerPop.lay_share  .la_middle{width:100%;padding:0 0 0 15px;background-position:0 0;}
+.layerPop.lay_share  .la_middle .la_middle1{width:100%;padding:0 0 0 15px;background-position:right 0;}
+.lay_share .head_sh{display:inline-block;}
+.lay_share .txt_sh{font-size:14px;color:#888;text-align:center;}
+.lay_share .box_share{position:relative;margin-top:30px;}
+.lay_share .box_share .inp_sh{width:370px;height:36px;border:1px solid #c3c3c3;padding:0 10px}
+.lay_share .box_share label{position:absolute;top: 9px;left: 12px;font-size: 14px;}
+.lay_share .box_share .btn_share{text-align:center;margin-top:25px; }
+.lay_share .box_share .btn_share .btSizeM{width:65px;height:36px;line-height:36px;}
+
+
+/*티켓 정보 영역*/
+.wrap_ticket_info .logo_onestop{padding-left:65px;height:22px}
+.wrap_ticket_info .box_info{padding-top:20px;}
+.wrap_ticket_info .box_info .select_tit.select_t{overflow:hidden;line-height:19px;max-height: 33px;margin-top:7px;margin-bottom:7px; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-wrap: break-word;font-weight:normal}
+.wrap_ticket_info .box_info .box_ticket{position:relative;width: 240px;border:1px solid #eeeeee;background-color: #fff;}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_list{margin: 10px 9px;font-size:13px;line-height: 20px;}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_list .nth{margin-left: 5px;}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_list .nth .txt_b{font-weight:bold;text-decoration:underline;}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_list .nth1{padding: 0 0 10px;border-bottom:1px solid #eeeeee;letter-spacing:0}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_list .nth2{padding-top:10px;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner{margin: 10px 14px;line-height: 20px;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner:after{content: ""; display: block;clear: both;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner.lst{margin-bottom: 16px;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .list_tkpay{line-height:24px;color:#888;padding-top:25px}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .tk_b{font-size:14px;color:#333333;}
+/*MELONUIT-577 190628*/
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .tk_tit{float: left;width:37%;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .pay{float: right;width:63%;text-align:right;letter-spacing:0;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .txt_vip{font-size:11px;color:#00b523;margin-right:3px;vertical-align:top;}
+/* //MELONUIT-577 190628*/
+.wrap_ticket_info .box_info .box_ticket .box_result{ margin:0;padding:15px;border-top:1px solid #eeeeee;font-weight: bold;}
+.wrap_ticket_info .box_info .box_ticket .box_result .tot_tit{font-size:14px;color:#333}
+.wrap_ticket_info .box_info .box_ticket .box_result .tot_pay{font-size: 22px;color:#00b523;}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_inner{padding:10px 15px;}
+.wrap_ticket_info .box_info .box_ticket .box_ticket_inner th{text-align:left; }
+.wrap_ticket_info .box_info .box_ticket .box_ticket_inner td{padding:8px 0;}
+.wrap_ticket_info .box_info_bm .box_info_list{padding:10px 0;}
+.wrap_ticket_info .box_info_bm .box_info_list .info_list li .btn_detail{vertical-align:top;}
+
+
+/*티켓정보영역 - 좌석 선택*/
+.wrap_ticket_info .box_info.box_map{padding-top:14px;}
+.wrap_ticket_info .box_map .map_seat{position:relative;width:245px;height:180px;background-color:#707070;}
+.wrap_ticket_info .box_map .map_seat .target{position:absolute;top:12px;left:42px;width:150px;height:150px;border:1px solid #f01717;}
+.wrap_ticket_info .box_map .view_seat{font-size:13px;color:#888888;padding-top:7px}
+.wrap_ticket_info .box_map .btn_view {margin-left:140px;height:20px;padding-bottom:1px;border-bottom:1px solid #888888;}
+.wrap_ticket_info .box_map .btn_view a:hover{text-decoration:none;}
+.wrap_ticket_info .box_map .view_seat .onbtn_arr{display:inline-block;width:6px;height:11px;margin-left:5px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop.png) no-repeat 0 -40px;background-size:100px auto;font-size:0;text-indent:-9999px;vertical-align: middle;}
+
+/*티켓정보영역-좌석등급/잔여석*/
+.wrap_ticket_info .wrap_seat_list{padding-top:25px;}
+.wrap_ticket_info .wrap_seat_list .seat_list{position:relative;}
+.wrap_ticket_info .wrap_seat_list .seat_list .select_tit .ico_info{overflow:hidden;display:inline-block;margin-left:4px;width:14px;height:14px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop.png) no-repeat -20px -40px;background-size:100px auto;text-indent:-9999px; vertical-align:middle;cursor: pointer;}
+.wrap_ticket_info .wrap_seat_list .seat_list .select_tit .btn_detail{margin-left:57px;}
+.wrap_ticket_info .wrap_seat_list .box_seat{width:240px;border: 1px solid #eeeeee;background-color: #fff;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner{margin: 8px 0;}
+
+.wrap_ticket_info .wrap_seat_list .box_seat_inner.box_seat_area{overflow-y:auto;margin:0 0 0 0;padding-top:9px;height:201px;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner.box_seat_area2{overflow-y:scroll;margin:0;height:110px;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .seat_area{border:1px solid red;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .list_seat li{display:inline;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner_inner .list_seat li .seat li{font-size:13px;font-weight:normal;line-height: 32px;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .list_seat li .seat .seat_name .seat_color{display:block;margin-right:7px;width:12px;height:12px;vertical-align:middle;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .list_seat li .seat .seat_name .seat_color.seat_vip{background-color:#6f68ae;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .tbl{width:100%}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner tr{ cursor:pointer;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner tr:hover{ background-color:#eee}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner tr.box_list_area:hover{background-color:#fff}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner td{font-size:13px;font-weight:normal;padding: 7px 0 6px;text-align:right;vertical-align:top;letter-spacing:0}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner td.seat_name{text-align:left;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner td.price{word-break: keep-all;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color{display:inline-block;/*width:12px;height:12px;margin:10px 7px 0 10px;*/vertical-align:top}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color em.seat_color{display:inline-block;width:12px;height:12px;margin:10px 4px 0 10px; text-indent: -9999px;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color.seat_vip{background-color:#6f68ae;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color.seat_color.seat_r{background-color:#ea794d;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color.seat_color.seat_sr{background-color:#5c93cc;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color.seat_color.seat_s{background-color:#f9d02c;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color.seat_color.seat_a{background-color:#a2d747;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner th.seat_color.seat_color.seat_b{background-color:#d15496;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner td.seat_remain{color:#00b523;padding-right:3px}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner td.area_info{overflow:hidden;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_onestop_arr2.png) no-repeat -5px -5px;text-indent:-9999px;font-size: 0;padding: 0;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner td.area_info.open{background-position:right -5px;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .box_list_area td{padding:0;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .box_list_area .list_area{display:none;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .box_list_area .list_area.listOn{display:block;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .box_list_area .list_area{color:#888888;text-align:left;line-height:20px;}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .box_list_area .list_area li{padding:0 10px 0 28px}
+.wrap_ticket_info .wrap_seat_list .box_seat_inner .box_list_area .list_area .ck{font-weight:bold;color:#000;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/seat_chk.png) no-repeat 10px 4px;}
+
+/*티켓정보영역-친구좌석찜하기*/
+.wrap_ticket_info .box_info .box_ticket.box_ticket_fri{height:112px;}
+.wrap_ticket_info .box_info .box_ticket.box_ticket_fri li{line-height:22px;letter-spacing:0}
+.wrap_ticket_info .box_info .box_ticket.box_ticket_fri .box_ticket_list{overflow: hidden;height: 88px;margin:15px 12px;}
+
+/*좌석 정보 레이어팝업*/
+.layer_ticket{z-index: 2;display:none;width: 165px;position:absolute;top: 90px;left: 73px;}
+.layer_ticket .layer_arr{position: absolute;top: 1px;right:78px; display:block;width:15px;height:10px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop.png) no-repeat;background-size:100px auto;background-position:-50px -20px;}
+.layer_ticket .tk_tit{display: inline-block;}
+.layer_ticket .tk_header,
+.layer_ticket .tk_header .tk_header1,
+.layer_ticket .tk_footer,
+.layer_ticket .tk_footer .tk_footer1{display:inline-block;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_popup.png) no-repeat;}
+.layer_ticket .tk_middle,
+.layer_ticket .tk_middle .tk_middle1{display:inline-block;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/bg_popup1.png) repeat-y;}
+.layer_ticket .tk_header{width:100%;height:18px;padding: 0 0 0 8px;background-position:0 0;}
+.layer_ticket .tk_header .tk_header1{width:100%;height:18px;padding: 0 0 0 2px;background-position:right 0;}
+.layer_ticket .tk_footer{width:100%;height: 20px;padding: 0 0 0 8px;background-position: 0px -40px;}
+.layer_ticket .tk_footer .tk_footer1{width:100%;height: 20px;padding: 0 0 0 2px;background-position: right -40px;}
+.layer_ticket .tk_middle{width:100%;padding: 0px 0 0 8px;background-position:0 0;}
+.layer_ticket .tk_middle .tk_middle1{width:100%;padding: 0px 0 0 2px;background-position:right 0;}
+.layer_ticket .tk_middle .tk_con{margin-left: 7px;}
+.layer_ticket .tk_middle .tk_con .list_ticket_info{color:#888;}
+
+/*유의사항 레이어팝업*/
+.layer_ticket .layer_ticket_inner.layer_info{width:234px;padding:12px 5px;font-size:12px;}
+
+
+/*멜론쇼핑 할인쿠폰 팝업*/
+.pop_cupon{position: absolute;bottom:0;left: 0;width:610px;height:100px;padding:12px 20px 12px 30px;background-color:#fafafa;}
+.pop_cupon:after{content: ""; display: block;clear: both;}
+.pop_cupon .cupon{float:left;width:211px;height:103px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/cupon_sale_back.png) no-repeat 0 0; text-align:center;font-family:AppleSDGothicNeo-Regular, '맑은 고딕','Malgun Gothic',sans-serif;}
+.pop_cupon .cupon span.tit{display:block;font-size:12px;height:21px;color:#333;padding-top:33px}
+.pop_cupon .cupon strong.type{display:block;font-size:26px;height:28px;color:#464646;padding-top:7px;font-weight:normal}
+.pop_cupon .cupon strong.type span{font-weight:bold;font-size:28px;}
+.pop_cupon .cupon_info{display:inline-block;float:left;margin-left:26px;line-height:31px;padding-top:3px;}
+.pop_cupon .cupon_info .btn_cupon{padding:0 18px;}
+.pop_cupon .cupon_info .txt_suc{color:#333;padding-bottom:3px}
+.pop_cupon .cupon_info .txt_mid{font-size:14px;color:#888;padding-bottom:11px}
+.pop_cupon .popClose{position:absolute;top:10px;right:10px;}
+.pop_cupon .popClose .bnt_layerpopup_close{display:inline-block;width:16px;height:16px;background:url(//cdnticket.melon.co.kr/resource/image/web/common/btn_layerpop_close.png) repeat-x 0 0;background-size:16px 16px;text-indent:-9999px;}
+
+/*추첨식예매 -상단*/
+.location_step .list_give{display:block;overflow:hidden;position:relative;height:50px;}
+.location_step .list_give .btn_menu{display:block;overflow:hidden;height:50px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop_tit2.jpg) no-repeat 0 0;font-size:0;}
+.location_step .list_give .btn_menu01{position:absolute;top:0;left:0;width:346px;background-position:0 0; }
+.location_step .list_give .btn_menu02{position:absolute;top:0;left:346px;width:336px;background-position:-346px 0; }
+.location_step .list_give .btn_menu01.on{background-position:0 -50px;}
+.location_step .list_give .btn_menu02.on{background-position:-346px -50px;}
+
+/*추첨식예매 - 배송,결제*/
+.txt_giveaway{display:block;margin:15px 0 -10px;font-size:13px;}
+.list_refund{position:relative;padding: 10px 0 0 6px;}
+.list_refund li.frt{padding-bottom:15px;}
+.list_refund label {display:block;line-height:18px;padding-right: 38px;}
+.list_refund label input, .list_refund label span {vertical-align: middle;}
+.list_refund .txt_lab {display:inline-block;font-size:14px;line-height:18px;color:#333;vertical-align: bottom;}
+.list_refund .lately_re {position:absolute;top:7px;left:118px;}
+.list_refund .lately_re select{padding-left:5px;border:1px solid #ddd;}
+.btn_refund{display:inline-block;width:68px;height:58px;line-height:58px;font-size:12px;}
+.box_inp_opt.opt_refund td{padding:4px 0;}
+
+/*친구좌석 찜하기*/
+.tit_friend{font-family:AppleSDGothicNeo-Regular, "맑은 고딕","Malgun Gothic",sans-serif;font-size:28px;color:#000;margin-bottom:35px;}
+.wrap_count{position:relative;padding:14px 0;border-top:1px solid #ddd;}
+.wrap_count .box_count{padding-left:104px;}
+.wrap_count .box_count .count_date{width:460px;font-family:AppleSDGothicNeo-Regular, "맑은 고딕","Malgun Gothic",sans-serif;font-size:18px;letter-spacing:0;text-align:right;}
+.wrap_count .box_count .count_date span.n{display:inline-block;width:35px;height:40px;margin-right:6px;color:#fff;background-color:#41d26b;text-align:center;line-height:40px;}
+.wrap_count .box_count .count_date span.num1{margin-left:12px;}
+.wrap_count .box_count .count_date span.num2{margin-left:20px;}
+.wrap_count .box_count .count_date.count_txt{height: 40px;color:#41d26b;line-height:40px;}
+.wrap_count .box_btn{position:absolute;top:10px;right:15px;text-align:right;}
+.wrap_count .box_btn .btColorGreen {width:295px;color:#fff;}
+.wrap_onestop{width:1008px;border-top:1px solid #ddd;}
+.wrap_onestop .wrap_select{width:680px;}
+.wrap_onestop .wrap_select .wrap_seat{height:624px;}
+
+.wrap_onestop .wrap_ticket_info{width:288px;padding:0 20px;}
+.wrap_onestop .wrap_ticket_info .box_friend{margin-top:25px;}
+.wrap_onestop .wrap_ticket_info .box_friend .tit_fri{margin-bottom:8px;font-size:16px;color:#000;}
+.wrap_onestop .wrap_ticket_info .box_friend .message{height:60px;padding:10px;font-size:14px;border:1px solid #eee;background-color:#fff;}
+.wrap_onestop .wrap_ticket_info .box_friend th{font-size:14px;text-align:left;}
+.wrap_onestop .wrap_ticket_info .box_friend th.txt_top{padding-top:7px;vertical-align:top;}
+.wrap_onestop .wrap_ticket_info .box_friend td{font-size:14px;padding:7px 0;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns {height:28px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns li{display:inline-block;margin-left: -5px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns li.frt a{border-right:0;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns a{border:1px solid #ccc;background-color:#fff;line-height: 27px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .txt{font-size:12px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .tw.twt {display:inline-block;width:63px;height: 27px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .tw.twt .ico {display: inline-block;width: 20px;height: 15px;background:url(//cdnticket.melon.co.kr/resource/image/web/common/ico_process.png) no-repeat -82px -44px;text-indent:-9999px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .fw.fb {display:inline-block;width: 73px;height: 27px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .fw.fb .ico {display:inline-block;width: 18px;height: 14px;background:url(//cdnticket.melon.co.kr/resource/image/web/common/ico_process.png) no-repeat -82px -6px;text-indent:-9999px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .url.urlshare {display:inline-block;width: 60px;height: 27px;}
+.wrap_onestop .wrap_ticket_info .box_friend .link_sns .url.urlshare .ico{display: inline-block;width: 28px;height: 17px;background:url(//cdnticket.melon.co.kr/resource/image/web/common/ico_process.png) no-repeat -80px -80px;text-indent: -9999px;}
+
+
+/*취소 수수료 상세보기*/
+/* UX-466 / 2017-07-11 */
+.floating_hover_box{display: none; position:absolute; width:440px; right:-8px; bottom: 22px;z-index:99;} /* 20211214 FTTICKET-275 추가 */
+.floating_hover_box strong{display:block; font-weight:normal; font-size:16px; line-height:100%; padding: 0 21px 14px; border-left: 1px solid #ccc; border-right: 1px solid #ccc; color:#333; background-color: #fff;}
+.floating_hover_box .tabling{padding: 0 21px; border-left: 1px solid #ccc; border-right: 1px solid #ccc; line-height:normal; background-color: #fff;}
+.floating_hover_box table{width:100%;border-collapse: collapse; border: 1px solid #eee;}
+.floating_hover_box table th{background:#fafafa;padding:9px 0; line-height:100%; text-align:center;font-weight:normal}
+.floating_hover_box table td{padding: 6px 0;line-height:100%; text-align:center;color:#888}
+.floating_hover_box .bg_top {display: block; width: 100%; height: 20px; background:url(//cdnticket.melon.co.kr/resource/image/web/common/bg_floating_box.png) no-repeat 0 0;}
+.floating_hover_box .bg_bottom {display: block; width: 100%; height: 20px; background:url(//cdnticket.melon.co.kr/resource/image/web/common/bg_floating_box.png) no-repeat 0 bottom;}
+/* //UX-466 / 2017-07-11 */
+
+/* 좌석 변경 2016.02.04 */
+.wrap_ticket_info .wrap_seatchange_list{padding-top:40px;}
+.wrap_ticket_info .wrap_seatchange_list .box_seat{width:240px;border: 1px solid #eeeeee;background-color: #fff;}
+.wrap_ticket_info .wrap_seatchange_list .box_seat_inner{margin: 8px 7px;}
+.wrap_ticket_info .wrap_seatchange_list .box_seat_inner.box_seat_area2{overflow-y:auto;margin:0;height:110px;}
+.wrap_ticket_info .wrap_seatchange_list .box_seat_inner.box_seat_area2 .seat_info{margin: 4px 0}
+.box_seat h4{color:#333;background: #fafafa;padding:6px 10px;font-weight: normal;}
+.box_seat h4 strong{color: #00b523}
+.box_seat .seat_info li{padding:2px 10px;color:#666;letter-spacing:0}
+.box_seat .seat_info li:hover{background-color:#eee}
+.btn_onestop .button.btchange{border: 1px solid #41d26b;background: #41d26b;}
+.btn_onestop .button.btchange:hover{border: 1px solid #00b523;background: #00b523;}
+.btn_onestop .button.btchange a{color:#fff;}
+
+/* 좌석 위치확인 2016.02.05 */
+.wrap_ticket_info .wrap_seatchange_list .box_seat_inner.box_seat_area3{overflow-y:scroll;margin:0;height:240px;}
+.wrap_ticket_info .wrap_seatchange_list .box_seat_inner.box_seat_area3 .seat_info{margin: 4px 0}
+.tit_seatNum{color: #00b523}
+.seat_info li a{line-height:13px}
+
+.seat_info em.seat_color{display:inline-block;width:12px;height:12px;margin:7px 7px 0 5px; text-indent: -9999px}
+.seat_info .seat_color.seat_vip{background-color:#6f68ae;}
+.seat_info .seat_color.seat_r{background-color:#ea794d;}
+.seat_info .seat_color.seat_sr{background-color:#5c93cc;}
+.seat_info .seat_color.seat_s{background-color:#f9d02c;}
+.seat_info .seat_color.seat_a{background-color:#a2d747;}
+.seat_info .seat_color.seat_b{background-color:#d15496;}
+
+.btn_onestop .button.btclose{}
+.btn_onestop .button.btclose a{color:#333;border: 1px solid #cccccc;background: #fff;}
+.btn_onestop .button.btclose a:hover{color:#000;border: 1px solid #666;}
+
+.btn_extension{position:absolute;right:15px;top:15px;z-index:99}
+.btn_extension a{display:block;width:22px;height:22px;}
+.btn_extension a.btn_plus{background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop.png) no-repeat -77px -1px;text-indent: -9999px;}
+.btn_extension a.btn_minus{background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/btn_onestop.png) no-repeat -77px -26px;text-indent: -9999px;margin-top:8px}
+
+/* 20160315 추가 */
+.wrap_reserve .box_reserve .address, .wrap_reserve .box_reserve .payment{font-size:13px;color:#666;padding:2px 0 3px}
+.wrap_reserve .box_reserve .address p, .wrap_reserve .box_reserve .payment p{padding-top:3px}
+.box_inp_opt th .require{color:#f0780a;font-size:16px;padding-left:4px}
+
+/* 로딩바 */
+.loding_sec{position:absolute;top:0;left:0;width:950px;height:650px;}
+.loding_sec .loding_text{position:relative;z-index:10;text-align:center;padding:263px 270px 0 0}
+.loding_sec .loding_text p.txt{color:#333;font-size:18px;font-family:AppleSDGothicNeo-Regular, "맑은 고딕","Malgun Gothic",sans-serif;padding-top:29px}
+.loding_sec .loding_back{position:absolute;top:0;left:0;background-color:#fafafa;width:950px;height:650px;opacity:0.5; filter:alpha(opacity=50);}
+
+.layer_personal_info .box_card{font-size:14px; color:#888; line-height:24px; letter-spacing: -0.6px;text-align:center;padding:0 30px 25px 0;}
+.layer_personal_info .box_card p{padding-bottom:5px}
+
+.reserve_txt{font-size:13px;color:#666;padding:2px 0 3px 0; line-height:16px}
+
+.btn_flexible_ico2{background-position:left -860px;padding-left:7px}
+.btn_flexible_ico2 span{background-position:right -860px;padding-right:8px}
+.list_coupon_t .box_gray{margin-top:0px;}
+
+/* 결제대행 서비스 표준이용약관 */
+/* MELONUIT-887 */
+.box_personal{position:relative}
+.tab_list {}
+.tab_list .tit {position:absolute;top:22px;height:40px; width: 190px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;}
+.tab_list .tit a {display:block;width:191px;height:40px;font-weight:normal;font-size:14px;color:#888;line-height:40px;text-align:center;}
+.tab_list .tit a:hover {text-decoration:none;color:#000}
+.tab_list .on .tit {}
+.tab_list .on .tit a {position: relative; top: -1px; left: -1px; width: 187px; padding-left: 2px; border: 1px solid #666; border-radius: 30px; color:#333;}
+.tab_list .box_cont {display:none;margin-top:72px;}
+.tab_list .on .box_cont {display:block;padding-right:13px;overflow-x: hidden;overflow-y: auto;max-height: 300px;font-size:13px;line-height:18px;}
+.tab_list .on .box_cont iframe {width: 100%; height: 290px;}
+.tab_list .tab_nth1 .tit {left:0; border-left: 1px solid #ccc; border-radius: 30px 0 0 30px;}
+.tab_list .tab_nth2 .tit {left:191px; width: 191px;}
+.tab_list .tab_nth3 .tit {left:382px; width: 189px; border-right: 1px solid #ccc; border-radius: 0 30px 30px 0;}
+/* //MELONUIT-887 */
+
+/* 하이패스예매 */
+.highpass_wrap{position:relative;text-align:center;padding:33px 0;font-family:AppleSDGothicNeo-Regular, "맑은 고딕","Malgun Gothic",sans-serif;}
+.highpass_wrap h4, .highpass_wrap2 h4{display:none}
+.highpass_wrap .highpass_txt{font-size:18px;color:#333;letter-spacing:-2px;padding-bottom:4px;}
+.highpass_wrap .limit_time{font-size:26px;color:#00b523;letter-spacing:-2px;padding-bottom:3px;}
+.highpass_wrap .highpass_date_time{font-size:16px;color:#999;display:block;padding-bottom:13px;}
+.highpass_wrap .highpass_txt2{font-size:14px;color:#717171;font-family:AppleSDGothicNeo-Regular, "돋움",Dotum;display:block;padding-top:20px;}
+.highpass_wrap .highpass_txt2 span{color:#f0780a}
+.highpass_wrap2{position:relative;text-align:center;padding:5px 0 40px;font-family:AppleSDGothicNeo-Regular, "맑은 고딕","Malgun Gothic",sans-serif;}
+.highpass_wrap2  .limit_time2, .highpass_wrap3  .limit_time2{height:40px;line-height:40px;font-weight:bold;font-size:18px;color:#333;}
+.highpass_wrap2  .limit_time2 .time, .highpass_wrap3  .limit_time2 .time{display:inline-block;width:76px;height:40px;color:#fff;font-weight:normal;letter-spacing:32px;text-indent:12px;margin:0 8px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/img_highpass_time.png) no-repeat 0 0;}
+.highpass_wrap2 .highpass_date_time2{font-size:16px;color:#333;display:block;padding-top:7px;}
+.highpass_wrap3{position:relative;text-align:center;padding:2px 0 17px;font-family:AppleSDGothicNeo-Regular, "맑은 고딕","Malgun Gothic",sans-serif;}
+.highpass_wrap3 h4{color:#00b523;font-size:30px;font-weight:normal;padding-bottom:13px}
+.highpass_wrap3 .highpass_date_time2{font-size:16px;color:#333;display:block;padding-top:7px;}
+.highpass_wrap3 .highpass_txt{font-size:18px;line-height:28px;color:#666;letter-spacing:-2px;padding-top:19px;}
+.highpass_wrap3 .highpass_txt span{color:#f0780a}
+
+/* 입력박스 공통 */
+.inp_txt{border: 1px solid #ddd;}
+
+/* 라디오버튼, 체크박스 디자인 */
+.box_coupon_more .box_coupon td.coupon .radio,
+.list_receipt_how .radio,
+.tit_receipt .box_check .checkbox{margin-top:-3px}
+.box_receipt .box_agree .list_agree .txt_lab{padding-left:2px}
+
+/* 20160623 배송료 추가 */
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .charge{font-size:14px;color:#333333;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .charge .tk_tit{float: left;width:30%;}
+.wrap_ticket_info .box_info .box_ticket .box_total_inner .charge .pay{float: right;letter-spacing: 0;font-size:12px}
+dl.bankbook_tip{border-top:1px solid #ddd;position:relative;padding-top:19px}
+dl.bankbook_tip dt{position:absolute;top:20px;background:url(//cdnticket.melon.co.kr/resource/image/web/common/icon_bankbook_tip.png) no-repeat 0 0;width:33px;height:16px;text-indent:-9999px}
+dl.bankbook_tip dd{font-size:12px;color:#666;line-height:20px;padding-left:47px;letter-spacing:-1px;}
+
+/* 20160628 우측 타이틀 수정 */
+.wrap_ticket_info .select_tit{font-weight:normal}
+
+/* 우측 미니맵 확대 축소 버튼 */
+.wrap_ticket_info .box_info.box_map{position:relative;}
+.wrap_ticket_info .box_info.box_map .map_btn{position:absolute;top:22px;right:9px;z-index:999}
+.wrap_ticket_info .box_info.box_map .map_btn a{display:inline-block;float:left;height:18px;background:url(//cdnticket.melon.co.kr/resource/image/web/onestop/map_btn.png) no-repeat 0 0;text-indent:-9999px}
+.wrap_ticket_info .box_info.box_map .map_btn a.btn_plus{width:21px;background-position:0 0}
+.wrap_ticket_info .box_info.box_map .map_btn a.btn_plus:hover{background-position:0 -18px}
+.wrap_ticket_info .box_info.box_map .map_btn a.btn_minus{width:20px;background-position:-21px 0}
+.wrap_ticket_info .box_info.box_map .map_btn a.btn_minus:hover{background-position:-21px -18px}
+
+/* 20161025 공연예매권 추가 사항 */
+.coupn_select{padding:2px 0 10px}
+.coupn_select .select_sec{display:inline-block;}
+.coupn_select .select_sec .radio{vertical-align:-4px}
+.coupn_select label{padding-right:127px;padding-left:6px}
+
+/* 예매자 부가정보 */
+.box_gray2{width:580px;margin-top:10px;padding:12px 20px 7px;background-color:#fafafa;line-height:30px;overflow:hidden}
+.box_gray2 h4{font-size:14px;color:#333;padding-bottom:9px}
+.box_gray2 input{height:22px;width:248px;padding:0 10px;vertical-align: top;} /* FTTICKET-278 : 220127 */
+.box_gray2 ul{margin-left:-40px}
+.box_gray2 ul li{float:left;margin-left:40px;padding-bottom:13px;width:270px;height: 58px;} /* FTTICKET-278 : 220127 */
+.box_gray2 ul li label{display:block;color:#888;line-height:22px}
+.box_gray2 ul li .require{color:#f0780a;font-size:16px;padding-left:4px;}
+.wrap_reserve .box_reserve_info ul li{color:#333;line-height:22px;position:relative;padding-left:10px}
+.wrap_reserve .box_reserve_info ul li:before{content:"";display:block;clear:both;position:absolute;left:0px;top:9px;height:2px;width:2px;background:url(//cdnticket.melon.co.kr/resource/image/web/common/blit_3x3.png) no-repeat 0 0;}
+
+
+/* FTTICKET-278 : 팬클럽 부가정보 입력 개선 - 220111  */
+.box_gray2 ul:after{content: ""; display: block; clear: both;}
+.list-title{display: block; color: #888; line-height: 22px; padding-bottom: 2px;} /* FTTICKET-278 : 220127 */
+.list-birth .sel_cate.birth-yy{width: 80px; margin-right: 10px;}
+.list-birth .sel_cate.birth-mm{width: 60px; margin-right: 10px;}
+.list-birth .sel_cate.birth-dd{width: 60px;}
+.box-radio{display: inline-block; height: 22px; line-height: 22px; margin-right: 10px; vertical-align: top;} /* FTTICKET-278 : 220127 */
+.box-radio input{width: auto; display: inline-block;}
+.box-radio .label-radio{display: inline-block;}
+.list-nation .wrap_sel .btn_sel .sel_cate{width: 207px;}
+.list-number .box-input:after{content: ""; display: block; clear: both;}
+.list-number .box-input .wrap_sel{float: left;}
+.list-number .box-input .wrap_sel .btn_sel{line-height: 22px; vertical-align: top;}
+.list-number .box-input .wrap_sel .sel_cate{width: 80px; margin-right: 5px;}
+.list-number .box-input .inp_txt{float: left; width: 100px;}
+.list-email .inp_txt{width: 100px;}
+.list-email .atsign{display: inline-block; margin: 0 6px; line-height: 22px; height: 22px; vertical-align: top;} /* FTTICKET-278 : 220127 */
+.box-notice{margin-top:20px; padding: 30px 0; border-top: 1px solid #ddd;}
+.box-notice .box-notice-title{line-height: 22px; font-weight: bold;}
+.box-notice .box-notice-list li{float: none; width: 100%;height:auto; line-height: 22px; padding-bottom: 0;} /* FTTICKET-278 : 220203 */
+.box-notice .tit_check{padding-top: 20px;}
+.box-notice .tit_check:after{content: ""; display: block; clear: both;}
+.box-notice .tit_check .checkbox{vertical-align: top;}
+.box-notice .tit_check .txt_lab{display: inline-block; width:90%; line-height: 22px; padding-left: 5px; margin-top: -2px; color: #222; font-weight: bold; vertical-align: top;}
+/* //FTTICKET-278 : 팬클럽 부가정보 입력 개선 - 220111  */
+
+/* s : FTTICKET-446 결제수단 ui 변경 / 기존 FTTICKET-436 내용 삭제*/
+.box_payment .list_variant {
+  font-size: 0;
+}
+.box_payment .list_variant li {
+  width: 173px;
+  height: 47px;
+  margin-right: 10px;
+  text-align: center;
+  box-sizing: border-box;
+}
+.box_payment .list_variant :is(li:nth-of-type(1), li:nth-of-type(2)) {
+  width: 265px;
+  margin-bottom: 10px;
+}
+.box_payment .list_variant li:nth-of-type(2) {
+  margin-right: 0;
+}
+.box_payment .list_variant input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.box_payment .list_variant label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 47px;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+  box-sizing: border-box;
+}
+.box_payment .list_variant input[type="radio"]:checked + label {
+  border: 1.5px solid #00cd3c;
+  background: #effff4;
+}
+.box_payment .list_variant input[type="radio"]:disabled + label{
+  border: 1px solid #EAEAEA;
+  cursor: not-allowed;
+  pointer-events: none
+}
+.box_payment .list_variant input[type="radio"]:disabled + label .txt_lab{
+  color: #B7B7B7;
+}
+.box_payment .list_variant .txt_lab {
+  margin: 2px 0 0 0;
+  font-weight: 700;
+  line-height: 17px;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.box_payment .list_variant .icon_kakaopay {
+  display: inline-block; 
+  width: 42px; 
+  height: 17px; 
+  margin: 0 6px 0 0;
+  background: url('//cdnticket.melon.co.kr/resource/image/mobile/common/payment_icon_yellow_large 1@2x.png') 0 0 / 42px auto no-repeat; 
+  vertical-align: top;
+}
+/* e : FTTICKET-446 결제수단 ui 변경 */

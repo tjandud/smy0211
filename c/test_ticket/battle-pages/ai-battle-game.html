@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 대결 - 티켓팅 배틀 | TicketPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background: #0a0f1e;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 파티클 배경 */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at top left, rgba(39, 215, 184, 0.1), transparent),
+                        radial-gradient(ellipse at bottom right, rgba(255, 107, 107, 0.1), transparent);
+            z-index: -3;
+            pointer-events: none;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.02), transparent, rgba(255, 255, 255, 0.02));
+            background-size: 300% 300%;
+            animation: moveGradient 15s ease infinite;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #particles {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* 배틀 헤더 */
+        .battle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+            border-radius: 16px;
+            margin-bottom: 15px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .battle-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .difficulty-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .difficulty-badge.easy { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .difficulty-badge.normal { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+        .difficulty-badge.hard { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .battle-timer {
+            font-size: 1.8rem;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        /* 메인 배틀 영역 */
+        .battle-arena {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* 플레이어 카드 */
+        .player-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 15px;
+            position: relative;
+        }
+
+        .player-card.user {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+        }
+
+        .player-card.ai {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+        }
+
+        .player-card.winning {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
+            border-color: rgba(34, 197, 94, 0.6);
+        }
+
+        .player-label {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .player-card.user .player-label {
+            color: #60a5fa;
+            border: 2px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .player-card.ai .player-label {
+            color: #f87171;
+            border: 2px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            margin-top: 5px;
+        }
+
+        .player-avatar {
+            font-size: 2rem;
+        }
+
+        .player-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .player-desc {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 프로그레스 바 */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+
+        .player-card.user .progress-bar {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .player-card.ai .progress-bar {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .step-info {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+        }
+
+        /* AI 행동 로그 */
+        .ai-action-log {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+
+        .ai-action {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-action:last-child {
+            border-bottom: none;
+        }
+
+        .ai-action .judgment {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .ai-action .judgment.PERFECT { background: #ffd700; color: #000; }
+        .ai-action .judgment.GREAT { background: #22c55e; color: #fff; }
+        .ai-action .judgment.GOOD { background: #3b82f6; color: #fff; }
+        .ai-action .judgment.BAD { background: #f97316; color: #fff; }
+        .ai-action .judgment.MISS { background: #ef4444; color: #fff; }
+
+        /* 게임 영역 */
+        .game-area {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .step-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 접속 대기 게임 - 새 스타일 */
+        .connection-game {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+        }
+
+        /* 서버 시간 표시 */
+        .server-time-display {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .server-time-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .server-time {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        /* 카운트다운 게이지 */
+        .countdown-gauge-container {
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .countdown-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.75rem;
+        }
+
+        .start-label { color: #4ade80; font-weight: 600; }
+        .end-label { color: #f87171; font-weight: 600; }
+
+        .countdown-gauge {
+            height: 25px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .countdown-gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e, #eab308, #f97316, #ef4444);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        .countdown-time {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 접속 버튼 */
+        .connection-btn {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .connection-btn.waiting {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            cursor: not-allowed;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        }
+
+        .connection-btn.ready {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5);
+            animation: ready-pulse 0.5s ease infinite;
+        }
+
+        .connection-btn.ready:hover {
+            transform: scale(1.05);
+        }
+
+        .connection-btn.success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .connection-btn.fail {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes ready-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5); }
+            50% { transform: scale(1.03); box-shadow: 0 12px 40px rgba(236, 72, 153, 0.7); }
+        }
+
+        /* 로그 컨테이너 */
+        .connection-log-container {
+            width: 100%;
+            max-width: 350px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .connection-log-title {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .connection-log-list {
+            max-height: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .connection-log-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .connection-log-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .connection-log-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        .connection-log-item {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-log-item:last-child {
+            border-bottom: none;
+        }
+
+        .connection-log-item.success {
+            color: #4ade80;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .connection-log-item.fail {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .connection-log-item.info {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .connection-log-item.warning {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .connection-log-item .log-time {
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+        }
+
+        /* 진행 상황 */
+        .connection-progress-info {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 20px;
+        }
+
+        .connection-progress-info span {
+            color: #a78bfa;
+            font-weight: 700;
+        }
+
+        /* 대기열 게임 */
+        .queue-game {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .queue-display {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .queue-progress {
+            width: 100%;
+            max-width: 400px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .queue-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            transition: width 0.2s ease;
+            border-radius: 15px;
+        }
+
+        .queue-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .queue-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.05s ease;
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .queue-btn:active {
+            transform: scale(0.95);
+        }
+
+        .click-streak {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .click-streak.high {
+            color: #ffd700;
+            animation: streak-pulse 0.3s ease;
+        }
+
+        @keyframes streak-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 장애물 팝업 */
+        .obstacle-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #ef4444;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            z-index: 1000;
+            animation: obstacle-appear 0.3s ease;
+        }
+
+        @keyframes obstacle-appear {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .obstacle-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .obstacle-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #f87171;
+        }
+
+        .obstacle-message {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .obstacle-btn {
+            padding: 12px 30px;
+            background: #ef4444;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 캡차 게임 */
+        .captcha-game {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .captcha-timer {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .captcha-timer.warning {
+            color: #ef4444;
+            animation: timer-pulse 0.5s ease infinite;
+        }
+
+        @keyframes timer-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .captcha-canvas {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: #1a1a2e;
+        }
+
+        .captcha-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .captcha-input {
+            padding: 15px 25px;
+            font-size: 1.5rem;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            letter-spacing: 5px;
+            width: 250px;
+        }
+
+        .captcha-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .captcha-submit {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .captcha-refresh {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* 좌석 선택 */
+        .seat-game {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .seat-instruction {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .seat-click-counter {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .seat {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.6rem;
+            font-weight: 600;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .seat.available {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .seat.available:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .seat.sold {
+            background: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .seat.target {
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+            animation: seat-target 0.3s ease infinite;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes seat-target {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .seat.selected {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .seat.just-sold {
+            animation: seat-sold 0.5s ease;
+        }
+
+        @keyframes seat-sold {
+            0% { background: #22c55e; transform: scale(1); }
+            50% { background: #ef4444; transform: scale(1.2); }
+            100% { background: #374151; transform: scale(1); }
+        }
+
+        .stage-label {
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* 결제 게임 */
+        .payment-game {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            min-width: 350px;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #ffd700;
+        }
+
+        .payment-btn {
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        /* 특수 이벤트 오버레이 */
+        .event-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: overlay-appear 0.3s ease;
+        }
+
+        .event-content {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .event-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: event-bounce 0.5s ease infinite;
+        }
+
+        @keyframes event-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .event-message {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .event-progress {
+            width: 300px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px auto;
+        }
+
+        .event-progress-bar {
+            height: 100%;
+            background: #ffd700;
+            animation: event-loading 2s linear forwards;
+        }
+
+        @keyframes event-loading {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        .event-action-hint {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
+        }
+
+        /* 결과 모달 */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .result-content {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+            border-radius: 24px;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .result-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .result-title.win {
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .result-title.lose {
+            color: #ef4444;
+        }
+
+        .result-time {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .result-stat {
+            text-align: center;
+        }
+
+        .result-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .result-stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .result-btn {
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .result-btn.primary {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+        }
+
+        .result-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* 단계 표시 바 */
+        .step-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .step-indicator.active {
+            opacity: 1;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.3));
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+
+        .step-indicator.completed {
+            opacity: 1;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1200px) {
+            .battle-arena {
+                grid-template-columns: 1fr;
+            }
+
+            .player-card {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 파티클 배경 -->
+    <div class="bg-gradient"></div>
+    <canvas id="particles"></canvas>
+
+    <div class="container">
+        <!-- 배틀 헤더 -->
+        <div class="battle-header">
+            <div class="battle-title">
+                <span>⚔️ AI 대결</span>
+                <span class="difficulty-badge" id="difficultyBadge">보통</span>
+            </div>
+            <div class="battle-timer" id="battleTimer">00:00.000</div>
+            <button onclick="location.href='ai-select.html'" style="background: rgba(255,255,255,0.1); border: none; padding: 8px 16px; border-radius: 8px; color: white; cursor: pointer;">
+                ✕ 나가기
+            </button>
+        </div>
+
+        <!-- 단계 표시 -->
+        <div class="step-indicators">
+            <div class="step-indicator" data-step="1">🌐 접속대기</div>
+            <div class="step-indicator" data-step="2">👥 대기열</div>
+            <div class="step-indicator" data-step="3">🔒 보안문자</div>
+            <div class="step-indicator" data-step="4">💺 좌석선택</div>
+            <div class="step-indicator" data-step="5">💳 결제</div>
+        </div>
+
+        <!-- 메인 배틀 영역 -->
+        <div class="battle-arena">
+            <!-- 유저 카드 -->
+            <div class="player-card user">
+                <div class="player-label">YOU</div>
+                <div class="player-info">
+                    <div class="player-avatar">😎</div>
+                    <div>
+                        <div class="player-name">플레이어</div>
+                        <div class="player-desc">도전자</div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="userProgress" style="width: 0%"></div>
+                </div>
+                <div class="step-info" id="userStepInfo">준비 중...</div>
+            </div>
+
+            <!-- 게임 영역 -->
+            <div class="game-area" id="gameArea">
+                <div class="step-header">
+                    <div class="step-title" id="stepTitle">🎮 게임 준비</div>
+                    <div class="step-subtitle" id="stepSubtitle">곧 시작됩니다...</div>
+                </div>
+                <div id="gameContent">
+                    <!-- 동적 게임 컨텐츠 -->
+                </div>
+            </div>
+
+            <!-- AI 카드 -->
+            <div class="player-card ai">
+                <div class="player-label">AI</div>
+                <div class="player-info">
+                    <div class="player-avatar" id="aiAvatar">🤖</div>
+                    <div>
+                        <div class="player-name" id="aiName">AI 상대</div>
+                        <div class="player-desc" id="aiDesc">도전자</div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="aiProgress" style="width: 0%"></div>
+                </div>
+                <div class="step-info" id="aiStepInfo">준비 중...</div>
+                <div class="ai-action-log" id="aiActionLog">
+                    <div style="color: rgba(255,255,255,0.5); text-align: center;">AI 행동 로그</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 특수 이벤트 오버레이 -->
+    <div class="event-overlay" id="eventOverlay" style="display: none;">
+        <div class="event-content">
+            <div class="event-icon" id="eventIcon">🌐</div>
+            <div class="event-message" id="eventMessage">이벤트 발생!</div>
+            <div class="event-progress" id="eventProgress">
+                <div class="event-progress-bar"></div>
+            </div>
+            <div class="event-action-hint" id="eventHint"></div>
+        </div>
+    </div>
+
+    <!-- 장애물 팝업 -->
+    <div class="obstacle-popup" id="obstaclePopup" style="display: none;">
+        <div class="obstacle-icon" id="obstacleIcon">📢</div>
+        <div class="obstacle-title" id="obstacleTitle">장애물!</div>
+        <div class="obstacle-message" id="obstacleMessage">메시지</div>
+        <button class="obstacle-btn" id="obstacleBtn">확인</button>
+    </div>
+
+    <!-- 결과 모달 -->
+    <div class="result-modal" id="resultModal" style="display: none;">
+        <div class="result-content">
+            <div class="result-title" id="resultTitle">승리!</div>
+            <div class="result-time" id="resultTime">00:00.000</div>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultCombo">0</div>
+                    <div class="result-stat-label">총 클릭</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultAccuracy">0%</div>
+                    <div class="result-stat-label">완료율</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultSeat">-</div>
+                    <div class="result-stat-label">선택 좌석</div>
+                </div>
+            </div>
+            <div class="result-buttons">
+                <button class="result-btn primary" onclick="location.reload()">다시 도전</button>
+                <button class="result-btn secondary" onclick="location.href='ai-select.html'">AI 선택</button>
+                <button class="result-btn secondary" id="saveRecordBtn">기록 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/battle-game-engine.js"></script>
+    <script>
+        // 게임 설정 로드
+        const aiProfile = sessionStorage.getItem('ai_battle_profile') || 'normal';
+        const difficulty = sessionStorage.getItem('ai_battle_difficulty') || 'normal';
+
+        const AI_PROFILES = {
+            casual: { name: '캐주얼 AI', avatar: '🤖', desc: '느긋한 초보자' },
+            normal: { name: '일반 AI', avatar: '🦾', desc: '평균적인 실력' },
+            pro: { name: '프로 AI', avatar: '🎯', desc: '빠른 반응속도' },
+            master: { name: '마스터 AI', avatar: '👑', desc: '최고의 티켓팅러' }
+        };
+
+        const DIFFICULTY_NAMES = {
+            easy: '쉬움',
+            normal: '보통',
+            hard: '어려움'
+        };
+
+        const STEP_NAMES = {
+            connection: '🌐 접속 대기',
+            queue: '👥 대기열 통과',
+            captcha: '🔒 보안문자 입력',
+            seat_select: '💺 좌석 선택',
+            payment: '💳 결제 확인'
+        };
+
+        // UI 초기화
+        const profile = AI_PROFILES[aiProfile] || AI_PROFILES.normal;
+        document.getElementById('aiAvatar').textContent = profile.avatar;
+        document.getElementById('aiName').textContent = profile.name;
+        document.getElementById('aiDesc').textContent = profile.desc;
+        document.getElementById('difficultyBadge').textContent = DIFFICULTY_NAMES[difficulty];
+        document.getElementById('difficultyBadge').className = `difficulty-badge ${difficulty}`;
+
+        // 게임 변수
+        let gameEngine = null;
+        let aiSimulator = null;
+        let captchaRenderer = null;
+        let startTime = null;
+        let timerInterval = null;
+        let myFinishTime = null;
+        let aiFinishTime = null;
+        let gameEnded = false;
+
+        // 게임 시작
+        function initGame() {
+            // 유저 게임 엔진
+            gameEngine = new BattleGameEngine({
+                difficulty: difficulty,
+                onStepChange: handleStepChange,
+                onProgress: handleProgress,
+                onComplete: handleComplete,
+                onSeatUpdate: handleSeatUpdate,
+                onConnectionUpdate: handleConnectionUpdate,
+                onSpecialEvent: handleSpecialEvent,
+                onQueueObstacle: handleQueueObstacle
+            });
+
+            // AI 시뮬레이터
+            aiSimulator = new AIBattleSimulator({
+                difficulty: difficulty,
+                profile: aiProfile,
+                onAction: handleAIAction,
+                onProgress: handleAIProgress,
+                onComplete: handleAIComplete,
+                onStepChange: handleAIStepChange
+            });
+
+            // 타이머 시작
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 10);
+
+            // 게임 시작
+            setTimeout(() => {
+                gameEngine.start();
+                aiSimulator.start();
+            }, 1000);
+        }
+
+        // 타이머 업데이트
+        function updateTimer() {
+            if (!startTime) return;
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const ms = elapsed % 1000;
+            document.getElementById('battleTimer').textContent =
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+        }
+
+        // 단계 변경 처리
+        function handleStepChange(step, stepIndex) {
+            // 단계 표시기 업데이트
+            document.querySelectorAll('.step-indicator').forEach((el, i) => {
+                el.classList.remove('active', 'completed');
+                if (i + 1 < stepIndex) el.classList.add('completed');
+                else if (i + 1 === stepIndex) el.classList.add('active');
+            });
+
+            document.getElementById('userStepInfo').textContent = STEP_NAMES[step] || step;
+
+            // 게임 컨텐츠 렌더링
+            renderGameStep(step);
+        }
+
+        // 게임 단계별 UI 렌더링
+        function renderGameStep(step) {
+            const content = document.getElementById('gameContent');
+            const title = document.getElementById('stepTitle');
+            const subtitle = document.getElementById('stepSubtitle');
+
+            switch(step) {
+                case 'connection':
+                    title.textContent = '🌐 서버 접속 대기';
+                    subtitle.textContent = '5초마다 버튼이 활성화됩니다. 정확한 타이밍에 클릭하세요!';
+                    content.innerHTML = `
+                        <div class="connection-game">
+                            <!-- 서버 시간 표시 -->
+                            <div class="server-time-display">
+                                <div class="server-time-label">현재 서버 시간</div>
+                                <div class="server-time" id="serverTime">00:00:00</div>
+                            </div>
+
+                            <!-- 카운트다운 게이지 -->
+                            <div class="countdown-gauge-container">
+                                <div class="countdown-labels">
+                                    <span class="start-label">0초</span>
+                                    <span class="end-label">5초</span>
+                                </div>
+                                <div class="countdown-gauge">
+                                    <div class="countdown-gauge-fill" id="countdownFill" style="width: 0%"></div>
+                                    <div class="countdown-time" id="countdownTime">5초</div>
+                                </div>
+                            </div>
+
+                            <!-- 접속 버튼 -->
+                            <button class="connection-btn waiting" id="connectionBtn" onclick="clickConnection()" disabled>
+                                대기 중...
+                            </button>
+
+                            <!-- 로그 컨테이너 (위에서 아래로 최신순) -->
+                            <div class="connection-log-container" id="connectionLogContainer">
+                                <div class="connection-log-title">📋 접속 로그</div>
+                                <div class="connection-log-list" id="connectionLogList">
+                                    <div class="connection-log-item info">시스템 초기화 중...</div>
+                                </div>
+                            </div>
+
+                            <!-- 진행 상황 -->
+                            <div class="connection-progress-info">
+                                <span id="connectionProgress">0</span> / 1 단계 완료
+                            </div>
+                        </div>
+                    `;
+                    // 접속대기 게임 시작
+                    initConnectionGame();
+                    break;
+
+                case 'queue':
+                    title.textContent = '👥 대기열 통과';
+                    subtitle.textContent = '빠르게 연타해서 대기열을 뚫으세요!';
+                    content.innerHTML = `
+                        <div class="queue-game">
+                            <div class="queue-display">
+                                <span id="queuePosition">150</span>번째
+                            </div>
+                            <div class="queue-progress">
+                                <div class="queue-progress-fill" id="queueProgressFill" style="width: 0%"></div>
+                                <div class="queue-progress-text" id="queueProgressText">0 / ${DIFFICULTY_SETTINGS[difficulty].queueClicksNeeded}</div>
+                            </div>
+                            <button class="queue-btn" id="queueBtn" onclick="clickQueue()">
+                                클릭!<br>
+                                <span style="font-size: 0.9rem; opacity: 0.7;">연타하세요!</span>
+                            </button>
+                            <div class="click-streak" id="clickStreak">연타: 0</div>
+                        </div>
+                    `;
+                    break;
+
+                case 'captcha':
+                    title.textContent = '🔒 보안문자 입력';
+                    subtitle.textContent = '아래 문자를 정확히 입력하세요!';
+                    content.innerHTML = `
+                        <div class="captcha-game">
+                            <div class="captcha-timer" id="captchaTimer">${(DIFFICULTY_SETTINGS[difficulty].captchaTimeLimit / 1000).toFixed(1)}초</div>
+                            <canvas class="captcha-canvas" id="captchaCanvas" width="280" height="80"></canvas>
+                            <div class="captcha-input-area">
+                                <input type="text" class="captcha-input" id="captchaInput"
+                                       maxlength="${DIFFICULTY_SETTINGS[difficulty].captchaLength}"
+                                       placeholder="입력" autocomplete="off">
+                                <button class="captcha-submit" onclick="submitCaptcha()">확인</button>
+                            </div>
+                            <button class="captcha-refresh" onclick="refreshCaptcha()">🔄 새로고침</button>
+                        </div>
+                    `;
+
+                    // 캡차 렌더링
+                    setTimeout(() => {
+                        const canvas = document.getElementById('captchaCanvas');
+                        if (canvas) {
+                            captchaRenderer = new CaptchaRenderer(canvas, difficulty);
+                            captchaRenderer.render(gameEngine.getCaptchaAnswer());
+                            document.getElementById('captchaInput').focus();
+                        }
+                    }, 100);
+                    break;
+
+                case 'seat_select':
+                    title.textContent = '💺 좌석 선택';
+                    subtitle.textContent = '원하는 좌석을 연타해서 확보하세요!';
+                    content.innerHTML = `
+                        <div class="seat-game">
+                            <div class="seat-instruction">
+                                <div class="seat-click-counter" id="seatClickCounter">좌석을 선택하세요</div>
+                            </div>
+                            <div class="stage-label">🎤 STAGE 🎤</div>
+                            <div class="seat-grid" id="seatGrid"></div>
+                            <div style="display: flex; gap: 20px; font-size: 0.75rem;">
+                                <span>🟩 선택 가능</span>
+                                <span>⬛ 매진</span>
+                                <span>🟨 선택 중</span>
+                                <span>🟦 확보 완료</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'payment':
+                    title.textContent = '💳 결제 확인';
+                    subtitle.textContent = '마지막 단계! 결제를 완료하세요!';
+                    const seat = gameEngine.seatData.selectedSeat || 'A1';
+                    content.innerHTML = `
+                        <div class="payment-game">
+                            <div class="payment-info">
+                                <div class="payment-row">
+                                    <span>공연명</span>
+                                    <span>TicketPro 콘서트</span>
+                                </div>
+                                <div class="payment-row">
+                                    <span>좌석</span>
+                                    <span>${seat}</span>
+                                </div>
+                                <div class="payment-row">
+                                    <span>가격</span>
+                                    <span>99,000원</span>
+                                </div>
+                                <div class="payment-row">
+                                    <span>수수료</span>
+                                    <span>1,000원</span>
+                                </div>
+                                <div class="payment-row">
+                                    <span>총 결제금액</span>
+                                    <span>100,000원</span>
+                                </div>
+                            </div>
+                            <button class="payment-btn" onclick="confirmPayment()">
+                                💳 결제 완료
+                            </button>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // ========== 접속 대기 게임 (새 버전) ==========
+        let connectionGameState = {
+            countdown: 10,
+            isReady: false,
+            successCount: 0,
+            totalRounds: 5,
+            timerInterval: null,
+            serverTimeInterval: null
+        };
+
+        // 접속대기 게임 초기화
+        function initConnectionGame() {
+            connectionGameState = {
+                countdown: 5,  // 10초에서 5초로 변경
+                isReady: false,
+                successCount: 0,
+                totalRounds: 5,
+                timerInterval: null,
+                serverTimeInterval: null
+            };
+
+            // 서버 시간 업데이트 시작
+            connectionGameState.serverTimeInterval = setInterval(updateServerTime, 100);
+            updateServerTime();
+
+            // 로그 초기화
+            addConnectionLog('info', '서버 접속 대기 시작...');
+            addConnectionLog('warning', '5초마다 버튼이 활성화됩니다');
+
+            // 카운트다운 시작
+            startConnectionCountdown();
+        }
+
+        // 서버 시간 업데이트
+        function updateServerTime() {
+            const serverTimeEl = document.getElementById('serverTime');
+            if (!serverTimeEl) return;
+
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            serverTimeEl.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 카운트다운 시작
+        function startConnectionCountdown() {
+            connectionGameState.countdown = 5;  // 10초에서 5초로 변경
+            connectionGameState.isReady = false;
+            updateCountdownUI();
+
+            const btn = document.getElementById('connectionBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.className = 'connection-btn waiting';
+                btn.textContent = '대기 중...';
+            }
+
+            connectionGameState.timerInterval = setInterval(() => {
+                connectionGameState.countdown -= 0.1;
+
+                if (connectionGameState.countdown <= 0) {
+                    // 버튼 활성화
+                    clearInterval(connectionGameState.timerInterval);
+                    activateConnectionButton();
+                } else {
+                    updateCountdownUI();
+                }
+            }, 100);
+        }
+
+        // 카운트다운 UI 업데이트
+        function updateCountdownUI() {
+            const fill = document.getElementById('countdownFill');
+            const time = document.getElementById('countdownTime');
+
+            if (!fill || !time) return;
+
+            const progress = ((5 - connectionGameState.countdown) / 5) * 100;  // 5초 기준으로 변경
+            fill.style.width = `${progress}%`;
+            time.textContent = `${Math.max(0, connectionGameState.countdown).toFixed(1)}초`;
+        }
+
+        // 버튼 활성화
+        function activateConnectionButton() {
+            connectionGameState.isReady = true;
+            connectionGameState.countdown = 0;
+
+            const btn = document.getElementById('connectionBtn');
+            const fill = document.getElementById('countdownFill');
+            const time = document.getElementById('countdownTime');
+
+            if (fill) fill.style.width = '100%';
+            if (time) time.textContent = '지금!';
+
+            if (btn) {
+                btn.disabled = false;
+                btn.className = 'connection-btn ready';
+                btn.innerHTML = '🎫 클릭!';
+            }
+
+            addConnectionLog('warning', '⚡ 버튼 활성화! 지금 클릭하세요!');
+
+            // 3초 후 자동 실패
+            setTimeout(() => {
+                if (connectionGameState.isReady) {
+                    connectionMissed();
+                }
+            }, 3000);
+        }
+
+        // 접속 버튼 클릭
+        function clickConnection() {
+            if (!connectionGameState.isReady) return;
+
+            connectionGameState.isReady = false;
+            connectionGameState.successCount++;
+
+            const btn = document.getElementById('connectionBtn');
+            if (btn) {
+                btn.className = 'connection-btn success';
+                btn.innerHTML = '✅ 통과!';
+                btn.disabled = true;
+            }
+
+            // 진행 상황 업데이트
+            const progressEl = document.getElementById('connectionProgress');
+            if (progressEl) {
+                progressEl.textContent = connectionGameState.successCount;
+            }
+
+            addConnectionLog('success', `✅ ${connectionGameState.successCount}단계 통과!`);
+
+            // 1번 성공 시 바로 대기열로 이동
+            setTimeout(() => {
+                addConnectionLog('success', '🎉 서버 접속 성공!');
+                clearInterval(connectionGameState.serverTimeInterval);
+                clearInterval(connectionGameState.timerInterval);
+
+                // 게임 엔진에 완료 알림
+                if (gameEngine) {
+                    gameEngine.connectionData = { gauge: 100, clicks: connectionGameState.successCount };
+                    gameEngine.completeStep(GAME_STEPS.CONNECTION);
+                }
+            }, 500);
+        }
+
+        // 클릭 실패
+        function connectionMissed() {
+            if (!connectionGameState.isReady) return;
+
+            connectionGameState.isReady = false;
+
+            const btn = document.getElementById('connectionBtn');
+            if (btn) {
+                btn.className = 'connection-btn fail';
+                btn.innerHTML = '❌ 실패!';
+                btn.disabled = true;
+            }
+
+            addConnectionLog('fail', '❌ 시간 초과! 다시 시도...');
+
+            // 재시도
+            setTimeout(() => {
+                startConnectionCountdown();
+            }, 1500);
+        }
+
+        // 로그 추가 (최신이 위로)
+        function addConnectionLog(type, message) {
+            const logList = document.getElementById('connectionLogList');
+            if (!logList) return;
+
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+            const logItem = document.createElement('div');
+            logItem.className = `connection-log-item ${type}`;
+            logItem.innerHTML = `<span class="log-time">[${timeStr}]</span> ${message}`;
+
+            // 맨 위에 추가 (최신순)
+            logList.insertBefore(logItem, logList.firstChild);
+
+            // 최대 10개 유지
+            while (logList.children.length > 10) {
+                logList.removeChild(logList.lastChild);
+            }
+        }
+
+        // 엔진에서 호출되는 접속 업데이트 핸들러 (호환성 유지)
+        function handleConnectionUpdate(data) {
+            // 새 시스템에서는 사용하지 않음
+        }
+
+        // 대기열 게임 핸들러
+        function clickQueue() {
+            const result = gameEngine.clickQueue();
+            if (result) {
+                updateQueueUI();
+            }
+        }
+
+        function updateQueueUI() {
+            const position = gameEngine.queueData.position;
+            const clicks = gameEngine.queueData.clicks;
+            const needed = gameEngine.queueData.clicksNeeded;
+            const streak = Math.floor(gameEngine.queueData.streak) || 0;
+
+            document.getElementById('queuePosition').textContent = Math.floor(position);
+            document.getElementById('queueProgressFill').style.width = `${(clicks / needed) * 100}%`;
+            document.getElementById('queueProgressText').textContent = `${clicks} / ${needed}`;
+
+            const streakEl = document.getElementById('clickStreak');
+            streakEl.textContent = `연타: ${streak}`;
+            if (streak >= 5) {
+                streakEl.classList.add('high');
+            } else {
+                streakEl.classList.remove('high');
+            }
+        }
+
+        // 캡차 핸들러
+        function submitCaptcha() {
+            const input = document.getElementById('captchaInput').value;
+            const result = gameEngine.submitCaptcha(input);
+
+            if (result && !result.success) {
+                // 오답 - 새 캡차 렌더링
+                captchaRenderer.render(result.newCaptcha);
+                document.getElementById('captchaInput').value = '';
+                document.getElementById('captchaInput').focus();
+
+                Swal.fire({
+                    title: '오답!',
+                    text: '새로운 보안문자를 입력하세요.',
+                    icon: 'error',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        function refreshCaptcha() {
+            if (captchaRenderer && gameEngine.currentStep === 'captcha') {
+                gameEngine.captchaData.answer = gameEngine.generateCaptcha();
+                captchaRenderer.render(gameEngine.captchaData.answer);
+                document.getElementById('captchaInput').value = '';
+            }
+        }
+
+        // 좌석 선택 핸들러
+        function handleSeatUpdate(data) {
+            const grid = document.getElementById('seatGrid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+            for (const row of rows) {
+                for (let col = 1; col <= 12; col++) {
+                    const seatId = `${row}${col}`;
+                    const seat = document.createElement('button');
+                    seat.className = 'seat';
+                    seat.textContent = seatId;
+
+                    if (data.sold.includes(seatId)) {
+                        seat.classList.add('sold');
+                    } else if (data.selected === seatId) {
+                        seat.classList.add('selected');
+                    } else if (data.targetSeat === seatId) {
+                        seat.classList.add('target');
+                    } else {
+                        seat.classList.add('available');
+                        seat.onclick = () => clickSeat(seatId);
+                    }
+
+                    grid.appendChild(seat);
+                }
+            }
+
+            // 클릭 카운터 업데이트
+            const counter = document.getElementById('seatClickCounter');
+            if (counter) {
+                if (data.targetSeat) {
+                    counter.textContent = `${data.targetSeat} 선택 중: ${data.clickCount}/${data.targetClicks} 클릭`;
+                } else if (data.selected) {
+                    counter.textContent = `✅ ${data.selected} 확보 완료!`;
+                } else {
+                    counter.textContent = '좌석을 선택하세요';
+                }
+            }
+        }
+
+        function clickSeat(seatId) {
+            gameEngine.selectSeat(seatId);
+        }
+
+        // 결제 핸들러
+        function confirmPayment() {
+            gameEngine.confirmPayment();
+        }
+
+        // 진행 상황 업데이트
+        function handleProgress(data) {
+            const progress = gameEngine.getProgress();
+            document.getElementById('userProgress').style.width = `${progress}%`;
+
+            if (data.step === 'queue') {
+                updateQueueUI();
+            }
+
+            if (data.step === 'captcha' && data.timeLeft !== undefined) {
+                const timerEl = document.getElementById('captchaTimer');
+                if (timerEl) {
+                    const seconds = (data.timeLeft / 1000).toFixed(1);
+                    timerEl.textContent = `${seconds}초`;
+                    if (data.timeLeft < 3000) {
+                        timerEl.classList.add('warning');
+                    }
+                }
+            }
+        }
+
+        // 게임 완료
+        function handleComplete(data) {
+            myFinishTime = data.time;
+            checkGameEnd();
+        }
+
+        // 특수 이벤트 처리 - 버튼으로 해결 (위치 랜덤)
+        function handleSpecialEvent(data) {
+            const overlay = document.getElementById('eventOverlay');
+
+            if (data.type === 'resolved' || data.type === 'captcha_timeout') {
+                overlay.style.display = 'none';
+                if (data.type === 'captcha_timeout' && captchaRenderer) {
+                    captchaRenderer.render(data.newCaptcha);
+                    document.getElementById('captchaInput').value = '';
+                }
+                return;
+            }
+
+            if (data.type === 'seat_stolen') {
+                Swal.fire({
+                    title: '😱 좌석 선점됨!',
+                    text: data.message,
+                    icon: 'warning',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            const event = SPECIAL_EVENTS[data.type];
+            if (!event) return;
+
+            document.getElementById('eventIcon').textContent = event.icon;
+            document.getElementById('eventMessage').textContent = event.message;
+            document.getElementById('eventProgress').style.display = 'none';
+
+            // 버튼으로 해결하도록 변경
+            const hint = document.getElementById('eventHint');
+            hint.innerHTML = `<button id="eventResolveBtn" class="obstacle-btn" style="margin-top: 15px;">확인</button>`;
+
+            // 버튼 위치 랜덤 조정
+            const btn = document.getElementById('eventResolveBtn');
+            const randomX = (Math.random() - 0.5) * 100;
+            const randomY = (Math.random() - 0.5) * 30;
+            btn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+            btn.onclick = () => {
+                overlay.style.display = 'none';
+                gameEngine.resolveSpecialEvent();
+            };
+
+            overlay.style.display = 'flex';
+        }
+
+        // 장애물 처리 - data가 obstacle 객체 자체로 전달됨
+        function handleQueueObstacle(obstacle) {
+            if (!obstacle) return;
+
+            const popup = document.getElementById('obstaclePopup');
+            document.getElementById('obstacleIcon').textContent = obstacle.icon;
+            document.getElementById('obstacleTitle').textContent = obstacle.name;
+            document.getElementById('obstacleMessage').textContent = obstacle.desc || '빠르게 닫으세요!';
+
+            // 버튼 텍스트 설정
+            const btn = document.getElementById('obstacleBtn');
+            btn.textContent = obstacle.action || '확인';
+
+            // 버튼 위치 랜덤 조정
+            const randomX = (Math.random() - 0.5) * 80;
+            const randomY = (Math.random() - 0.5) * 20;
+            btn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+            popup.style.display = 'block';
+
+            btn.onclick = () => {
+                popup.style.display = 'none';
+                btn.style.transform = '';
+                gameEngine.resolveObstacle();
+            };
+        }
+
+        // AI 핸들러
+        function handleAIAction(data) {
+            const log = document.getElementById('aiActionLog');
+            const entry = document.createElement('div');
+            entry.className = 'ai-action';
+
+            if (data.step === 'connection') {
+                entry.innerHTML = `<span>접속 ${data.gauge ? Math.floor(data.gauge) : 0}%</span>`;
+            } else if (data.step === 'queue') {
+                entry.innerHTML = `<span>클릭 ${data.clicks}/${data.needed}</span>`;
+            } else if (data.step === 'captcha') {
+                if (data.action === 'typing') {
+                    entry.innerHTML = `<span>입력 중... ${data.progress}%</span>`;
+                } else if (data.action === 'mistake') {
+                    entry.innerHTML = `<span style="color: #ef4444;">오타 발생!</span>`;
+                } else if (data.action === 'retry') {
+                    entry.innerHTML = `<span>재입력 중...</span>`;
+                }
+            } else if (data.step === 'seat_select') {
+                if (data.action === 'found_seat') {
+                    entry.innerHTML = `<span>좌석 발견!</span>`;
+                } else {
+                    entry.innerHTML = `<span>클릭 ${data.clicks}/${data.needed}</span>`;
+                }
+            } else if (data.step === 'payment') {
+                entry.innerHTML = `<span>결제 처리 중...</span>`;
+            }
+
+            log.insertBefore(entry, log.firstChild);
+
+            // 로그 최대 개수 제한
+            while (log.children.length > 10) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function handleAIProgress(data) {
+            document.getElementById('aiProgress').style.width = `${data.progress}%`;
+        }
+
+        function handleAIStepChange(step, stepIndex) {
+            document.getElementById('aiStepInfo').textContent = STEP_NAMES[step] || step;
+        }
+
+        function handleAIComplete(data) {
+            aiFinishTime = data.time;
+            checkGameEnd();
+        }
+
+        // 승패 판정
+        function checkGameEnd() {
+            if (gameEnded) return;
+            if (myFinishTime === null || aiFinishTime === null) return;
+
+            gameEnded = true;
+            clearInterval(timerInterval);
+
+            const isWinner = myFinishTime <= aiFinishTime;
+
+            // 결과 표시
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('resultTitle');
+            const time = document.getElementById('resultTime');
+
+            if (isWinner) {
+                title.textContent = '🏆 승리!';
+                title.className = 'result-title win';
+            } else {
+                title.textContent = '😢 패배';
+                title.className = 'result-title lose';
+            }
+
+            const minutes = Math.floor(myFinishTime / 60000);
+            const seconds = Math.floor((myFinishTime % 60000) / 1000);
+            const ms = myFinishTime % 1000;
+            time.textContent = `내 기록: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+
+            document.getElementById('resultCombo').textContent = gameEngine.connectionData?.clicks || 0;
+            document.getElementById('resultAccuracy').textContent = '100%';
+            document.getElementById('resultSeat').textContent = gameEngine.seatData.selectedSeat || '-';
+
+            modal.style.display = 'flex';
+
+            // 기록 저장 버튼
+            document.getElementById('saveRecordBtn').onclick = () => saveRecord(isWinner);
+        }
+
+        // 기록 저장
+        async function saveRecord(isWinner) {
+            const difficultyKorean = {easy: '쉬움', normal: '보통', hard: '어려움'}[difficulty];
+
+            try {
+                await saveBookingRecord({
+                    category: 'AI 대결',
+                    difficulty: difficultyKorean,
+                    time_ms: myFinishTime,
+                    success: true
+                });
+
+                Swal.fire({
+                    title: '저장 완료!',
+                    text: '기록이 저장되었습니다.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                Swal.fire({
+                    title: '저장 실패',
+                    text: error.message,
+                    icon: 'error'
+                });
+            }
+        }
+
+        // 키보드 이벤트
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+
+                // 접속 대기 게임
+                if (gameEngine && gameEngine.currentStep === 'connection') {
+                    clickConnection();
+                }
+            }
+
+            // 캡차 엔터
+            if (e.code === 'Enter' && gameEngine && gameEngine.currentStep === 'captcha') {
+                submitCaptcha();
+            }
+        });
+
+        // 게임 시작
+        initGame();
+
+        // ========== 파티클 배경 ==========
+        const particleCanvas = document.getElementById('particles');
+        const particleCtx = particleCanvas.getContext('2d');
+        let particlesArray;
+
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * particleCanvas.width;
+                this.y = Math.random() * particleCanvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.5 + 0.3;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > particleCanvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > particleCanvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                particleCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                particleCtx.beginPath();
+                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                particleCtx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            for (let i = 0; i < 100; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            particlesArray.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+    </script>
+</body>
+</html>

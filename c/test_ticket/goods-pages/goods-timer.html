@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>티케팅 게임 — 타이머</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f8fafc;color:#111827}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:720px;max-width:92%;text-align:center}
+    .start-btn{background:#2563EB;color:#fff;border:0;padding:14px 28px;border-radius:999px;font-weight:700;cursor:pointer;font-size:20px}
+    #pre-count{font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em}
+    #ten-timer{font-size:120px;font-weight:900;color:#111827}
+    #result-msg{font-size:20px;font-weight:700;color:#111827;margin-bottom:12px}
+    @keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.7);transform:scale(1)}50%{box-shadow:0 0 20px 10px rgba(239,68,68,0);transform:scale(1.05)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);transform:scale(1)}}
+    .pulse-red{animation:pulse-red 1s infinite;background:#ef4444!important}
+  </style>
+</head>
+<body>
+  <!-- 퀘스트 표시 -->
+  <div id="questDisplay" style="position: fixed; top: 20px; right: 20px; background: white; border: 3px solid #00d9c8; border-radius: 12px; padding: 20px; box-shadow: 0 6px 14px rgba(2,6,23,0.25); z-index: 1000; min-width: 280px; display: none;">
+    <div style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <span>📋 미션</span>
+      <span id="questDifficultyBadge" style="display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 700; background: #2563EB; color: white;">NORMAL</span>
+    </div>
+    <div id="questObjectiveText" style="font-size: 14px; color: #374151; margin-bottom: 16px; line-height: 1.6; padding: 12px; background: #f9fafb; border-radius: 6px;">
+      미션을 확인하세요!
+    </div>
+    <div id="questItemsList"></div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <div id="questTimerBadge" style="background:#0b1220;color:#fff;border-radius:10px;padding:6px 10px;font-weight:900;min-width:64px;text-align:center;">--:--</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+
+
+      <!-- 게임 UI: 3-2-1 카운트 및 10초 타이머 (원본 그대로 이동) -->
+      <div id="game-overlay" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(15,23,42,0.06);z-index:9999;">
+        <div style="width:720px;max-width:92%;background:transparent;padding:24px 20px;text-align:center;">
+          <div id="pre-count" style="font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em;"></div>
+
+          <div id="start-msg" style="display:none;font-size:18px;font-weight:700;color:#374151;margin-bottom:12px;">잠시 후 게임이 시작됩니다</div>
+
+          <div id="timer-area" style="display:none;">
+            <div id="ready-msg" style="font-size:18px;font-weight:700;color:#374151;margin-bottom:8px;">타이머가 끝나면 티케팅을 시작하세요!</div>
+              <div id="ten-timer" style="font-size:120px;font-weight:900;color:#111827;"></div>
+            <div style="margin-top:18px;">
+              <button id="connect-btn" type="button" style="background:#2563EB;color:#fff;border:0;padding:14px 28px;border-radius:999px;font-weight:700;cursor:pointer;font-size:20px;">사이트 접속하기</button>
+            </div>
+          </div>
+
+          <div id="result-area" style="display:none;margin-top:18px;">
+            <div id="result-msg" style="font-size:20px;font-weight:700;color:#111827;margin-bottom:12px;"></div>
+            <div>
+              <button id="retry-btn" type="button" style="background:#fff;color:#2563EB;border:2px solid #2563EB;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">다시하기</button>
+            </div>
+          </div>
+          <!-- Queue modal (hidden by default) -->
+          <div id="queue-modal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);z-index:10000;padding:24px;">
+            <div style="width:820px;max-width:96%;background:#f3f4ff;border-radius:12px;padding:28px 30px;color:#0f172a;box-shadow:0 12px 30px rgba(2,6,23,0.15);">
+              <h2 style="margin:0 0 10px 0;font-size:28px;text-align:center;font-weight:900;color:#0b1220;">예매 대기중입니다.</h2>
+              <div style="display:flex;gap:18px;align-items:flex-start;">
+                <div style="flex:1;">
+                  <p style="margin:6px 0 12px 0;font-size:16px;line-height:1.4;color:#0b1220;"><span id="queue-top-msg" style="font-weight:700;">사이트에 접속중입니다..</span><br><span style="font-weight:700;color:#4f46e5;">사용자 님 앞에 <span id="queue-count">83</span> 명의 대기자가 있습니다.</span><br><span style="color:#374151;">잠시 기다려주세요.</span></p>
+                </div>
+              </div>
+              <div style="margin-top:10px;">
+                <div style="background:#eef2ff;border-radius:999px;padding:6px;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);">
+                  <div id="queue-bar" style="width:16%;height:18px;background:#4f46e5;border-radius:999px;transition:width 400ms ease;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Game: 3-2-1 pre-count, then 10.00s timer (0.01s precision), and connect button behavior
+  (function(){
+    var levelButtons = document.querySelectorAll('.level-button');
+    var overlay = document.getElementById('game-overlay');
+    var preCountEl = document.getElementById('pre-count');
+    var timerArea = document.getElementById('timer-area');
+    var tenTimer = document.getElementById('ten-timer');
+    var connectBtn = document.getElementById('connect-btn');
+    var resultArea = document.getElementById('result-area');
+    var resultMsg = document.getElementById('result-msg');
+    var retryBtn = document.getElementById('retry-btn');
+
+    var timerId = null;
+    var startTime = 0;
+    var duration = 5000; // 5 seconds in ms (default)
+    var remaining = duration;
+    // capture selected level and goods from query params (e.g. ?level=easy&goods=앨범)
+    var urlParams = new URLSearchParams(window.location.search);
+    var selectedLevel = urlParams.get('level') || 'normal';
+    var selectedGoods = urlParams.get('goods') || '앨범';
+    console.log('goods-timer: selectedLevel=', selectedLevel, 'selectedGoods=', selectedGoods);
+
+    // Client-side configuration maps (no backend required)
+    // Base configs per level
+    var levelConfigs = {
+      easy:   { duration: 5000, successWindow: 150 },
+      normal: { duration: 5000, successWindow: 80 },
+      hard:   { duration: 5000,  successWindow: 40 }
+    };
+
+    // Compute effective config
+    var effective = { duration: duration, successWindow: 0 };
+    if(levelConfigs[selectedLevel]){
+      effective.duration = levelConfigs[selectedLevel].duration;
+      effective.successWindow = levelConfigs[selectedLevel].successWindow;
+    }
+    // apply effective duration
+    duration = effective.duration;
+    remaining = duration;
+    console.log('goods-timer: effective=', effective);
+
+    function showOverlay(){ overlay.style.display = 'flex'; }
+    function hideOverlay(){ overlay.style.display = 'none'; }
+
+    function disableLevelButtons(){ levelButtons.forEach(b=>b.disabled=true); }
+    function enableLevelButtons(){ levelButtons.forEach(b=>b.disabled=false); }
+
+    var startMsgEl = document.getElementById('start-msg');
+    var readyMsgEl = document.getElementById('ready-msg');
+
+    function runPreCount(){
+      return new Promise(function(resolve){
+        // show top message then pre-count
+        if(startMsgEl) startMsgEl.style.display = 'block';
+        preCountEl.style.display = 'block';
+        timerArea.style.display = 'none';
+        resultArea.style.display = 'none';
+        var nums = ['3','2','1'];
+        var i = 0;
+        preCountEl.textContent = nums[i];
+        var pc = setInterval(function(){
+          i++;
+          if(i < nums.length){
+            preCountEl.textContent = nums[i];
+          } else {
+            clearInterval(pc);
+            preCountEl.style.display = 'none';
+            if(startMsgEl) startMsgEl.style.display = 'none';
+            resolve();
+          }
+        }, 1000);
+      });
+    }
+
+    function formatMs(ms){
+      var s = Math.max(0, ms / 1000);
+      // 하드 모드는 소수점 없이 초 단위만 표시
+      if(selectedLevel === 'hard') {
+        return Math.ceil(s).toString();
+      }
+      return s.toFixed(2);
+    }
+
+    function startTenTimer(){
+      timerArea.style.display = 'block';
+      resultArea.style.display = 'none';
+      startTime = performance.now();
+      // reset endTime marker
+      window._timerEndTime = null;
+      function tick(){
+        var now = performance.now();
+        var elapsed = now - startTime;
+        remaining = Math.max(0, duration - elapsed);
+        tenTimer.textContent = formatMs(remaining);
+        if(remaining <= 0){
+          cancelAnimationFrame(timerId);
+          timerId = null;
+          tenTimer.textContent = selectedLevel === 'hard' ? '0' : '0.00';
+          // record the moment timer reached zero
+          if(!window._timerEndTime) window._timerEndTime = performance.now();
+          // Add red pulse effect to connect button
+          connectBtn.classList.add('pulse-red');
+          return;
+        }
+        timerId = requestAnimationFrame(tick);
+      }
+      timerId = requestAnimationFrame(tick);
+    }
+
+    function stopTenTimer(){ if(timerId) { cancelAnimationFrame(timerId); timerId = null; } }
+
+    function showResult(msg){
+      resultMsg.textContent = msg;
+      resultArea.style.display = 'block';
+      timerArea.style.display = 'none';
+    }
+
+    levelButtons.forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        // start game
+        disableLevelButtons();
+        showOverlay();
+        await runPreCount();
+        startTenTimer();
+      });
+    });
+
+    // Generate quest and save to localStorage
+    function generateQuestData() {
+      // 굿즈 종류별 버전 구분
+      const isPhotocard = selectedGoods === '포토카드';
+      const isClothes = selectedGoods === '의상';
+      let versions, productName;
+      
+      if (isClothes) {
+        versions = ['S', 'M', 'L', 'XL'];
+        productName = '의상';
+      } else if (isPhotocard) {
+        versions = ['Random', 'Member A', 'Member B', 'Member C'];
+        productName = '포토카드';
+      } else {
+        versions = ['Random', 'A ver', 'B ver', 'C ver'];
+        productName = '앨범';
+      }
+      
+      let questRequirements = [];
+      let questObjective = '';
+      
+      if (selectedLevel === 'easy') {
+        questRequirements = [{ version: '아무 ' + productName, count: 1 }];
+        questObjective = '아무 ' + productName + '이나 1개 이상 구매하세요!';
+      } else if (selectedLevel === 'normal') {
+        const count = Math.random() < 0.5 ? 1 : 2;
+        const randomVersion = versions[Math.floor(Math.random() * versions.length)];
+        questRequirements = [{ version: randomVersion, count: count }];
+        questObjective = randomVersion + ' ' + productName + '을 ' + count + '개 구매하세요!';
+      } else {
+        // hard: 2개 고정
+        const count = 2;
+        const selectedVersions = [];
+        while (selectedVersions.length < count) {
+          const randomVersion = versions[Math.floor(Math.random() * versions.length)];
+          if (!selectedVersions.includes(randomVersion)) {
+            selectedVersions.push(randomVersion);
+          }
+        }
+        questRequirements = selectedVersions.map(v => ({ version: v, count: 1 }));
+        questObjective = '다음 ' + productName + '들을 각각 1개씩 구매하세요!';
+      }
+      
+      localStorage.setItem('questData', JSON.stringify({
+        level: selectedLevel,
+        requirements: questRequirements,
+        objective: questObjective
+      }));
+      
+      // Display quest on timer page
+      displayQuest(selectedLevel, questRequirements, questObjective);
+    }
+
+    // 타이머 페이지에서는 미션 타이머가 흐르지 않음 — 표시만 유지
+    function setQuestBadgeIdle(){
+      var badge = document.getElementById('questTimerBadge');
+      if(!badge) return;
+      badge.textContent = '--:--';
+    }
+    
+    function displayQuest(level, requirements, objective) {
+      const questDisplay = document.getElementById('questDisplay');
+      const questDifficultyBadge = document.getElementById('questDifficultyBadge');
+      const questObjectiveText = document.getElementById('questObjectiveText');
+      const questItemsList = document.getElementById('questItemsList');
+      
+      if (!questDisplay) return;
+      
+      questDifficultyBadge.textContent = level.toUpperCase();
+      questDifficultyBadge.className = '';
+      if (level === 'easy') {
+        questDifficultyBadge.style.background = '#22c55e';
+      } else if (level === 'normal') {
+        questDifficultyBadge.style.background = '#2563EB';
+      } else {
+        questDifficultyBadge.style.background = '#ef4444';
+      }
+      
+      questObjectiveText.textContent = objective;
+      
+      let html = '';
+      requirements.forEach((req) => {
+        html += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px; background: #f3f4f6; border-radius: 6px;">';
+        html += '<div style="width: 18px; height: 18px; border: 2px solid #9ca3af; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px;"></div>';
+        html += '<div>' + req.version + ' ' + req.count + '개</div>';
+        html += '</div>';
+      });
+      questItemsList.innerHTML = html;
+      
+      questDisplay.style.display = 'block';
+      // 타이머 페이지에서는 카운트다운 시작하지 않고 배지를 정지 상태로 표시
+      setQuestBadgeIdle();
+    }
+
+    // Auto-start when the page loads
+    (async function autoStartIfNeeded(){
+      await new Promise(r=>setTimeout(r, 50));
+      try{
+        // Generate quest before starting (displayQuest is called inside generateQuestData)
+        generateQuestData();
+        disableLevelButtons();
+        showOverlay();
+        await runPreCount();
+        startTenTimer();
+      } catch(e){
+        console.error(e);
+      }
+    })();
+
+    connectBtn.addEventListener('click', function(){
+      // success if remaining is within successWindow
+      if(remaining > effective.successWindow){
+        // clicked too early
+        stopTenTimer();
+        showResult('이런.. 티케팅이 열리기 전에 접속했습니다!');
+        return;
+      }
+      // compute how long after timer end the user clicked
+      var clickTime = performance.now();
+      var endTime = window._timerEndTime || clickTime;
+      var extraMs = Math.max(0, clickTime - endTime);
+      var extraSec = extraMs / 1000;
+      // rates per second
+      var ratesPerSecond = { easy: 25 * 2, normal: 75 * 2, hard: 150 * 2 };
+      var rate = ratesPerSecond[selectedLevel] || ratesPerSecond['normal'];
+      var added = Math.round(rate * extraSec);
+      // base counts by level
+      var baseByLevel = { easy: 50, normal: 83, hard: 120 };
+      var base = baseByLevel[selectedLevel] || 80;
+      var initialQueue = Math.max(0, base + added);
+      // show queue modal and animate decreasing over 6.5s
+      showQueueModal(initialQueue, 6500);
+    });
+
+    // Queue modal logic
+    function showQueueModal(initialCount, durationMs){
+      var modal = document.getElementById('queue-modal');
+      var countEl = document.getElementById('queue-count');
+      var bar = document.getElementById('queue-bar');
+      var topMsg = document.getElementById('queue-top-msg');
+      if(!modal || !countEl || !bar) return;
+      // initialize
+      var queueCount = Math.max(0, Math.round(initialCount || 0));
+      countEl.textContent = queueCount;
+      bar.style.width = '0%';
+      if(topMsg) topMsg.textContent = '사이트에 접속중입니다..';
+      modal.style.display = 'flex';
+
+      // animate: decrease queueCount to 0 over durationMs (default 6500ms)
+      var dur = durationMs || 6500;
+      var start = performance.now();
+      function frame(now){
+        var t = Math.min(1, (now - start) / dur);
+        var percent = Math.round(t * 100);
+        bar.style.width = percent + '%';
+        var current = Math.max(0, Math.round(queueCount * (1 - t)));
+        countEl.textContent = current;
+        if(t < 1){
+          requestAnimationFrame(frame);
+        } else {
+          // complete - 굿즈 예매 페이지로 이동
+          if(topMsg) topMsg.textContent = '대기열 처리 완료 — 예매 페이지로 이동합니다.';
+          setTimeout(function(){ 
+            // 굿즈 종류에 따라 다른 페이지로 이동
+            var targetPage = 'goods-album.html';
+            if (selectedGoods === '포토카드') {
+              targetPage = 'goods-photo.html';
+            } else if (selectedGoods === '의상') {
+              targetPage = 'goods-clothes.html';
+            }
+            // 다음 페이지에서 미션 타이머가 흐르도록 종료시각 저장
+            try{
+              var endAt = Date.now() + (selectedLevel==='easy' ? 15000 : 10000);
+              localStorage.setItem('questEndAt', String(endAt));
+            }catch(e){}
+            window.location.href = targetPage + '?level=' + selectedLevel + '&goods=' + encodeURIComponent(selectedGoods);
+          }, 1200);
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    retryBtn.addEventListener('click', function(){
+      location.reload();
+    });
+
+  })();
+  </script>
+</body>
+</html>

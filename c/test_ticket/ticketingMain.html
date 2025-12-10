@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>티켓 예매</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Malgun Gothic", "맑은 고딕", AppleGothic, sans-serif;
+      background: #fff;
+      color: #333;
+      font-size: 13px;
+    }
+
+    /* Top header - 1st row */
+    .header-top {
+      background: #fff;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 14px 0;
+    }
+    .header-top-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: #5551ff;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: #000; }
+
+    /* Top header - 2nd row */
+    .header-nav {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 14px 0;
+    }
+    .header-nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .main-nav {
+      display: flex;
+      gap: 32px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .main-nav a {
+      color: #333;
+      text-decoration: none;
+    }
+    .main-nav a:hover {
+      color: #5551ff;
+    }
+    .user-links {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .user-links a {
+      color: #000;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .user-links a:hover {
+      color: #333;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      max-width: 1280px;
+      margin: 20px auto;
+      padding: 0 20px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* Title section - full width above content */
+    .title-section {
+      max-width: 1280px;
+      margin: 0 auto 24px;
+      padding: 0 20px;
+    }
+    
+    .title-section .category {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    
+    .title-section .goods-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #000;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    
+    .title-section .rating {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Main container - 3 column layout */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto 40px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 350px 1fr 420px;
+      gap: 30px;
+    }
+    /* Left - Poster */
+    .poster-section {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+    }
+    .poster-img {
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .poster-footer {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .like-count {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #666;
+    }
+    .social-links {
+      display: flex;
+      gap: 6px;
+    }
+    .social-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid #ddd;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      text-decoration: none;
+      color: #666;
+    }
+    .social-btn:hover {
+      background: #f5f5f5;
+      border-color: #bbb;
+    }
+
+    /* Center - Info */
+    .info-section {
+      padding-top: 8px;
+    }
+    .category {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+    .goods-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #000;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .stars {
+      color: #ffa300;
+      font-weight: 700;
+    }
+    .rating-value {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .info-table {
+      border-top: 2px solid #000;
+      margin-bottom: 30px;
+    }
+    .info-row {
+      display: flex;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 16px 0;
+    }
+    .info-label {
+      width: 120px;
+      color: #666;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .info-value {
+      flex: 1;
+      color: #000;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .info-value strong {
+      font-weight: 600;
+    }
+
+    /* Right - Booking Panel */
+    .booking-panel {
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 24px;
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      margin-top: -120px; /* 제목 영역 높이만큼 위로 */
+    }
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    /* Calendar */
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .calendar-header button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #666;
+      padding: 4px 8px;
+    }
+    .calendar-month {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .calendar {
+      margin-bottom: 24px;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .calendar-day-header {
+      padding: 8px 0;
+      font-size: 12px;
+      color: #999;
+      font-weight: 500;
+    }
+    .calendar-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+    .calendar-day {
+      padding: 10px 0;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      font-weight: 700;
+    }
+    .calendar-day:hover {
+      background: #f5f5f5;
+    }
+    .calendar-day.selected {
+      background: #5551ff;
+      color: #fff;
+      font-weight: 700;
+    }
+    .calendar-day.disabled {
+      color: #ddd;
+      cursor: not-allowed;
+      font-weight: 400;
+    }
+    .calendar-day.disabled:hover {
+      background: transparent;
+    }
+
+    /* Session selection */
+    .session-section {
+      margin-bottom: 24px;
+    }
+    .session-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .session-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .session-item:hover {
+      border-color: #5551ff;
+      background: #f8f8ff;
+    }
+    .session-item.selected {
+      border-color: #5551ff;
+      background: #f0f0ff;
+      border-width: 2px;
+    }
+    .session-time {
+      font-size: 15px;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 6px;
+    }
+    .session-info {
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Cast info */
+    .cast-section {
+      margin-bottom: 24px;
+    }
+    .cast-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .cast-list {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    /* Book button */
+    .btn-book {
+      width: 100%;
+      padding: 16px;
+      background: #5551ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-book:hover {
+      background: #4440dd;
+    }
+    .btn-book:active {
+      transform: translateY(1px);
+    }
+    .btn-book:disabled {
+      background: #ddd;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .poster-section, .booking-panel {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header - Top Row -->
+  <div class="header-top">
+    <div class="header-top-inner">
+      <a href="#" class="logo">NOL <span>interpark</span></a>
+    </div>
+  </div>
+
+  <!-- Header - Nav Row -->
+  <div class="header-nav">
+    <div class="header-nav-inner">
+      <div class="main-nav">
+        <a href="#">홈</a>
+        <a href="#">투어</a>
+        <a href="#" style="color:#5551ff;">티켓</a>
+      </div>
+      <div class="user-links">
+        <a href="#">로그인</a>
+        <a href="#">내 예약</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    *할인대기 ⓘ
+  </div>
+
+  <!-- Title Section - Full Width -->
+  <div class="title-section">
+    <div class="category" id="category">연극</div>
+    <h1 id="goods-title" class="goods-title">공연 제목</h1>
+    <div class="rating">
+      <span class="stars">★★★★★</span>
+      <span class="rating-value" id="rating">9.6</span>
+      <span style="color:#999">연극 추천 40위</span>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Left: Poster -->
+    <div class="poster-section">
+      <img id="poster-img" src="" alt="공연 포스터" class="poster-img" />
+      <div class="poster-footer">
+        <div class="like-count">
+          ♡ 티켓캐스트 <span id="like-count">228</span>
+        </div>
+        <div class="social-links">
+          <a href="#" class="social-btn" title="Facebook">f</a>
+          <a href="#" class="social-btn" title="Twitter">𝕏</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Info -->
+    <div class="info-section">
+
+      <div class="info-table">
+        <div class="info-row">
+          <div class="info-label">장소</div>
+          <div class="info-value" id="venue">예스24아트원 2관 ▶</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">공연기간</div>
+          <div class="info-value" id="period">2025.09.30 ~2025.12.14</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">공연시간</div>
+          <div class="info-value" id="runtime">110분</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">관람연령</div>
+          <div class="info-value" id="age-limit">13세 이상 관람가능</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">가격</div>
+          <div class="info-value">
+            <div><strong>R석</strong> <span id="price-r">66,000원</span></div>
+            <div><strong>S석</strong> <span id="price-s">44,000원</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Booking Panel -->
+    <div class="booking-panel">
+      <div class="panel-title">관람일</div>
+
+      <!-- Calendar -->
+      <div class="calendar">
+        <div class="calendar-header">
+          <button onclick="prevMonth()">‹</button>
+          <div class="calendar-month" id="calendar-month">2025. 11</div>
+          <button onclick="nextMonth()">›</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day-header">일</div>
+          <div class="calendar-day-header">월</div>
+          <div class="calendar-day-header">화</div>
+          <div class="calendar-day-header">수</div>
+          <div class="calendar-day-header">목</div>
+          <div class="calendar-day-header">금</div>
+          <div class="calendar-day-header">토</div>
+        </div>
+        <!-- Calendar days will be inserted here -->
+        <div class="calendar-days-grid" id="calendar-days"></div>
+      </div>
+
+      <!-- Session -->
+      <div class="session-section">
+        <div class="session-title">회차</div>
+        <div id="session-list">
+          <div class="session-item" onclick="selectSession(this)">
+            <div class="session-time">1회 20:00</div>
+            <div class="session-info">
+              <span>R석 81</span>
+              <span>S석 31</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cast -->
+      <div class="cast-section">
+        <div class="cast-title">캐스팅</div>
+        <div class="cast-list" id="cast-list">김단원, 김이담, 이승원</div>
+      </div>
+
+      <!-- Book button -->
+      <button class="btn-book" id="btn-book" onclick="startBooking()">예매하기</button>
+    </div>
+  </div>
+
+  <script>
+    // 공연 날짜 생성 함수 (오늘 기준 7~21일 후 사이에서 랜덤 시작, 2일간 진행)
+    function generateConcertDates() {
+      const today = new Date();
+      const daysOffset = Math.floor(Math.random() * 15) + 7; // 7~21일 후
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() + daysOffset);
+      
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 1); // 2일간
+      
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}.${month}.${day}`;
+      };
+      
+      return {
+        period: `${formatDate(startDate)} ~${formatDate(endDate)}`,
+        startDate: startDate,
+        endDate: endDate
+      };
+    }
+    
+    // 각 공연마다 날짜 생성
+    const concertDates = generateConcertDates();
+
+    // Artist data by level
+    const artistData = {
+      easy: [
+        {
+          name: '트루웨스트 〈2025 콘서트〉',
+          image: 'image/concert/트루웨스트.gif',
+          category: '콘서트',
+          venue: '올림픽공원 올림픽홀 ▶',
+          period: concertDates.period,
+          runtime: '100분',
+          age: '만 7세 이상 관람가능',
+          priceR: '99,000원',
+          priceS: '77,000원',
+          rating: '9.2',
+          likeCount: '156',
+          cast: '트루웨스트 밴드'
+        },
+        {
+          name: '펭수와 함께하는 〈특별 공연〉',
+          image: 'image/concert/폭수.gif',
+          category: '뮤지컬/오페라',
+          venue: 'KSPO DOME ▶',
+          period: concertDates.period,
+          runtime: '90분',
+          age: '전체 관람가능',
+          priceR: '88,000원',
+          priceS: '66,000원',
+          rating: '9.8',
+          likeCount: '342',
+          cast: '펭수, EBS 출연진'
+        }
+      ],
+      normal: [
+        {
+          name: '라흐마니노프 〈피아노 협주곡 2번〉',
+          image: 'image/concert/라흐마니노프.gif',
+          category: '클래식/무용',
+          venue: '예술의전당 콘서트홀 ▶',
+          period: concertDates.period,
+          runtime: '120분',
+          age: '만 7세 이상 관람가능',
+          priceR: '150,000원',
+          priceS: '120,000원',
+          rating: '9.7',
+          likeCount: '289',
+          cast: '조성진, KBS교향악단'
+        },
+        {
+          name: '부활 〈30주년 기념 콘서트〉',
+          image: 'image/concert/부활.gif',
+          category: '콘서트',
+          venue: '잠실실내체육관 ▶',
+          period: concertDates.period,
+          runtime: '150분',
+          age: '만 13세 이상 관람가능',
+          priceR: '154,000원',
+          priceS: '132,000원',
+          rating: '9.4',
+          likeCount: '418',
+          cast: '김태원, 이승철, 정동하'
+        },
+        {
+          name: '기리보이 X 원슈타인 〈조인트 콘서트〉',
+          image: 'image/concert/기리보이 원슈타인.gif',
+          category: '콘서트',
+          venue: '블루스퀘어 마스터카드홀 ▶',
+          period: concertDates.period,
+          runtime: '110분',
+          age: '만 15세 이상 관람가능',
+          priceR: '121,000원',
+          priceS: '99,000원',
+          rating: '9.5',
+          likeCount: '367',
+          cast: '기리보이, 원슈타인'
+        }
+      ],
+      hard: [
+        {
+          name: 'Doja Cat 〈World Tour - Seoul〉',
+          image: 'image/concert/도자캣.gif',
+          category: '콘서트',
+          venue: '고척스카이돔 ▶',
+          period: concertDates.period,
+          runtime: '150분',
+          age: '만 15세 이상 관람가능',
+          priceR: '220,000원',
+          priceS: '198,000원',
+          rating: '9.8',
+          likeCount: '892',
+          cast: 'Doja Cat'
+        },
+        {
+          name: 'ONE OK ROCK 〈2025 Live in Seoul〉',
+          image: 'image/concert/원오크락.gif',
+          category: '콘서트',
+          venue: 'KSPO DOME ▶',
+          period: concertDates.period,
+          runtime: '140분',
+          age: '만 13세 이상 관람가능',
+          priceR: '187,000원',
+          priceS: '165,000원',
+          rating: '9.6',
+          likeCount: '673',
+          cast: 'ONE OK ROCK'
+        },
+        {
+          name: 'OneRepublic 〈Live in Seoul〉',
+          image: 'image/concert/원리퍼블릭.gif',
+          category: '콘서트',
+          venue: 'Olympic Hall ▶',
+          period: concertDates.period,
+          runtime: '130분',
+          age: '만 15세 이상 관람가능',
+          priceR: '209,000원',
+          priceS: '187,000원',
+          rating: '9.7',
+          likeCount: '754',
+          cast: 'OneRepublic'
+        },
+        {
+          name: 'tuki. 〈Special Concert〉',
+          image: 'image/concert/tuki..gif',
+          category: '콘서트',
+          venue: '블루스퀘어 ▶',
+          period: '2025.04.25 ~2025.04.27',
+          runtime: '120분',
+          age: '만 19세 이상 관람가능',
+          priceR: '176,000원',
+          priceS: '154,000원',
+          rating: '9.9',
+          likeCount: '521',
+          cast: 'tuki.'
+        }
+      ]
+    };
+
+    // Get level and hall from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedLevel = urlParams.get('level') || 'normal';
+    const selectedHall = urlParams.get('hall') || 'YES24홀';
+    
+    // Select random artist from level pool
+    const levelPool = artistData[selectedLevel] || artistData.normal;
+    const selectedArtist = levelPool[Math.floor(Math.random() * levelPool.length)];
+
+    // Hall name mapping
+    const hallNames = {
+      'YES24홀': 'YES24아트원 2관',
+      '고척 스카이돔': '고척스카이돔',
+      'default': '예술의전당 콘서트홀'
+    };
+    const displayHallName = hallNames[selectedHall] || selectedArtist.venue;
+
+    // Populate page with selected artist data
+    document.getElementById('goods-title').textContent = selectedArtist.name;
+    document.getElementById('category').textContent = selectedArtist.category;
+    document.getElementById('poster-img').src = selectedArtist.image;
+    document.getElementById('venue').textContent = displayHallName + ' ▶';
+    document.getElementById('period').textContent = selectedArtist.period;
+    document.getElementById('runtime').textContent = selectedArtist.runtime;
+    document.getElementById('age-limit').textContent = selectedArtist.age;
+    document.getElementById('price-r').textContent = selectedArtist.priceR;
+    document.getElementById('price-s').textContent = selectedArtist.priceS;
+    document.getElementById('rating').textContent = selectedArtist.rating;
+    document.getElementById('like-count').textContent = selectedArtist.likeCount;
+    document.getElementById('cast-list').textContent = selectedArtist.cast;
+
+    console.log('ticketingMain: level=', selectedLevel, 'artist=', selectedArtist.name);
+
+    // Calendar functionality
+    // 공연 시작일의 월/년도로 초기화
+    let currentMonth = concertDates.startDate.getMonth();
+    let currentYear = concertDates.startDate.getFullYear();
+    let selectedDate = null;
+    
+    // 예매 가능한 날짜들 (공연 시작일과 종료일)
+    const availableDates = [
+      concertDates.startDate.getDate(),
+      concertDates.endDate.getDate()
+    ];
+
+    function renderCalendar() {
+      const daysContainer = document.getElementById('calendar-days');
+      daysContainer.innerHTML = '';
+      
+      const monthEl = document.getElementById('calendar-month');
+      monthEl.textContent = `${currentYear}. ${String(currentMonth + 1).padStart(2, '0')}`;
+
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      
+      const today = new Date();
+      const todayDate = today.getDate();
+      const todayMonth = today.getMonth();
+      const todayYear = today.getFullYear();
+
+      // Empty cells for days before first day of month
+      for(let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day disabled';
+        daysContainer.appendChild(emptyDay);
+      }
+
+      // Actual days
+      for(let day = 1; day <= daysInMonth; day++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = day;
+        
+        // 공연 월에서만 예매 가능한 날짜 체크
+        const isAvailable = currentMonth === concertDates.startDate.getMonth() && 
+                           currentYear === concertDates.startDate.getFullYear() &&
+                           availableDates.includes(day);
+        
+        // 첫 렌더링이고 선택된 날짜가 없으면 첫 공연일 자동 선택
+        if(!selectedDate && day === availableDates[0] && isAvailable) {
+          dayEl.classList.add('selected');
+          selectedDate = day;
+        }
+        // 이미 선택된 날짜면 selected 추가
+        if(day === selectedDate && isAvailable) {
+          dayEl.classList.add('selected');
+        }
+        
+        // 예매 불가능한 날짜는 disabled
+        if(!isAvailable) {
+          dayEl.classList.add('disabled');
+        } else {
+          dayEl.onclick = () => selectDate(day);
+        }
+        
+        daysContainer.appendChild(dayEl);
+      }
+    }
+
+    function selectDate(day) {
+      selectedDate = day;
+      // 모든 날짜에서 selected 클래스 제거
+      const allDays = document.querySelectorAll('.calendar-day');
+      allDays.forEach(d => d.classList.remove('selected'));
+      // 클릭된 날짜에만 selected 추가
+      const clickedDay = Array.from(allDays).find(d => 
+        d.textContent == day && !d.classList.contains('disabled')
+      );
+      if(clickedDay) {
+        clickedDay.classList.add('selected');
+      }
+    }
+
+    function prevMonth() {
+      currentMonth--;
+      if(currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      currentMonth++;
+      if(currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    }
+
+    function selectSession(el) {
+      document.querySelectorAll('.session-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      el.classList.add('selected');
+    }
+
+    function startBooking() {
+      if(!selectedDate) {
+        alert('관람일을 선택해주세요.');
+        return;
+      }
+      
+      // URL 파라미터로 정보 전달
+      const urlParams = new URLSearchParams(window.location.search);
+      const level = urlParams.get('level') || 'normal';
+      const hall = urlParams.get('hall') || 'YES24홀';
+      const bookingDate = `${currentYear}.${String(currentMonth+1).padStart(2,'0')}.${String(selectedDate).padStart(2,'0')}`;
+      
+      // yes24hall.html로 이동
+      location.href = `yes24hall.html?level=${level}&hall=${encodeURIComponent(hall)}&date=${encodeURIComponent(bookingDate)}`;
+    }
+
+    // Initialize
+    renderCalendar();
+    // No need to disable button - today is auto-selected
+  </script>
+</body>
+</html>

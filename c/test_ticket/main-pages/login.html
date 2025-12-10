@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>TicketPro - 로그인</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg: #08080c;
+            --card: rgba(16, 12, 28, 0.75);
+            --card-hover: rgba(22, 16, 38, 0.85);
+            --border: rgba(70, 50, 120, 0.2);
+            --border-hover: rgba(139, 92, 246, 0.35);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.45);
+            --accent-purple: #8b5cf6;
+            --accent-violet: #a78bfa;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Background Effects */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+        }
+
+        .gradient-orb-1 {
+            width: 500px;
+            height: 500px;
+            background: rgba(139, 92, 246, 0.3);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .gradient-orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(236, 72, 153, 0.25);
+            bottom: -50px;
+            right: -50px;
+        }
+
+        /* 로그인 카드 */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px 40px;
+            backdrop-filter: blur(20px);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-logo {
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        /* 입력 필드 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            padding-right: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* 중복 체크 버튼 */
+        .check-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 16px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            color: var(--accent-violet);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .check-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+
+        .check-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 상태 메시지 */
+        .status-message {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-message.show {
+            display: flex;
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--accent-red);
+        }
+
+        .status-message.info {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--accent-violet);
+        }
+
+        /* 로그인 버튼 */
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--gradient-purple);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 하단 링크 */
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .login-footer a {
+            color: var(--accent-violet);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 로딩 스피너 */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 닉네임 규칙 */
+        .nickname-rules {
+            margin-top: 16px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        .nickname-rules h4 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .nickname-rules ul {
+            list-style: none;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .nickname-rules li {
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nickname-rules li::before {
+            content: "•";
+            color: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-effects">
+        <div class="gradient-orb gradient-orb-1"></div>
+        <div class="gradient-orb gradient-orb-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1 class="login-logo">TicketPro</h1>
+                <p class="login-subtitle">티켓팅 연습의 시작</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <label class="input-label">닉네임</label>
+                    <div class="input-wrapper">
+                        <input
+                            type="text"
+                            id="nickname"
+                            class="input-field"
+                            placeholder="닉네임을 입력하세요"
+                            maxlength="20"
+                            autocomplete="off"
+                            style="padding-right: 20px;"
+                        />
+                    </div>
+                    <div id="statusMessage" class="status-message"></div>
+                </div>
+
+                <div class="nickname-rules">
+                    <h4>닉네임 규칙</h4>
+                    <ul>
+                        <li>2~20자 이내</li>
+                        <li>한글, 영문, 숫자 사용 가능</li>
+                        <li>특수문자 사용 불가</li>
+                    </ul>
+                </div>
+
+                <button type="submit" id="loginBtn" class="login-btn">
+                    시작하기
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <a href="../../../a/index.html">홈으로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase 설정 -->
+    <script src="../js/supabase-config.js"></script>
+
+    <script>
+        const nicknameInput = document.getElementById('nickname');
+        const loginBtn = document.getElementById('loginBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const loginForm = document.getElementById('loginForm');
+
+        // 닉네임 유효성 검사
+        function validateNickname(nickname) {
+            const regex = /^[가-힣a-zA-Z0-9]{2,20}$/;
+            return regex.test(nickname);
+        }
+
+        // 상태 메시지 표시
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message show ${type}`;
+        }
+
+        // 상태 메시지 숨기기
+        function hideStatus() {
+            statusMessage.className = 'status-message';
+        }
+
+        // 로그인 폼 제출
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nickname = nicknameInput.value.trim();
+
+            if (!nickname) {
+                showStatus('닉네임을 입력해주세요', 'error');
+                return;
+            }
+
+            if (!validateNickname(nickname)) {
+                showStatus('닉네임 형식이 올바르지 않습니다', 'error');
+                return;
+            }
+
+            // 로딩 상태
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner"></span> 로그인 중...';
+
+            try {
+                const userId = await loginOrCreate(nickname);
+
+                if (userId) {
+                    showStatus('로그인 성공! 이동 중...', 'success');
+
+                    // 1초 후 메인 페이지로 이동
+                    setTimeout(() => {
+                        window.location.href = '../../../a/index.html';
+                    }, 1000);
+                } else {
+                    showStatus('로그인에 실패했습니다', 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '시작하기';
+                }
+            } catch (error) {
+                showStatus('오류가 발생했습니다', 'error');
+                console.error(error);
+                loginBtn.disabled = false;
+                loginBtn.textContent = '시작하기';
+            }
+        });
+
+        // 이미 로그인된 경우 바로 이동
+        if (isLoggedIn()) {
+            window.location.href = '../../../a/index.html';
+        }
+    </script>
+</body>
+</html>

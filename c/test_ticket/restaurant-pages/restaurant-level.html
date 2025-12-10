@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TicketPro - 난이도 선택</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../common/theme.css">
+  <style>
+    .levels-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+    <div class="gradient-orb gradient-orb-3"></div>
+  </div>
+
+  <!-- 네비게이션 바 -->
+  <nav class="navbar">
+    <a href="../../../a/index.html" class="nav-logo">
+      <span class="nav-logo-text">TicketPro</span>
+      <div class="star star-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+      <div class="star star-6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53"><path class="star-fill" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"/></svg></div>
+    </a>
+    <div class="nav-actions" id="navActions">
+    </div>
+  </nav>
+
+  <!-- 로그인 상태 체크 -->
+  <script>
+    (function() {
+      const navActions = document.getElementById('navActions');
+      const userId = sessionStorage.getItem('userId');
+      const nickname = sessionStorage.getItem('nickname');
+      const adminBtn = `<a href="../admin/key-manager.html" class="nav-btn secondary" style="font-size: 11px; padding: 4px 8px; opacity: 0.5; margin-left: 8px;" title="관리자">⚙️</a>`;
+      if (userId && nickname) {
+        navActions.innerHTML = `
+          <span style="color: var(--text-secondary); font-size: 14px; margin-right: 8px;">👤 ${nickname}</span>
+          <a href="../battle-pages/battle-mode.html" class="nav-btn" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2)); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">⚔️ 대결</a>
+          <a href="../main-pages/ranking.html" class="nav-btn secondary">🏆 순위표</a>
+          <a href="../main-pages/chat.html" class="nav-btn secondary">💬 채팅</a>
+          <button onclick="logout()" class="nav-btn secondary">로그아웃</button>
+          ${adminBtn}
+        `;
+      } else {
+        navActions.innerHTML = `
+          <a href="../main-pages/login.html" class="nav-btn primary">로그인</a>
+          ${adminBtn}
+        `;
+      }
+    })();
+    function logout() {
+      sessionStorage.removeItem('userId');
+      sessionStorage.removeItem('nickname');
+      location.reload();
+    }
+  </script>
+
+  <!-- 스피커 버튼 -->
+  <button id="globalSpeaker" class="speaker-btn" title="사운드">
+    <span id="speakerIcon">🔊</span>
+  </button>
+
+  <!-- 메인 컨테이너 -->
+  <div class="main-container">
+    <h1 class="main-title">원하는 <span class="gradient-text">난이도</span>를 선택해주세요</h1>
+
+    <div class="levels-container">
+      <button class="level-btn easy" onclick="navigateToTimer('easy')">
+        <span>🌱</span> 요즘 뜨는 인스타 맛집
+      </button>
+      <button class="level-btn normal" onclick="navigateToTimer('normal')">
+        <span>🔥</span> 흑백요리사 맛집
+      </button>
+      <button class="level-btn hard" onclick="navigateToTimer('hard')">
+        <span>💀</span> 모수
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 스피커 토글
+    (function(){
+      var btn = document.getElementById('globalSpeaker');
+      var icon = document.getElementById('speakerIcon');
+      function refresh(){ icon.textContent = localStorage.getItem('globalSound') === 'off' ? '🔇' : '🔊'; }
+      btn.addEventListener('click', function(){
+        localStorage.setItem('globalSound', localStorage.getItem('globalSound') === 'off' ? 'on' : 'off');
+        refresh();
+      });
+      if(!localStorage.getItem('globalSound')) localStorage.setItem('globalSound','on');
+      refresh();
+    })();
+
+    // 난이도 선택
+    function navigateToTimer(level) {
+      location.href = 'restaurant-timer.html?level=' + level;
+    }
+  </script>
+</body>
+</html>

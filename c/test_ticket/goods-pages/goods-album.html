@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>앨범 구매</title>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Malgun Gothic", "맑은 고딕", AppleGothic, sans-serif;
+      background: #fff;
+      color: #333;
+      font-size: 14px;
+    }
+
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 0;
+    }
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #00d9c8;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: #000; font-weight: 700; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .nav-links a {
+      color: #000;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 13px;
+    }
+    .user-menu a {
+      color: #000;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 480px 1fr;
+      gap: 48px;
+    }
+
+    /* Left - Product Image */
+    .product-image-section {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+    }
+    .product-image {
+      width: 100%;
+      background: #f5f5f5;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+    }
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .thumbnail-list {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+    .thumbnail {
+      width: 60px;
+      height: 60px;
+      background: #f5f5f5;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .thumbnail.active {
+      border-color: #00d9c8;
+    }
+
+    /* Right - Product Info */
+    .product-info {
+      padding-top: 0;
+    }
+    .artist-name {
+      font-size: 13px;
+      color: #000;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .artist-name::after {
+      content: ' 〉';
+    }
+    .product-title {
+      font-size: 18px;
+      font-weight: 400;
+      color: #000;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .price-section {
+      padding: 0;
+      border: none;
+      margin-bottom: 20px;
+    }
+    .original-price {
+      font-size: 13px;
+      color: #4d9eff;
+      margin-bottom: 6px;
+    }
+    .current-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: #000;
+    }
+    .current-price .currency {
+      font-size: 13px;
+      font-weight: 600;
+      margin-right: 2px;
+    }
+
+    /* Options */
+    .options-section {
+      margin-bottom: 20px;
+    }
+    .option-group {
+      margin-bottom: 0;
+    }
+    .option-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: #666;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .version-selector {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .version-select {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+      color: #000;
+    }
+    .add-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      background: #00d9c8;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .add-btn:hover {
+      background: #00c4b4;
+    }
+
+    /* Selected Items Cart */
+    .selected-items {
+      margin-bottom: 20px;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #f8f8f8;
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+    .cart-item:last-child {
+      margin-bottom: 0;
+    }
+    .cart-item-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cart-item-name {
+      font-size: 14px;
+      color: #000;
+      font-weight: 500;
+    }
+    .cart-item-price {
+      font-size: 13px;
+      color: #666;
+    }
+    .cart-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+    }
+    .qty-btn:hover {
+      background: #f5f5f5;
+    }
+    .qty-value {
+      font-size: 14px;
+      font-weight: 500;
+      min-width: 24px;
+      text-align: center;
+      color: #000;
+    }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .remove-btn:hover {
+      color: #333;
+    }
+    .empty-cart {
+      text-align: center;
+      padding: 20px 16px;
+      color: #999;
+      font-size: 13px;
+    }
+
+    /* Total Price */
+    .total-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      margin-bottom: 20px;
+      border-top: 1px solid #e5e5e5;
+    }
+    .total-label {
+      font-size: 14px;
+      font-weight: 400;
+      color: #000;
+    }
+    .total-sublabel {
+      font-size: 12px;
+      color: #999;
+      display: block;
+      margin-top: 2px;
+    }
+    .total-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: #000;
+    }
+    .total-price .currency {
+      font-size: 13px;
+      font-weight: 600;
+      margin-right: 2px;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-cart {
+      background: #fff;
+      color: #00d9c8;
+      border: 2px solid #00d9c8;
+    }
+    .btn-cart:hover {
+      background: #f0fffe;
+    }
+    .btn-buy {
+      background: #00d9c8;
+      color: #fff;
+    }
+    .btn-buy:hover {
+      background: #00c4b4;
+    }
+
+    /* Additional Info */
+    .info-notice {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      margin-bottom: 32px;
+    }
+    .info-notice p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .info-notice p::before {
+      content: '📍';
+      flex-shrink: 0;
+    }
+    .info-notice p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Product Details Tabs */
+    .tabs {
+      border-top: 2px solid #000;
+      margin-top: 40px;
+    }
+    .tab-buttons {
+      display: flex;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .tab-btn {
+      padding: 16px 24px;
+      border: none;
+      background: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: #999;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab-btn.active {
+      color: #000;
+      border-bottom-color: #000;
+    }
+    .tab-content {
+      padding: 32px 0;
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .tab-content h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .tab-content p {
+      font-size: 14px;
+      line-height: 1.8;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .spec-table {
+      width: 100%;
+      border-top: 1px solid #e5e5e5;
+    }
+    .spec-table tr {
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .spec-table th {
+      text-align: left;
+      padding: 12px 16px;
+      background: #f8f8f8;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      width: 140px;
+    }
+    .spec-table td {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .product-image-section {
+        position: relative;
+      }
+    }
+
+    /* 보안문자 모달 */
+    .captcha-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .captcha-container {
+      background: white;
+      padding: 32px 28px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 360px;
+      height: 430px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+    .captcha-canvas {
+      cursor: pointer;
+    }
+    .captcha-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .captcha-input:focus {
+      outline: none;
+      border-color: #00d9c8;
+    }
+    .captcha-result {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .captcha-result.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .captcha-result.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* 실패 모달 */
+    .failure-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    .failure-container {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 400px;
+      text-align: center;
+    }
+    .failure-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: #ef4444;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+    .failure-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 40px 0;
+    }
+    .failure-button {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .failure-button.retry {
+      background: #00d9c8;
+      color: white;
+    }
+    .failure-button.retry:hover {
+      background: #00c4b4;
+    }
+    .failure-button.home {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .failure-button.home:hover {
+      background: #e5e7eb;
+    }
+
+    /* 성공 모달 */
+    .success-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    .success-container {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 400px;
+      text-align: center;
+    }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+    .success-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 40px 0;
+    }
+    .success-button {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .success-button.home {
+      background: #00d9c8;
+      color: white;
+    }
+    .success-button.home:hover {
+      background: #00c4b4;
+    }
+
+    /* 타이머 표시 */
+    .timer-display {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #1f2937;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      display: none;
+    }
+
+    /* 퀘스트 UI */
+    .quest-display {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: white;
+      border: 3px solid #00d9c8;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      display: none;
+      min-width: 280px;
+    }
+    .quest-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quest-difficulty {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .quest-difficulty.easy {
+      background: #22c55e;
+      color: white;
+    }
+    .quest-difficulty.normal {
+      background: #2563EB;
+      color: white;
+    }
+    .quest-difficulty.hard {
+      background: #ef4444;
+      color: white;
+    }
+    .quest-objective {
+      font-size: 14px;
+      color: #374151;
+      margin-bottom: 16px;
+      line-height: 1.6;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+    }
+    .quest-progress {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+    .quest-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 8px;
+      background: #f3f4f6;
+      border-radius: 6px;
+    }
+    .quest-item.completed {
+      background: #d4edda;
+      color: #155724;
+    }
+    .quest-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #9ca3af;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    .quest-item.completed .quest-checkbox {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="../main-pages/choice.html" class="logo">weverse <span>shop</span></a>
+        <nav class="nav-links">
+          <a href="#">LE SSERAFIM</a>
+          <a href="#">KO</a>
+          <a href="#">KRW ₩</a>
+        </nav>
+      </div>
+      <div class="user-menu">
+        <a href="#">🌐 KR</a>
+        <a href="#">장바구니</a>
+        <a href="#">MY</a>
+        <a href="#">로그인</a>
+        <a href="#">고객센터</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    홈 > 아티스트 > LE SSERAFIM > 앨범
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Product Image -->
+    <div class="product-image-section">
+      <div class="product-image">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;color:#ddd;font-weight:700;">RANDOM</div>
+      </div>
+      <div class="thumbnail-list">
+        <div class="thumbnail active"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+      </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="product-info">
+      <div class="artist-name">LE SSERAFIM 〉</div>
+      <h1 class="product-title">1st Single Album 'SPAGHETTI' (COMPACT ver.) [Random]</h1>
+      
+      <div class="price-section">
+        <div class="original-price">정가 KRW ₩150</div>
+        <div class="current-price">
+          <span class="currency">KRW</span>₩13,300
+        </div>
+      </div>
+
+      <div class="options-section">
+        <div class="option-group">
+          <label class="option-label">버전 선택</label>
+          <div class="version-selector">
+            <select class="version-select" id="version-select">
+              <option value="Random">Random</option>
+              <option value="A ver">A ver</option>
+              <option value="B ver">B ver</option>
+              <option value="C ver">C ver</option>
+            </select>
+            <button class="add-btn" onclick="addSelectedVersion()">추가</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="selected-items" id="selected-items">
+        <div class="empty-cart">버전을 선택해주세요</div>
+      </div>
+
+      <div class="total-section">
+        <div>
+          <div class="total-label"><span id="total-count">0</span>개 선택</div>
+          <span class="total-sublabel" id="max-notice">최대 17개까지 구매할 수 있습니다.</span>
+        </div>
+        <div class="total-price">
+          <span class="currency">KRW</span><span id="total-price">₩0</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-cart">장바구니 추가</button>
+        <button class="btn btn-buy" onclick="handlePurchase()">구매하기</button>
+      </div>
+
+      <div class="info-notice">
+        <p>로그인 후 배송 가능 여부를 확인할 수 있습니다.</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab(0)">상세정보</button>
+          <button class="tab-btn" onclick="switchTab(1)">유의사항</button>
+        </div>
+        
+        <div class="tab-content active" id="tab-0">
+          <h3>상품 정보</h3>
+          <p>LE SSERAFIM의 첫 번째 싱글 앨범 'SPAGHETTI' COMPACT 버전입니다.</p>
+          <p>랜덤으로 구성된 포토카드와 다양한 구성품이 포함되어 있습니다.</p>
+          
+          <table class="spec-table">
+            <tr>
+              <th>아티스트</th>
+              <td>LE SSERAFIM</td>
+            </tr>
+            <tr>
+              <th>발매일</th>
+              <td>2025.01.15</td>
+            </tr>
+            <tr>
+              <th>구성</th>
+              <td>CD + 포토북 + 포토카드 + 미니 포스터</td>
+            </tr>
+            <tr>
+              <th>크기</th>
+              <td>120 x 120 x 15mm</td>
+            </tr>
+            <tr>
+              <th>무게</th>
+              <td>약 180g</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div class="tab-content" id="tab-1">
+          <h3>배송 및 교환/환불 안내</h3>
+          <p>• 상품은 결제 완료 후 2-5 영업일 이내 발송됩니다.</p>
+          <p>• 랜덤 상품 특성상 단순 변심에 의한 교환 및 환불이 불가능합니다.</p>
+          <p>• 제품 불량 시 수령일로부터 7일 이내 문의 바랍니다.</p>
+          <p>• 해외 배송은 국가별로 배송 기간이 다를 수 있습니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퀘스트+타이머 (우상단 통합 패널) -->
+  <div class="quest-display" id="questDisplay" style="right:20px;left:auto;">
+    <div class="quest-title" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span>📋 미션</span>
+        <span class="quest-difficulty" id="questDifficulty">NORMAL</span>
+      </div>
+      <div id="questTimerBadge" style="background:#0b1220;color:#fff;border-radius:10px;padding:6px 10px;font-weight:900;min-width:64px;text-align:center;">--:--</div>
+    </div>
+    <div class="quest-objective" id="questObjective">지정된 앨범을 구매하세요!</div>
+    <div id="questItems"></div>
+  </div>
+
+  <!-- 보안문자 모달 -->
+  <div class="captcha-modal" id="captchaModal">
+    <div class="captcha-container">
+      <div style="margin-bottom: 20px;">
+        <div style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 6px;">자동입력 방지</div>
+        <div style="font-size: 13px; color: #6b7280;">아래 이미지의 문자를 입력해주세요</div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <canvas id="captchaCanvas" class="captcha-canvas" width="260" height="70" style="border: none; display: block; margin: 0 auto;"></canvas>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+        <button onclick="generateCaptcha()" style="width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </button>
+        <div style="font-size: 12px; color: #9ca3af;">새로고침</div>
+      </div>
+
+      <input type="text" id="captchaInput" class="captcha-input" placeholder="문자를 입력해주세요" maxlength="6">
+
+      <div style="display: flex; gap: 8px;">
+        <button onclick="verifyCaptcha()" style="flex: 1; padding: 13px; background: #00d9c8; color: white; border: none; border-radius: 3px; font-size: 14px; font-weight: 600; cursor: pointer;">
+          확인
+        </button>
+      </div>
+
+      <div id="captchaResult" class="captcha-result"></div>
+    </div>
+  </div>
+
+  <!-- 실패 모달 -->
+  <div class="failure-modal" id="failureModal">
+    <div class="failure-container">
+      <div class="failure-icon">😢</div>
+      <h2 class="failure-title">이런.. 재고가 다 팔렸습니다!</h2>
+      <button class="failure-button retry" onclick="localStorage.removeItem('questData'); location.href='goods-level.html'">난이도 선택으로</button>
+      <button class="failure-button retry" onclick="localStorage.removeItem('questData'); location.href='goods-timer.html'">다시하기</button>
+      <button class="failure-button home" onclick="localStorage.removeItem('questData'); location.href='../main-pages/choice.html'">메인으로</button>
+    </div>
+  </div>
+
+  <!-- 성공 모달 -->
+  <div class="success-modal" id="successModal">
+    <div class="success-container">
+      <div class="success-icon">✅</div>
+      <h2 class="success-title">미션 완료! 구매 성공!</h2>
+      <p id="elapsedTimeText" style="font-size: 18px; color: #666; margin: -10px 0 20px;">소요시간: <strong id="elapsedTime">00:00</strong></p>
+      <button class="success-button" id="saveRecordBtn" onclick="saveRecord()" style="background: linear-gradient(135deg, #fbbf24, #f97316); margin-bottom: 10px; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); font-weight: 700; animation: pulse-save 1.5s infinite;">🏆 기록 저장하기</button>
+      <button class="success-button" id="aiFeedbackBtn" onclick="goToAIFeedback()" style="background: linear-gradient(135deg, #3b82f6, #06b6d4); margin-bottom: 10px;">🤖 AI 피드백 받기</button>
+      <button class="success-button home" onclick="localStorage.removeItem('questData'); location.href='goods-level.html'">난이도 선택으로</button>
+      <button class="success-button home" onclick="localStorage.removeItem('questData'); location.href='goods-timer.html'">다시하기</button>
+      <button class="success-button home" onclick="localStorage.removeItem('questData'); location.href='../main-pages/choice.html'">메인으로</button>
+      <a href="ranking.html" class="success-button" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); margin-top: 10px; text-decoration: none; display: inline-block;">👉 순위표 보러가기</a>
+      <p id="saveStatus" style="margin-top: 15px; font-size: 14px; color: #888;"></p>
+      <p style="margin-top: 10px; font-size: 13px; color: #ef4444; font-weight: 600;">⚠️ 지금 저장하지 않으면 기록이 저장되지 않습니다!</p>
+    </div>
+  </div>
+  <style>
+    @keyframes pulse-save {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+      50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+    }
+  </style>
+
+  <script>
+    // Album data by artist
+    const albumData = {
+      lesserafim: {
+        artist: 'LE SSERAFIM',
+        title: "5th Mini Album 'HOT' (COMPACT ver.) (Set)",
+        price: 81000,
+        originalPrice: 150,
+        maxQuantity: 3,
+        image: '../image/goods/르세라핌 앨범.png'
+      },
+      bts: {
+        artist: 'BTS',
+        title: "'Charm of HOPE' (Set)",
+        price: 98700,
+        originalPrice: 200,
+        maxQuantity: 4,
+        image: '../image/goods/BTS 앨범.png'
+      },
+      blackpink: {
+        artist: 'BLACKPINK',
+        title: "2nd ALBUM [BORN PINK] DIGIPACK ver.",
+        price: 13200,
+        originalPrice: 150,
+        maxQuantity: 6,
+        image: '../image/goods/블랙핑크 앨범.png'
+      },
+      seventeen: {
+        artist: 'SEVENTEEN',
+        title: "5th Album 'HAPPY BURSTDAY' (Set)",
+        price: 64500,
+        originalPrice: 150,
+        maxQuantity: 5,
+        image: '../image/goods/세븐틴 앨범.png'
+      }
+    };
+
+    // Randomly select an artist
+    const artists = Object.keys(albumData);
+    const randomArtist = artists[Math.floor(Math.random() * artists.length)];
+    const selectedAlbum = albumData[randomArtist];
+
+    let unitPrice = selectedAlbum.price;
+    const maxQuantity = selectedAlbum.maxQuantity;
+    let cart = {}; // { 'Random': 2, 'A ver': 1, ... }
+
+    // Update page content with selected album
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('.artist-name').textContent = selectedAlbum.artist;
+      document.querySelector('.product-title').textContent = selectedAlbum.title;
+      document.querySelector('.original-price').textContent = '최대 캐시 KRW ₩' + selectedAlbum.originalPrice;
+      document.querySelector('.current-price .currency').textContent = 'KRW';
+      document.querySelector('.current-price').innerHTML = '<span class="currency">KRW</span>₩' + unitPrice.toLocaleString('ko-KR');
+      document.getElementById('max-notice').textContent = '최대 ' + maxQuantity + '개까지 구매할 수 있습니다.';
+      
+      // Update album image
+      const productImageDiv = document.querySelector('.product-image');
+      productImageDiv.innerHTML = '<img src="' + selectedAlbum.image + '" alt="' + selectedAlbum.artist + ' 앨범" />';
+      
+      // Show quest and start timer immediately
+      if (questRequirements.length > 0) {
+        updateQuestDisplay();
+        questDisplay.style.display = 'block';
+        startTimer();
+      }
+    });
+
+    function addSelectedVersion() {
+      const select = document.getElementById('version-select');
+      const version = select.value;
+      
+      const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      if (totalCount >= maxQuantity) {
+        alert('최대 ' + maxQuantity + '개까지만 구매 가능합니다.');
+        return;
+      }
+      
+      if (!cart[version]) {
+        cart[version] = 1;
+      } else {
+        cart[version]++;
+      }
+      updateCart();
+    }
+
+    function updateCart() {
+      const container = document.getElementById('selected-items');
+      const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      
+      if (totalCount === 0) {
+        container.innerHTML = '<div class="empty-cart">버전을 선택해주세요</div>';
+      } else {
+        let html = '';
+        for (let version in cart) {
+          if (cart[version] > 0) {
+            html += `
+              <div class="cart-item">
+                <div class="cart-item-info">
+                  <div class="cart-item-name">${version}</div>
+                </div>
+                <div class="cart-item-controls">
+                  <div class="quantity-controls">
+                    <button class="qty-btn" onclick="decreaseVersion('${version}')">−</button>
+                    <div class="qty-value">${cart[version]}</div>
+                    <button class="qty-btn" onclick="increaseVersion('${version}')">+</button>
+                  </div>
+                  <button class="remove-btn" onclick="removeVersion('${version}')">✕</button>
+                </div>
+              </div>
+            `;
+          }
+        }
+        container.innerHTML = html;
+      }
+      
+      updateTotal();
+      
+      // 퀘스트 진행도 업데이트
+      if (questRequirements.length > 0) {
+        updateQuestDisplay();
+      }
+    }
+
+    function increaseVersion(version) {
+      const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      if (totalCount >= maxQuantity) {
+        alert('최대 ' + maxQuantity + '개까지만 구매 가능합니다.');
+        return;
+      }
+      cart[version]++;
+      updateCart();
+    }
+
+    function decreaseVersion(version) {
+      if (cart[version] > 1) {
+        cart[version]--;
+      } else {
+        delete cart[version];
+      }
+      updateCart();
+    }
+
+    function removeVersion(version) {
+      delete cart[version];
+      updateCart();
+    }
+
+    function updateTotal() {
+      const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      const totalPrice = totalCount * unitPrice;
+      
+      document.getElementById('total-count').textContent = totalCount;
+      document.getElementById('total-price').textContent = '₩' + totalPrice.toLocaleString('ko-KR');
+    }
+
+    function switchTab(index) {
+      const buttons = document.querySelectorAll('.tab-btn');
+      const contents = document.querySelectorAll('.tab-content');
+      
+      buttons.forEach((btn, i) => {
+        if (i === index) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      contents.forEach((content, i) => {
+        if (i === index) {
+          content.classList.add('active');
+        } else {
+          content.classList.remove('active');
+        }
+      });
+    }
+
+    // ========== 보안문자 시스템 ==========
+    let currentCaptcha = '';
+    let captchaVerified = false;
+    const captchaModal = document.getElementById('captchaModal');
+    const captchaCanvas = document.getElementById('captchaCanvas');
+    const captchaCtx = captchaCanvas.getContext('2d');
+    const captchaInput = document.getElementById('captchaInput');
+    const captchaResult = document.getElementById('captchaResult');
+    const timerDisplay = document.getElementById('questTimerBadge');
+    const failureModal = document.getElementById('failureModal');
+    const questDisplay = document.getElementById('questDisplay');
+    const questDifficulty = document.getElementById('questDifficulty');
+    const questObjective = document.getElementById('questObjective');
+    const questItems = document.getElementById('questItems');
+
+    // Load quest data from localStorage
+    let level = 'normal';
+    let questRequirements = [];
+    const storedQuest = localStorage.getItem('questData');
+    if (storedQuest) {
+      try {
+        const questData = JSON.parse(storedQuest);
+        level = questData.level || 'normal';
+        questRequirements = questData.requirements || [];
+        questObjective.textContent = questData.objective || '미션을 확인하세요!';
+      } catch(e) {
+        console.error('Failed to parse quest data:', e);
+      }
+    }
+
+    // 난이도별 제한 시간 (초)
+    const timeLimit = {
+      easy: 20,
+      normal: 10,
+      hard: 7
+    };
+
+    let timerInterval = null;
+    let purchaseAllowed = true; // 페이지 진입 시 바로 구매 가능
+    
+
+    
+    function updateQuestDisplay() {
+      questDifficulty.textContent = level.toUpperCase();
+      questDifficulty.className = 'quest-difficulty ' + level;
+      
+      let html = '';
+      questRequirements.forEach((req, index) => {
+        const completed = checkQuestItem(req);
+        html += `
+          <div class="quest-item ${completed ? 'completed' : ''}" id="quest-item-${index}">
+            <div class="quest-checkbox">${completed ? '✓' : ''}</div>
+            <div>${req.version} ${req.count}개</div>
+          </div>
+        `;
+      });
+      questItems.innerHTML = html;
+    }
+    
+    function checkQuestItem(requirement) {
+      if (requirement.version === '아무 앨범' || requirement.version === '아무 포토카드') {
+        const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+        return totalCount >= requirement.count;
+      } else {
+        return (cart[requirement.version] || 0) >= requirement.count;
+      }
+    }
+    
+    function checkQuestComplete() {
+      return questRequirements.every(req => checkQuestItem(req));
+    }
+
+    // 난이도별 보안문자 설정
+    const captchaDifficultySettings = {
+      easy: {
+        length: 4,
+        rotation: 0.05,
+        noiseLines: 5,
+        noiseDots: 10,
+        foregroundLines: 0,
+        offsetY: 2,
+        offsetX: 1,
+        fontSize: [38, 40]
+      },
+      normal: {
+        length: 6,
+        rotation: 0.5,
+        noiseLines: 80,
+        noiseDots: 150,
+        foregroundLines: 8,
+        offsetY: 12,
+        offsetX: 8,
+        fontSize: [32, 45]
+      },
+      hard: {
+        length: 6,
+        rotation: 1.0,
+        noiseLines: 180,
+        noiseDots: 400,
+        foregroundLines: 25,
+        offsetY: 25,
+        offsetX: 15,
+        fontSize: [25, 55]
+      }
+    };
+
+    const captchaSettings = captchaDifficultySettings[level] || captchaDifficultySettings.normal;
+
+    function generateRandomString(length) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function generateCaptcha() {
+      currentCaptcha = generateRandomString(captchaSettings.length);
+      drawCaptcha();
+      captchaInput.value = '';
+      captchaInput.maxLength = captchaSettings.length;
+      captchaResult.innerHTML = '';
+      console.log('보안문자 정답:', currentCaptcha);
+    }
+
+    function drawCaptcha() {
+      const ctx = captchaCtx;
+      const canvas = captchaCanvas;
+      
+      // 배경 그리기
+      ctx.fillStyle = '#f8f9fa';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 배경 노이즈 선
+      for (let i = 0; i < captchaSettings.noiseLines; i++) {
+        ctx.strokeStyle = `rgba(${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, 0.4)`;
+        ctx.lineWidth = Math.random() * 2.5 + 0.5;
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.stroke();
+      }
+
+      // 배경 노이즈 점
+      for (let i = 0; i < captchaSettings.noiseDots; i++) {
+        ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.3)`;
+        ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+      }
+
+      // 글자 그리기
+      const spacing = canvas.width / (currentCaptcha.length + 1);
+      
+      for (let i = 0; i < currentCaptcha.length; i++) {
+        const char = currentCaptcha[i];
+        const x = spacing * (i + 1);
+        const y = canvas.height / 2;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((Math.random() - 0.5) * captchaSettings.rotation);
+        
+        const r = Math.floor(Math.random() * 80);
+        const g = Math.floor(Math.random() * 80);
+        const b = Math.floor(Math.random() * 80);
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        
+        const [minSize, maxSize] = captchaSettings.fontSize;
+        const fontSize = minSize + Math.random() * (maxSize - minSize);
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        
+        const offsetY = (Math.random() - 0.5) * captchaSettings.offsetY;
+        const offsetX = (Math.random() - 0.5) * captchaSettings.offsetX;
+        ctx.fillText(char, -10 + offsetX, offsetY);
+        
+        if (Math.random() > 0.3) {
+          ctx.strokeStyle = `rgba(${r + 50}, ${g + 50}, ${b + 50}, 0.6)`;
+          ctx.lineWidth = 1.5;
+          ctx.strokeText(char, -10 + offsetX, offsetY);
+        }
+        
+        ctx.restore();
+      }
+
+      // 전경 노이즈 선
+      for (let i = 0; i < captchaSettings.foregroundLines; i++) {
+        ctx.strokeStyle = `rgba(${Math.random() * 120}, ${Math.random() * 120}, ${Math.random() * 120}, 0.5)`;
+        ctx.lineWidth = Math.random() * 4 + 1;
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        
+        const cp1x = Math.random() * canvas.width;
+        const cp1y = Math.random() * canvas.height;
+        const cp2x = Math.random() * canvas.width;
+        const cp2y = Math.random() * canvas.height;
+        const endx = Math.random() * canvas.width;
+        const endy = Math.random() * canvas.height;
+        
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endx, endy);
+        ctx.stroke();
+      }
+    }
+
+    function verifyCaptcha() {
+      const input = captchaInput.value.toUpperCase();
+      
+      if (input === currentCaptcha) {
+        captchaVerified = true;
+        captchaModal.style.display = 'none';
+        // 구매 성공 처리
+        clearInterval(timerInterval);
+        timerDisplay.style.display = 'none';
+        questDisplay.style.display = 'none';
+        document.getElementById('successModal').style.display = 'flex';
+      } else {
+        captchaResult.className = 'captcha-result error';
+        captchaResult.textContent = '❌ 인증 실패! 다시 시도해주세요.';
+        setTimeout(() => generateCaptcha(), 1500);
+      }
+    }
+
+    function startTimer() {
+      const endAtRaw = localStorage.getItem('questEndAt');
+      if (!endAtRaw) {
+        timerDisplay.style.display = 'block';
+        timerDisplay.textContent = '--:--';
+        return;
+      }
+      const endAt = parseInt(endAtRaw, 10);
+      timerDisplay.style.display = 'block';
+      
+      function tick() {
+        const remainMs = Math.max(0, endAt - Date.now());
+        const totalSec = Math.floor(remainMs / 1000);
+        const minutes = Math.floor(totalSec / 60);
+        const seconds = totalSec % 60;
+        timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        if (remainMs <= 0) {
+          clearInterval(timerInterval);
+          purchaseAllowed = false;
+          timerDisplay.style.display = 'none';
+          failureModal.style.display = 'flex';
+        }
+      }
+      tick();
+      timerInterval = setInterval(tick, 1000);
+    }
+
+    // 엔터키로 확인
+    captchaInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        verifyCaptcha();
+      }
+    });
+
+    function handlePurchase() {
+      const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      
+      if (totalCount === 0) {
+        showToast('구매할 상품을 선택해주세요.');
+        return;
+      }
+
+      if (!purchaseAllowed) {
+        showToast('시간이 초과되었습니다.');
+        return;
+      }
+
+      // 퀘스트 완료 체크
+      if (!checkQuestComplete()) {
+        showToast('미션 조건을 충족하지 못했습니다!');
+        return;
+      }
+      
+      // 보안문자 입력 요청
+      if (!captchaVerified) {
+        generateCaptcha();
+        captchaModal.style.display = 'flex';
+        return;
+      }
+    }
+  </script>
+  <script>
+    (function(){
+      var style = document.createElement('style');
+      style.textContent = 
+        '.toast-container{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none}'+
+        '.toast{min-width:240px;max-width:90vw;background:rgba(17,24,39,0.92);color:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 8px 20px rgba(0,0,0,0.25);font-size:14px;line-height:1.4;pointer-events:auto}'+
+        '.toast-warning{background:rgba(217,119,6,0.95)}';
+      document.head.appendChild(style);
+      var container = document.createElement('div');
+      container.className = 'toast-container';
+      container.id = 'toastContainer';
+      document.body.appendChild(container);
+    })();
+    function showToast(message){
+      var container = document.getElementById('toastContainer');
+      if(!container) return;
+      var el = document.createElement('div');
+      el.className = 'toast toast-warning';
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(function(){ el.style.transition = 'opacity 300ms, transform 300ms'; el.style.opacity = '0'; el.style.transform = 'translateY(-6px)'; setTimeout(function(){ if(el && el.parentNode){ el.parentNode.removeChild(el); } }, 320); }, 1600);
+    }
+  </script>
+
+<!-- Supabase 설정 -->
+<script src="../js/supabase-config.js"></script>
+
+<script>
+// === 기록 저장 기능 ===
+let gameStartTime = Date.now();
+let gameEndTime = null;
+let elapsedMs = 0;
+let recordSaved = false;
+
+// 페이지 로드 시 시작 시간 기록
+document.addEventListener('DOMContentLoaded', function() {
+  gameStartTime = Date.now();
+});
+
+// 성공 모달이 표시될 때 소요시간 계산
+const successModalEl = document.getElementById('successModal');
+const observer = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+      if (successModalEl.style.display === 'flex') {
+        gameEndTime = Date.now();
+        elapsedMs = gameEndTime - gameStartTime;
+
+        // 소요시간 표시
+        const elapsedEl = document.getElementById('elapsedTime');
+        if (elapsedEl) {
+          elapsedEl.textContent = formatTimeSimple(elapsedMs);
+        }
+
+        // 로그인 상태 확인
+        const saveBtn = document.getElementById('saveRecordBtn');
+        const saveStatus = document.getElementById('saveStatus');
+
+        if (!isLoggedIn()) {
+          saveBtn.textContent = '🔒 로그인 필요';
+          saveBtn.style.background = '#6b7280';
+          saveStatus.innerHTML = '<a href="../main-pages/login.html" style="color: #8b5cf6;">로그인</a>하면 기록을 저장할 수 있어요!';
+        }
+      }
+    }
+  });
+});
+
+observer.observe(successModalEl, { attributes: true });
+
+// 기록 저장 함수
+async function saveRecord() {
+  if (recordSaved) {
+    alert('이미 저장된 기록입니다!');
+    return;
+  }
+
+  if (!isLoggedIn()) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      window.location.href = '../main-pages/login.html';
+    }
+    return;
+  }
+
+  const saveBtn = document.getElementById('saveRecordBtn');
+  const saveStatus = document.getElementById('saveStatus');
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = '저장 중...';
+
+  try {
+    const difficulty = getDifficulty();
+    const recordId = await saveBookingRecord('goods', difficulty, elapsedMs, {
+      type: 'album',
+      timestamp: new Date().toISOString()
+    });
+
+    if (recordId) {
+      recordSaved = true;
+      saveBtn.textContent = '✅ 저장 완료!';
+      saveBtn.style.background = '#10b981';
+      saveStatus.innerHTML = '<a href="../main-pages/ranking.html" style="color: #8b5cf6; font-weight: bold;">👉 순위표 보러가기</a>';
+    } else {
+      throw new Error('저장 실패');
+    }
+  } catch (error) {
+    console.error('기록 저장 오류:', error);
+    saveBtn.disabled = false;
+    saveBtn.textContent = '🏆 기록 저장하기';
+    saveStatus.textContent = '저장에 실패했습니다. 다시 시도해주세요.';
+    saveStatus.style.color = '#ef4444';
+  }
+}
+
+function getDifficulty() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('level') || 'normal';
+}
+
+// === 클릭 추적 및 AI 피드백 기능 ===
+let clickCount = 0;
+let mouseDistance = 0;
+let lastMousePos = { x: 0, y: 0 };
+let clickTimes = [];
+
+// 클릭 추적
+document.addEventListener('click', function(e) {
+  clickCount++;
+  clickTimes.push(Date.now());
+});
+
+// 마우스 이동 거리 추적
+document.addEventListener('mousemove', function(e) {
+  if (lastMousePos.x !== 0 || lastMousePos.y !== 0) {
+    const dx = e.clientX - lastMousePos.x;
+    const dy = e.clientY - lastMousePos.y;
+    mouseDistance += Math.sqrt(dx * dx + dy * dy);
+  }
+  lastMousePos = { x: e.clientX, y: e.clientY };
+});
+
+// AI 피드백 페이지로 이동
+function goToAIFeedback() {
+  // 평균 반응 시간 계산
+  let avgReactionTime = 0;
+  if (clickTimes.length > 1) {
+    let totalGap = 0;
+    for (let i = 1; i < clickTimes.length; i++) {
+      totalGap += clickTimes[i] - clickTimes[i - 1];
+    }
+    avgReactionTime = Math.floor(totalGap / (clickTimes.length - 1));
+  }
+
+  // 피드백 데이터 저장
+  const feedbackData = {
+    category: 'goods',
+    difficulty: getDifficulty(),
+    elapsedTime: elapsedMs,
+    clickCount: clickCount,
+    success: true,
+    mouseDistance: Math.floor(mouseDistance),
+    accuracy: Math.min(100, Math.floor((5 / Math.max(1, clickCount)) * 100)),
+    reactionTime: avgReactionTime
+  };
+
+  localStorage.setItem('ticketpro_feedback_data', JSON.stringify(feedbackData));
+  localStorage.removeItem('questData');
+  location.href = '../main-pages/ai-feedback.html';
+}
+</script>
+</body>
+</html>

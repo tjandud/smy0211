@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>멜론 티켓 - 결제</title>
+    <meta name="viewport" content="width=1126">
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 멜론티켓 CSS (비동기 로드로 최적화) -->
+    <link rel="preload" href="https://cdnticket.melon.co.kr/resource/style/web/common/common_onestop-1f4da835a2.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnticket.melon.co.kr/resource/style/web/common/onestop-ea2e58911c.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnticket.melon.co.kr/resource/style/web/common/common_onestop-1f4da835a2.css">
+        <link rel="stylesheet" href="https://cdnticket.melon.co.kr/resource/style/web/common/onestop-ea2e58911c.css">
+    </noscript>
+
+    <!-- 여기부터 덮어쓰기용 커스텀 CSS -->
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background:#fff;
+        }
+
+        /* 전체 원스탑 영역 – 멜론 팝업 기준 1126px */
+        .section_onestop {
+            position: relative;
+            width: 1126px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* 좌측 : 가격 선택 영역 */
+        .section_onestop .wrap_select {
+            float: left;
+            width: 740px;          /* 멜론 팝업 비율에 맞춘 값 */
+            box-sizing: border-box;
+        }
+
+        /* 우측 : 티켓 정보 영역 */
+        .section_onestop .wrap_ticket_info {
+            float: right;
+            width: 330px;          /* 멜론 팝업 비율에 맞춘 값 */
+            box-sizing: border-box;
+        }
+
+        /* 상단 STEP 네비게이션 영역 높이/정렬 보정 */
+        .location_step {
+            height: 60px;
+            box-sizing: border-box;
+        }
+        .location_step .list_step {
+            height: 60px;
+            line-height: 60px;
+        }
+
+        /* 우측 결제 정보 카드가 너무 붙지 않게 */
+        .wrap_ticket_info .box_info {
+            margin-bottom: 15px;
+        }
+
+        /* 우측 결제 요약 박스 폭 꽉 채우기 */
+        .wrap_ticket_info .box_ticket {
+            width: 100%;
+        }
+
+        /* 우측 하단 버튼 영역 폭 맞추기 */
+        .wrap_ticket_info .btn_onestop {
+            width: 100%;
+        }
+
+        /* iframe 안에서처럼 스크롤 없애고 싶으면 */
+        body {
+            overflow: hidden;
+        }
+
+        #bookingElapsed {
+    font-weight: bold;
+}
+.virtual-page-notice {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        padding: 6px 10px;
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        font-size: 11px;
+        border-radius: 4px;
+        z-index: 99999;
+        pointer-events: none; /* 아래 버튼 클릭 막지 않게 */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif;
+      }
+
+    </style>
+</head>
+<body>
+
+<div class="section_onestop">
+    <!-- 왼쪽: 가격선택 영역 -->
+    <div class="wrap_select">
+        <!-- 단계 네비게이션 -->
+        <div class="location_step">
+            <ul class="list_step">
+                <li class="step">
+                    <a href="javascript:;" class="btn_o_menu btn_o_menu01">좌석선택</a>
+                </li>
+                <li class="step">
+                    <a href="javascript:;" class="btn_o_menu btn_o_menu02 on">가격선택</a>
+                </li>
+                <li class="step">
+                    <a href="javascript:;" class="btn_o_menu btn_o_menu03">배송/결제</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="box_select box_r">
+            <!-- 티켓가격 선택 -->
+            <div class="box_select_t">
+                <h3 class="select_tit">티켓가격을 선택하세요</h3>
+
+                <div id="partTicketType" class="box_cont box_ticket">
+                    <h4>
+                        <strong class="tit_ticket">R석</strong>
+                        <span class="txt">
+                            <span class="txt_seat_grade_tot">
+                                <span id="seatGrade10001_tot">3</span>매중
+                            </span>
+                            <em id="seatGrade10001_sel">0</em>매 선택
+                        </span>
+                    </h4>
+
+                    <!-- 기본가 -->
+                    <div class="list_ticket DP0020">
+                        <div class="box_ticket_t">
+                            <div>
+                                <div>
+                                    <dl>
+                                        <dt class="tit_tk base_pr">기본가</dt>
+                                        <dd class="price price_sale_r txt_bd">
+                                            140,000원
+                                        </dd>
+                                        <dd class="price wrap_sel">
+                                            <select
+                                                id="volume_10001_10067"
+                                                class="sel_cate ticket-select"
+                                                data-seat-grade="10001"
+                                                data-base-price="140000"
+                                                data-discount="0"
+                                            >
+                                                <option value="0">0매</option>
+                                                <option value="1">1매</option>
+                                                <option value="2">2매</option>
+                                                <option value="3">3매</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 서울시 중구민 할인 -->
+                    <div class="list_ticket DP0006">
+                        <div class="box_ticket_t">
+                            <div>
+                                <div class="ticket_btn">
+                                    <dl>
+                                        <dt class="tit_tk">
+                                            서울시 중구민 할인
+                                            <span class="arr">보기</span>
+                                        </dt>
+                                        <dd class="price price_sale">
+                                            14,000원 할인
+                                        </dd>
+                                        <dd class="price price_sale_r">
+                                            126,000원
+                                        </dd>
+                                        <dd class="price wrap_sel">
+                                            <select
+                                                id="volume_10001_15726"
+                                                class="sel_cate ticket-select"
+                                                data-seat-grade="10001"
+                                                data-base-price="140000"
+                                                data-discount="14000"
+                                            >
+                                                <option value="0">0매</option>
+                                                <option value="1">1매</option>
+                                                <option value="2">2매</option>
+                                                <option value="3">3매</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="box_ticket_more">
+                                    <p class="tit_more_info">
+                                        1인 2매 / 서울시 중구민(거주) / 증빙서류 미지참 시 정가대비 차액 지불
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 장애인 1~3급 -->
+                    <div class="list_ticket DP0006">
+                        <div class="box_ticket_t">
+                            <div>
+                                <div class="ticket_btn">
+                                    <dl>
+                                        <dt class="tit_tk">
+                                            장애인 1~3급(중증)
+                                            <span class="arr">보기</span>
+                                        </dt>
+                                        <dd class="price price_sale">
+                                            42,000원 할인
+                                        </dd>
+                                        <dd class="price price_sale_r">
+                                            98,000원
+                                        </dd>
+                                        <dd class="price wrap_sel">
+                                            <select
+                                                id="volume_10001_15723"
+                                                class="sel_cate ticket-select"
+                                                data-seat-grade="10001"
+                                                data-base-price="140000"
+                                                data-discount="42000"
+                                            >
+                                                <option value="0">0매</option>
+                                                <option value="1">1매</option>
+                                                <option value="2">2매</option>
+                                                <option value="3">3매</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="box_ticket_more">
+                                    <p class="tit_more_info">
+                                        동반 1인까지 / 증빙자료 미지참 시 현장에서 차액 지불
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 장애인 4~6급 -->
+                    <div class="list_ticket DP0006">
+                        <div class="box_ticket_t">
+                            <div>
+                                <div class="ticket_btn">
+                                    <dl>
+                                        <dt class="tit_tk">
+                                            장애인 4~6급(경증)
+                                            <span class="arr">보기</span>
+                                        </dt>
+                                        <dd class="price price_sale">
+                                            42,000원 할인
+                                        </dd>
+                                        <dd class="price price_sale_r">
+                                            98,000원
+                                        </dd>
+                                        <dd class="price wrap_sel">
+                                            <select
+                                                id="volume_10001_15724"
+                                                class="sel_cate ticket-select"
+                                                data-seat-grade="10001"
+                                                data-base-price="140000"
+                                                data-discount="42000"
+                                            >
+                                                <option value="0">0매</option>
+                                                <option value="1">1매</option>
+                                                <option value="2">2매</option>
+                                                <option value="3">3매</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="box_ticket_more">
+                                    <p class="tit_more_info">
+                                        본인에 한함 / 증빙자료 미지참 시 현장에서 차액 지불
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 국가유공자 -->
+                    <div class="list_ticket DP0006">
+                        <div class="box_ticket_t">
+                            <div>
+                                <div class="ticket_btn">
+                                    <dl>
+                                        <dt class="tit_tk">
+                                            국가유공자
+                                            <span class="arr">보기</span>
+                                        </dt>
+                                        <dd class="price price_sale">
+                                            42,000원 할인
+                                        </dd>
+                                        <dd class="price price_sale_r">
+                                            98,000원
+                                        </dd>
+                                        <dd class="price wrap_sel">
+                                            <select
+                                                id="volume_10001_11548"
+                                                class="sel_cate ticket-select"
+                                                data-seat-grade="10001"
+                                                data-base-price="140000"
+                                                data-discount="42000"
+                                            >
+                                                <option value="0">0매</option>
+                                                <option value="1">1매</option>
+                                                <option value="2">2매</option>
+                                                <option value="3">3매</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="box_ticket_more">
+                                    <p class="tit_more_info">
+                                        본인에 한함 / 증빙자료 미지참 시 현장에서 차액 지불
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- //box_ticket -->
+            </div>
+            <!-- // 티켓가격 선택 -->
+
+            <!-- 할인수단 선택 (쿠폰/예매권 레이아웃만, 기능은 생략 또는 추후 구현) -->
+            <div class="box_select_t box_top">
+                <h3 class="select_tit">할인수단을 선택하세요</h3>
+                <div class="box_cont box_coupon">
+                    <!-- 쿠폰 -->
+                    <div class="list_coupon">
+                        <div class="list_coupon_t frt">
+                            <div class="ticket_btn_cp">
+                                <div class="box_coupon_t">
+                                    <span class="tit_cp">쿠폰
+                                        <span class="txt_gr"><span id="txtCouponCnt">0</span>개</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="box_coupon_more">
+                                <div class="box_coupon">
+                                    <p class="no_result">사용 가능한 쿠폰이 없습니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 공연예매권 -->
+                    <div class="list_coupon">
+                        <div class="list_coupon_t">
+                            <div class="ticket_btn_cp">
+                                <div class="box_coupon_t">
+                                    <span class="tit_cp">공연예매권
+                                        <span class="txt_gr"><span id="txtAdvtkCnt">0</span>개</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="box_coupon_more">
+                                <div class="box_coupon">
+                                    <p class="no_result">사용 가능한 예매권이 없습니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                        <!-- 예매 기록 (소요 시간) -->
+        <div class="box_info">
+            <h3 class="select_tit">예매 기록</h3>
+            <div class="box_ticket">
+                <p class="tk_b">
+                    <span class="tk_tit">이번 예매 소요시간</span>
+                    <span class="pay pay_comp"><span id="bookingElapsed">00:00</span></span>
+                </p>
+            </div>
+        </div>
+                </div><!-- //box_coupon -->
+            </div>
+            <!-- // 할인수단 선택 -->
+        </div>
+    </div>
+
+    <!-- 오른쪽: 티켓 정보 영역 -->
+    <div class="wrap_ticket_info">
+        <h2 class="logo_onestop">
+            <a href="#none">
+                <img src="https://cdnticket.melon.co.kr/resource/image/web/onestop/logo_onestop.png" alt="Melon 티켓">
+            </a>
+        </h2>
+
+        <!-- 공연/좌석 정보 -->
+        <div class="box_info">
+            <h3 class="select_tit select_t txt_prod_name" title="뮤지컬 〈한복 입은 남자〉">
+                뮤지컬 〈한복 입은 남자〉
+            </h3>
+            <div class="box_ticket">
+                <ul class="box_ticket_list">
+                    <li class="nth nth1 txt_prod_schedule">2025.12.10(수) 14:30</li>
+                    <li class="nth nth2 txt_ticket_info">
+총 <span id="summarySeatCount">0</span>석 선택<br>
+<span id="summarySeatText">좌석 정보 없음</span>
+
+    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <!-- 결제금액 -->
+        <div class="box_info">
+            <h3 class="select_tit">결제금액</h3>
+            <div class="box_ticket">
+                <div class="box_total_inner">
+                    <p class="tk_b">
+                        <span class="tk_tit">티켓금액</span>
+                        <span class="pay pay_comp"><span id="ticketPriceTotal">0</span>원</span>
+                    </p>
+                    <ul class="list_tkpay">
+                        <li>
+                            <span class="tk_tit">기본가</span>
+                            <span class="pay"><span id="basePriceTotal">0</span>원</span>
+                        </li>
+                        <li>
+                            <span class="tk_tit">가격할인</span>
+                            <span class="pay"><span id="dcPriceTotal">0</span>원</span>
+                        </li>
+                        <li>
+                            <span class="tk_tit">쿠폰할인</span>
+                            <span class="pay"><span id="couponAmount">0</span>원</span>
+                        </li>
+                        <li>
+                            <span class="tk_tit">공연예매권</span>
+                            <span class="pay"><span id="advtkAmount">0</span>원</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="box_total_inner">
+                    <p class="tk_b">
+                        <span class="tk_tit tk_tit_b">예매수수료</span>
+                        <span class="pay pay_comp">
+                            <span id="reservationFee">0</span>원
+                        </span>
+                    </p>
+                </div>
+
+                <div class="box_total_inner lst">
+                    <p class="tk_b">
+                        <span class="tk_tit tk_tit_b">배송료</span>
+                        <span class="pay pay_comp">
+                            <span id="delivyFee">0</span>원
+                        </span>
+                    </p>
+                </div>
+
+                <div class="box_total_inner box_result">
+                    <span class="tk_tit tot_tit">총 결제금액</span>
+                    <strong class="pay tot_pay">
+                        <span id="paymentAmount">0</span>원
+                    </strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 취소 안내/버튼 -->
+        <div class="box_info_bm">
+            <div class="box_info_list">
+                <ul class="dotlist1x1 one_list">
+                    <li>취소기한 :
+                        <span class="txt_og txt_cancel_close_dt">
+                            2025년 12월 9일(화) 16:59 까지
+                        </span>
+                    </li>
+                    <li>취소수수료 :
+                        <span class="txt_og txt_cancel_fee_info">티켓금액의 0~30%</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="btn_onestop">
+                <span class="button btWhite frt">
+                    <a class="btnOne" onclick="alert('이전 단계는 데모에서는 동작하지 않습니다.');">
+                        이전<em class="one_arr prav_ar">이전</em>
+                    </a>
+                </span>
+                <span class="button btNext">
+                    <a class="btnOne" onclick="goToAIFeedback();">
+                        다음<em class="one_arr next_ar">다음</em>
+                    </a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  // 천단위 콤마
+  function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  // === 좌석 정보 전역 ===
+  let seatPayload = [];
+  let seatCount = 0;
+  let baseSeatPriceTotal = 0;   // 좌석 페이지에서 넘어온 총 금액
+
+  // 등급 → 이름 매핑
+  const gradeNameMap = {
+    VIP: "VIP석",
+    R:   "R석",
+    S:   "S석",
+    A:   "A석"
+  };
+
+  // URL 쿼리에서 좌석/금액 정보 읽어서 화면에 반영
+  function initSeatInfoFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const seatsParam = params.get("seats");
+    const totalParam = params.get("total");
+
+    if (seatsParam) {
+      try {
+        seatPayload = JSON.parse(decodeURIComponent(seatsParam));
+      } catch (e) {
+        console.warn("seats parse error", e);
+        seatPayload = [];
+      }
+    }
+
+    seatCount = seatPayload.length;
+
+    if (seatCount > 0) {
+      const first = seatPayload[0];
+
+      // 총 금액
+      if (totalParam) {
+        baseSeatPriceTotal = parseInt(totalParam, 10) || 0;
+      } else {
+        baseSeatPriceTotal = seatPayload.reduce((sum, s) => sum + (s.price || 0), 0);
+      }
+
+      // --------- [티켓가격을 선택하세요] 영역 덮어쓰기 ---------
+      // 1) "R석" → 실제 등급 이름
+      const titTicket = document.querySelector(".tit_ticket");
+      if (titTicket) {
+        const name = gradeNameMap[first.grade] || (first.grade + "석");
+        titTicket.textContent = name;
+      }
+
+      // 2) "3매중" → seatCount 매중
+      const totSpan = document.getElementById("seatGrade10001_tot");
+      if (totSpan) {
+        totSpan.textContent = seatCount.toString();
+      }
+
+      // 3) "기본가 140,000원" → 첫 좌석 가격으로 변경
+      const baseDt = document.querySelector(".tit_tk.base_pr");
+      if (baseDt && baseDt.nextElementSibling) {
+        baseDt.nextElementSibling.textContent = formatNumber(first.price) + "원";
+      }
+
+      // (선택 매수 표시용 – 우리 로직에서는 좌석 수와 동일하게)
+      const selSpan = document.getElementById("seatGrade10001_sel");
+      if (selSpan) {
+        selSpan.textContent = seatCount.toString();
+      }
+
+      // 4) 우측 요약 “총 N석 선택” / 상세 문구
+      const countEl = document.getElementById("summarySeatCount");
+      if (countEl) {
+        countEl.textContent = seatCount.toString();
+      }
+
+      const textEl = document.getElementById("summarySeatText");
+      if (textEl) {
+        const firstStr =
+          `${first.grade}석 ${first.floor} ${first.block}구역 ` +
+          `${first.row}열 ${first.col}번`;
+        textEl.textContent =
+          seatCount === 1 ? firstStr : `${firstStr} 외 ${seatCount - 1}석`;
+      }
+    }
+  }
+
+
+
+    function recalc() {
+        const selects = document.querySelectorAll('.ticket-select');
+
+        // ★ 기본금액/좌석수는 좌석 페이지에서 넘어온 값 사용
+        let basePriceTotal = baseSeatPriceTotal;
+        let discountTotal = 0;
+        let ticketCount = seatCount;
+
+        // 좌석등급별 선택 매수 (데모용)
+        const seatGradeSelected = {
+            "10001": seatCount   // 그냥 전체를 R석 한 종류로 본다고 가정
+        };
+
+        selects.forEach(sel => {
+            const qty = parseInt(sel.value, 10) || 0;
+            const basePrice = parseInt(sel.dataset.basePrice, 10) || 0;
+            const discount = parseInt(sel.dataset.discount, 10) || 0;
+            const seatGrade = sel.dataset.seatGrade;
+
+            if (qty > 0) {
+                discountTotal += discount * qty;
+
+                if (seatGradeSelected[seatGrade] !== undefined) {
+                    seatGradeSelected[seatGrade] = seatCount; // 데모용
+                }
+            }
+        });
+
+        const ticketPriceTotal = basePriceTotal - discountTotal;
+        const reservationFee = 0; // 데모에서는 0
+        const deliveryFee = 0;    // 데모에서는 0
+        const couponAmount = 0;
+        const advtkAmount = 0;
+
+        const chargeTotal = ticketPriceTotal + reservationFee + deliveryFee;
+        const paymentAmount = chargeTotal - couponAmount - advtkAmount;
+
+        // DOM 반영
+        document.getElementById('basePriceTotal').innerText = formatNumber(basePriceTotal);
+        document.getElementById('dcPriceTotal').innerText = formatNumber(discountTotal);
+        document.getElementById('ticketPriceTotal').innerText = formatNumber(ticketPriceTotal);
+
+        document.getElementById('reservationFee').innerText = formatNumber(reservationFee);
+        document.getElementById('delivyFee').innerText = formatNumber(deliveryFee);
+        document.getElementById('couponAmount').innerText = formatNumber(couponAmount);
+        document.getElementById('advtkAmount').innerText = formatNumber(advtkAmount);
+        document.getElementById('paymentAmount').innerText = formatNumber(paymentAmount);
+
+        // 좌석 선택 수 / 요약 텍스트
+        const summarySeatCount = document.getElementById('summarySeatCount');
+        if (summarySeatCount) {
+            summarySeatCount.innerText = seatCount;   // ★ 좌석 수 기준
+        }
+
+        const selCountEl = document.getElementById('seatGrade10001_sel');
+        if (selCountEl) {
+            selCountEl.innerText = seatCount;         // 데모용 표시
+        }
+    }
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+      const selects = document.querySelectorAll('.ticket-select');
+      selects.forEach(sel => {
+          sel.addEventListener('change', recalc);
+      });
+
+      // ★ 좌석/등급 정보 먼저 화면에 반영
+      initSeatInfoFromQuery();
+
+      // ★ 그 다음 금액 계산
+      recalc();
+  });
+
+</script>
+
+  <script>
+  // === 예매 소요 시간 ===
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      // 1) 예매 시작 시간 읽어서 총 소요시간 계산
+      var startStr = sessionStorage.getItem("bookingStartTime");
+      if (startStr) {
+        var start = parseInt(startStr, 10);
+        if (!isNaN(start)) {
+          var end = Date.now();
+          var diffSec = Math.max(0, Math.floor((end - start) / 1000));
+          var m = String(Math.floor(diffSec / 60)).padStart(2, "0");
+          var s = String(diffSec % 60).padStart(2, "0");
+
+          var el = document.getElementById("bookingElapsed");
+          if (el) {
+            el.textContent = m + ":" + s;
+          }
+        }
+      }
+    }
+    catch (e) {
+      console.warn("booking game info error", e);
+    }
+  });
+</script>
+
+
+<script>
+(function () {
+  const KEY_PREFIX = 'melonGame_';
+  const startStr = sessionStorage.getItem(KEY_PREFIX + 'start');
+  if (!startStr) return;
+
+  const start = parseInt(startStr, 10);
+  if (!isNaN(start) && !sessionStorage.getItem(KEY_PREFIX + 'timeToPayment')) {
+    const elapsed = Date.now() - start;
+    sessionStorage.setItem(KEY_PREFIX + 'timeToPayment', elapsed.toString());
+  }
+
+  // 혹시 결제 페이지에도 정보 보여주고 싶으면 여기서 DOM에 붙이면 됨
+})();
+</script>
+
+<div class="virtual-page-notice">
+    이 페이지는 가상의 페이지입니다.
+  </div>
+
+<!-- Supabase 설정 -->
+<script src="../c/test_ticket/js/supabase-config.js"></script>
+
+<script>
+// === AI 피드백 페이지로 이동 ===
+function goToAIFeedback() {
+    // 소요시간 계산
+    const startStr = sessionStorage.getItem('bookingStartTime');
+    let elapsedMs = 30000; // 기본값
+
+    if (startStr) {
+        const start = parseInt(startStr, 10);
+        if (!isNaN(start)) {
+            elapsedMs = Date.now() - start;
+        }
+    }
+
+    // URL 파라미터에서 정보 가져오기
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category') || sessionStorage.getItem('ticketCategory') || 'concert';
+    const difficulty = params.get('difficulty') || sessionStorage.getItem('ticketDifficulty') || 'normal';
+
+    // 좌석 정보
+    const seatsParam = params.get('seats');
+    let selectionData = null;
+    if (seatsParam) {
+        try {
+            selectionData = JSON.parse(decodeURIComponent(seatsParam));
+        } catch (e) {}
+    }
+
+    // 클릭 카운트 (세션에서 가져오기)
+    const clickCount = parseInt(sessionStorage.getItem('clickCount') || '10', 10);
+
+    // AI 피드백 페이지로 넘길 데이터 저장
+    const feedbackData = {
+        category: category,
+        difficulty: difficulty,
+        elapsedTime: elapsedMs,
+        clickCount: clickCount,
+        success: true,
+        selectionData: selectionData,
+        mouseDistance: parseInt(sessionStorage.getItem('mouseDistance') || '0', 10),
+        accuracy: parseFloat(sessionStorage.getItem('accuracy') || '85'),
+        reactionTime: parseInt(sessionStorage.getItem('reactionTime') || '350', 10)
+    };
+
+    localStorage.setItem('ticketpro_feedback_data', JSON.stringify(feedbackData));
+
+    // AI 피드백 페이지로 이동
+    window.location.href = '../c/test_ticket/main-pages/ai-feedback.html';
+}
+
+// === 예매 기록 Supabase 저장 ===
+(function() {
+    console.log('[DEBUG] 예매 기록 저장 시작');
+
+    // 소요시간 계산
+    const startStr = sessionStorage.getItem('bookingStartTime');
+    console.log('[DEBUG] bookingStartTime:', startStr);
+
+    let elapsedMs;
+    if (startStr) {
+        const start = parseInt(startStr, 10);
+        if (!isNaN(start)) {
+            elapsedMs = Date.now() - start;
+        }
+    }
+
+    // bookingStartTime이 없으면 기본값 사용 (30초)
+    if (!elapsedMs) {
+        elapsedMs = 30000; // 기본 30초
+        console.log('[DEBUG] bookingStartTime 없음, 기본값 사용:', elapsedMs);
+    }
+
+    // 카테고리 & 난이도 정보 (URL 파라미터 또는 세션에서)
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category') || sessionStorage.getItem('ticketCategory') || 'concert';
+    const difficulty = params.get('difficulty') || sessionStorage.getItem('ticketDifficulty') || 'normal';
+
+    console.log('[DEBUG] category:', category, 'difficulty:', difficulty);
+
+    // 좌석 정보
+    const seatsParam = params.get('seats');
+    let selectionData = null;
+    if (seatsParam) {
+        try {
+            selectionData = JSON.parse(decodeURIComponent(seatsParam));
+        } catch (e) {}
+    }
+
+    // 로그인 확인
+    console.log('[DEBUG] 로그인 상태:', isLoggedIn());
+    console.log('[DEBUG] userId:', sessionStorage.getItem('userId'));
+    console.log('[DEBUG] nickname:', sessionStorage.getItem('nickname'));
+
+    if (!isLoggedIn()) {
+        console.log('[DEBUG] 로그인 안됨 - 기록 저장 건너뜀');
+        showNotLoggedIn();
+        return;
+    }
+
+    // 기록 저장
+    console.log('[DEBUG] saveBookingRecord 호출:', { category, difficulty, elapsedMs });
+
+    saveBookingRecord(category, difficulty, elapsedMs, selectionData)
+        .then(recordId => {
+            console.log('[DEBUG] saveBookingRecord 결과:', recordId);
+            if (recordId) {
+                console.log('예매 기록 저장 완료:', recordId);
+                showRecordSaved(elapsedMs);
+            } else {
+                console.log('[DEBUG] recordId가 null임');
+                showSaveFailed();
+            }
+        })
+        .catch(err => {
+            console.error('예매 기록 저장 실패:', err);
+            showSaveFailed();
+        });
+
+    function showRecordSaved(ms) {
+        const notice = document.querySelector('.virtual-page-notice');
+        if (notice) {
+            const timeStr = formatTimeSimple(ms);
+            notice.innerHTML = `기록 저장 완료! ⏱️ ${timeStr} | <a href="../c/test_ticket/main-pages/ranking.html" style="color: #a78bfa;">순위표 보기</a>`;
+            notice.style.background = 'rgba(16, 185, 129, 0.9)';
+        }
+    }
+
+    function showNotLoggedIn() {
+        const notice = document.querySelector('.virtual-page-notice');
+        if (notice) {
+            notice.innerHTML = `로그인하면 기록이 저장됩니다! | <a href="../c/test_ticket/main-pages/login.html" style="color: #fbbf24;">로그인하기</a>`;
+            notice.style.background = 'rgba(251, 191, 36, 0.9)';
+        }
+    }
+
+    function showSaveFailed() {
+        const notice = document.querySelector('.virtual-page-notice');
+        if (notice) {
+            notice.innerHTML = `기록 저장 실패 - 콘솔 확인`;
+            notice.style.background = 'rgba(239, 68, 68, 0.9)';
+        }
+    }
+})();
+</script>
+</body>
+</html>
