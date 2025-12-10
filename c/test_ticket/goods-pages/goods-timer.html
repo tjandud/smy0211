@@ -5,18 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>티케팅 게임 — 타이머</title>
   <style>
-    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f8fafc;color:#111827}
-    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .result-area-card {
+      background: rgba(16, 12, 28, 0.75);
+      border: 1px solid rgba(120, 119, 198, 0.18);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(16,12,28,0.18);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      padding: 32px 24px;
+      color: #fff;
+      margin-top: 18px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    html,body{height:100%;margin:0;font-family:'Inter','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#0b0a13;color:#111827;overflow:hidden;}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;z-index:1;}
     .card{width:720px;max-width:92%;text-align:center}
     .start-btn{background:#2563EB;color:#fff;border:0;padding:14px 28px;border-radius:999px;font-weight:700;cursor:pointer;font-size:20px}
-    #pre-count{font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em}
-    #ten-timer{font-size:120px;font-weight:900;color:#111827}
-    #result-msg{font-size:20px;font-weight:700;color:#111827;margin-bottom:12px}
+    #pre-count{font-size:120px;font-weight:900;color:#fff;display:none;line-height:1;height:1em}
+    #ten-timer{font-size:120px;font-weight:900;color:#fff}
+    #result-msg{font-size:20px;font-weight:700;color:#fff;margin-bottom:12px}
+    #start-msg, #ready-msg { color: #fff !important; }
     @keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.7);transform:scale(1)}50%{box-shadow:0 0 20px 10px rgba(239,68,68,0);transform:scale(1.05)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);transform:scale(1)}}
     .pulse-red{animation:pulse-red 1s infinite;background:#ef4444!important}
+    .bg-effects {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .gradient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .gradient-orb-1 {
+      width: 700px; height: 700px;
+      left: -200px; top: -200px;
+      background: radial-gradient(circle at 30% 30%, #a78bfa 0%, #6366f1 80%, transparent 100%);
+    }
+    .gradient-orb-2 {
+      width: 600px; height: 600px;
+      right: -180px; top: 0;
+      background: radial-gradient(circle at 70% 20%, #c084fc 0%, #a21caf 80%, transparent 100%);
+    }
+    .gradient-orb-3 {
+      width: 500px; height: 500px;
+      left: 50%; bottom: -200px; transform: translateX(-50%);
+      background: radial-gradient(circle at 50% 80%, #818cf8 0%, #f472b6 80%, transparent 100%);
+    }
   </style>
 </head>
 <body>
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+    <div class="gradient-orb gradient-orb-3"></div>
+  </div>
   <!-- 퀘스트 표시 -->
   <div id="questDisplay" style="position: fixed; top: 20px; right: 20px; background: white; border: 3px solid #00d9c8; border-radius: 12px; padding: 20px; box-shadow: 0 6px 14px rgba(2,6,23,0.25); z-index: 1000; min-width: 280px; display: none;">
     <div style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
@@ -39,20 +90,20 @@
       <!-- 게임 UI: 3-2-1 카운트 및 10초 타이머 (원본 그대로 이동) -->
       <div id="game-overlay" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(15,23,42,0.06);z-index:9999;">
         <div style="width:720px;max-width:92%;background:transparent;padding:24px 20px;text-align:center;">
-          <div id="pre-count" style="font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em;"></div>
+          <div id="pre-count" style="font-size:120px;font-weight:900;color:#fff;display:none;line-height:1;height:1em;"></div>
 
-          <div id="start-msg" style="display:none;font-size:18px;font-weight:700;color:#374151;margin-bottom:12px;">잠시 후 게임이 시작됩니다</div>
+          <div id="start-msg" style="display:none;font-size:18px;font-weight:700;color:#fff;margin-bottom:12px;">잠시 후 게임이 시작됩니다</div>
 
           <div id="timer-area" style="display:none;">
-            <div id="ready-msg" style="font-size:18px;font-weight:700;color:#374151;margin-bottom:8px;">타이머가 끝나면 티케팅을 시작하세요!</div>
-              <div id="ten-timer" style="font-size:120px;font-weight:900;color:#111827;"></div>
+            <div id="ready-msg" style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px;">타이머가 끝나면 티케팅을 시작하세요!</div>
+              <div id="ten-timer" style="font-size:120px;font-weight:900;color:#fff;"></div>
             <div style="margin-top:18px;">
               <button id="connect-btn" type="button" style="background:#2563EB;color:#fff;border:0;padding:14px 28px;border-radius:999px;font-weight:700;cursor:pointer;font-size:20px;">사이트 접속하기</button>
             </div>
           </div>
 
-          <div id="result-area" style="display:none;margin-top:18px;">
-            <div id="result-msg" style="font-size:20px;font-weight:700;color:#111827;margin-bottom:12px;"></div>
+          <div id="result-area" class="result-area-card" style="display:none;">
+            <div id="result-msg" style="font-size:20px;font-weight:700;color:#fff;margin-bottom:12px;"></div>
             <div>
               <button id="retry-btn" type="button" style="background:#fff;color:#2563EB;border:2px solid #2563EB;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">다시하기</button>
             </div>
@@ -93,7 +144,7 @@
 
     var timerId = null;
     var startTime = 0;
-    var duration = 5000; // 5 seconds in ms (default)
+    var duration = 10000; // 10 seconds in ms (default)
     var remaining = duration;
     // capture selected level and goods from query params (e.g. ?level=easy&goods=앨범)
     var urlParams = new URLSearchParams(window.location.search);
@@ -104,7 +155,7 @@
     // Client-side configuration maps (no backend required)
     // Base configs per level
     var levelConfigs = {
-      easy:   { duration: 5000, successWindow: 150 },
+      easy:   { duration: 10000, successWindow: 150 },
       normal: { duration: 5000, successWindow: 80 },
       hard:   { duration: 5000,  successWindow: 40 }
     };
@@ -378,7 +429,7 @@
             }
             // 다음 페이지에서 미션 타이머가 흐르도록 종료시각 저장
             try{
-              var endAt = Date.now() + (selectedLevel==='easy' ? 15000 : 10000);
+              var endAt = Date.now() + (selectedLevel==='easy' ? 15000 : selectedLevel==='normal' ? 7000 : 5000);
               localStorage.setItem('questEndAt', String(endAt));
             }catch(e){}
             window.location.href = targetPage + '?level=' + selectedLevel + '&goods=' + encodeURIComponent(selectedGoods);
@@ -389,7 +440,11 @@
     }
 
     retryBtn.addEventListener('click', function(){
-      location.reload();
+      // 현재 모드와 굿즈를 URL 파라미터로 명시적으로 전달하여 새로고침
+      var params = new URLSearchParams(window.location.search);
+      params.set('level', selectedLevel);
+      params.set('goods', selectedGoods);
+      window.location.search = params.toString();
     });
 
   })();

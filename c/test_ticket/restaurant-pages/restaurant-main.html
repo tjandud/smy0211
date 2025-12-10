@@ -770,7 +770,7 @@
     </div>
   </div>
 
-  <!-- 결과 모달 (성공/실패/경고 공용) -->
+  <!-- 결과 모달 (실패/경고/기존) -->
   <div id="resultOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);z-index:3000;align-items:center;justify-content:center;padding:24px;">
     <div id="resultModal" style="width:400px;max-width:96%;background:#ffffff;border-radius:12px;padding:50px 40px;color:#111827;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:center;">
       <!-- 통일된 아이콘: 원 + 박스 + 마크 -->
@@ -779,14 +779,44 @@
       <p id="resultDesc" style="margin:0 0 40px 0;font-size:16px;line-height:1.5;text-align:center;color:#6b7280;"></p>
       <p id="elapsedTimeText" style="font-size: 18px; color: #666; margin: -20px 0 20px; display: none;">소요시간: <strong id="elapsedTime">00:00</strong></p>
       <div id="resultActions" style="display:flex;flex-direction:column;gap:10px;justify-content:center;">
-        <button id="saveRecordBtn" type="button" onclick="saveRecord()" style="display:none;width:100%;background:linear-gradient(135deg, #8b5cf6, #ec4899);color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">🏆 기록 저장하기</button>
+        <button class="btn-action btn-save" id="saveRecordBtn" type="button" onclick="saveRecord()" style="display:none;background: linear-gradient(135deg, #fbbf24, #f97316); color: white; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); font-weight: 700; animation: pulse-save 1.5s infinite; width:100%; padding:14px; border-radius:6px; border:none; font-size:16px; font-weight:600; cursor:pointer;">🏆 기록 저장하기</button>
         <button id="aiFeedbackBtn" type="button" onclick="goToAIFeedback()" style="display:none;width:100%;background:linear-gradient(135deg, #3b82f6, #06b6d4);color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">🤖 AI 피드백 받기</button>
         <button id="resultLevelBtn" type="button" style="width:100%;background:#00d9c8;color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">난이도 선택으로</button>
         <button id="resultRetryBtn" type="button" style="width:100%;background:#00d9c8;color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">다시하기</button>
         <button id="resultHomeBtn" type="button" style="width:100%;background:#00d9c8;color:#fff;border:0;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">메인으로</button>
+        <a href="../main-pages/ranking.html" class="btn-action" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; text-decoration: none; display: inline-block; width:100%; padding:14px; border-radius:6px; font-size:16px; font-weight:600; text-align:center;">👉 순위표 보러가기</a>
       </div>
       <p id="saveStatus" style="margin-top: 15px; font-size: 14px; color: #888;"></p>
+      <style>
+        @keyframes pulse-save {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+          50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+        }
+        .btn-save { animation: pulse-save 1.5s infinite; }
+      </style>
     </div>
+  </div>
+  <!-- 성공 모달(콘서트 스타일) -->
+  <div class="success-modal" id="successModal" style="display:none;">
+    <div class="result-area-card" style="background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.12); padding:40px 32px; max-width:400px; margin:0 auto; text-align:center;">
+      <div id="result-msg" style="font-size:22px; font-weight:700; color:#22c55e; margin-bottom:16px;">미션 완료! 구매 성공!</div>
+      <div style="font-size:15px; color:#888; margin-bottom:16px;">소요시간: <span style="font-weight:700;color:#222;" id="elapsedTime">00:00</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="btn-action btn-save" id="saveRecordBtn" onclick="saveRecord()" style="background: linear-gradient(135deg, #fbbf24, #f97316); color: white; font-weight: 700; animation: pulse-save 1.5s infinite; font-size:15px; padding:13px; border-radius:6px; border:none;">🏆 기록 저장하기</button>
+        <button class="btn-action" id="aiFeedbackBtn" onclick="goToAIFeedback()" style="background: linear-gradient(135deg, #3b82f6, #06b6d4); color: white; font-size:15px; padding:13px; border-radius:6px; border:none;">🤖 AI 피드백 받기</button>
+        <button class="btn-action btn-teal" onclick="location.href='restaurant-level.html'" style="font-size:15px; padding:13px; border-radius:6px; border:none; background:#00d9c8;color:#fff;">난이도 선택으로</button>
+        <button class="btn-action btn-teal" onclick="restartGame()" style="font-size:15px; padding:13px; border-radius:6px; border:none; background:#00d9c8;color:#fff;">다시하기</button>
+        <button class="btn-action btn-teal" onclick="location.href='http://localhost:8080/a/index.html'" style="font-size:15px; padding:13px; border-radius:6px; border:none; background:#00d9c8;color:#fff;">메인으로</button>
+        <a href="../main-pages/ranking.html" class="btn-action" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; text-decoration: none; display: inline-block; font-size:15px; padding:13px; border-radius:6px;">👉 순위표 보러가기</a>
+      </div>
+      <div style="margin-top:18px;font-size:13px;color:#ef4444;font-weight:600;">⚠️ 지금 저장하지 않으면 기록이 저장되지 않습니다!</div>
+    </div>
+    <style>
+      @keyframes pulse-save {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+        50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+      }
+    </style>
   </div>
 
   <script>
@@ -1336,8 +1366,8 @@
       resultOverlay.style.display = 'flex';
     }
     resultRetryBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} const url = new URL(window.location.href); const level = url.searchParams.get('level') || 'normal'; window.location.href = '../restaurant-pages/restaurant-timer.html?level=' + encodeURIComponent(level); });
-    resultLevelBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} window.location.href = '../main-pages/choice.html'; });
-    resultHomeBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} window.location.href = '../main-pages/index.html'; });
+    resultLevelBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} window.location.href = 'restaurant-level.html'; });
+    resultHomeBtn.addEventListener('click', function(){ try{ localStorage.removeItem('ct_mission'); }catch(e){} window.location.href = 'http://localhost:8080/a/index.html'; });
     resultOverlay.addEventListener('click', function(e){ if(e.target===resultOverlay){ resultOverlay.style.display = 'none'; } });
 
     // === 비방해형 경고 토스트 UI ===

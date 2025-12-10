@@ -5,22 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>티케팅 게임 — 타이머</title>
   <style>
-    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f8fafc;color:#111827}
+    .result-area-card {
+      background: rgba(16, 12, 28, 0.75);
+      border: 1px solid rgba(120, 119, 198, 0.18);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(16,12,28,0.18);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      padding: 32px 24px;
+      color: #fff;
+      margin-top: 18px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    html,body{
+      height:100%;margin:0;
+      font-family:'Inter','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+      background:#0b0a13;
+      color:#111827;
+      overflow:hidden;
+    }
+    .bg-effects {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .gradient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .gradient-orb-1 {
+      width: 700px; height: 700px;
+      left: -200px; top: -200px;
+      background: radial-gradient(circle at 30% 30%, #a78bfa 0%, #6366f1 80%, transparent 100%);
+    }
+    .gradient-orb-2 {
+      width: 600px; height: 600px;
+      right: -180px; top: 0;
+      background: radial-gradient(circle at 70% 20%, #c084fc 0%, #a21caf 80%, transparent 100%);
+    }
+    .gradient-orb-3 {
+      width: 500px; height: 500px;
+      left: 50%; bottom: -200px; transform: translateX(-50%);
+      background: radial-gradient(circle at 50% 80%, #818cf8 0%, #f472b6 80%, transparent 100%);
+    }
     .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
     .card{width:720px;max-width:92%;text-align:center}
-    #pre-count{font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em}
+    #pre-count{font-size:120px;font-weight:900;color:#fff;display:none;line-height:1;height:1em}
     /* 타이머 숫자 대신 점점점 로딩 애니메이션 */
     #loading-dots{height:120px;display:flex;align-items:center;justify-content:center;gap:16px}
-    .dot{width:22px;height:22px;border-radius:50%;background:#111827;opacity:0.25;animation:blink 900ms infinite}
+    .dot{width:22px;height:22px;border-radius:50%;background:#fff;opacity:0.25;animation:blink 900ms infinite}
     .dot:nth-child(2){animation-delay:150ms}
     .dot:nth-child(3){animation-delay:300ms}
     @keyframes blink{0%{opacity:0.2}50%{opacity:1}100%{opacity:0.2}}
-    #result-msg{font-size:20px;font-weight:700;color:#111827;margin-bottom:12px}
+    #result-msg{font-size:20px;font-weight:700;color:#fff;margin-bottom:12px}
     @keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.7);transform:scale(1)}50%{box-shadow:0 0 20px 10px rgba(239,68,68,0);transform:scale(1.05)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);transform:scale(1)}}
     .pulse-red{animation:pulse-red 1s infinite;background:#ef4444!important}
   </style>
 </head>
 <body>
+      <!-- Background Effects (goods/concert와 완전히 동일) -->
+      <div class="bg-effects">
+        <div class="gradient-orb gradient-orb-1"></div>
+        <div class="gradient-orb gradient-orb-2"></div>
+        <div class="gradient-orb gradient-orb-3"></div>
+      </div>
     <!-- 카카오 알림 사운드 -->
     <audio id="kakaoAlertSound" preload="auto">
       <source src="../audio/까톡 소리.mp3" type="audio/mpeg">
@@ -43,13 +99,13 @@
     <div class="card">
       <!-- 게임 UI: 3-2-1 카운트 및 10초 타이머 -->
       <div id="game-overlay" style="display:flex;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(15,23,42,0.06);z-index:9999;">
-        <div style="width:720px;max-width:92%;background:transparent;padding:24px 20px;text-align:center;">
-          <div id="pre-count" style="font-size:120px;font-weight:900;color:#111827;display:none;line-height:1;height:1em;"></div>
+        <div style="width:720px;max-width:92%;background:transparent;padding:24px 20px;text-align:center;color:#fff;">
+          <div id="pre-count" style="font-size:120px;font-weight:900;color:#fff;display:none;line-height:1;height:1em;"></div>
 
-          <div id="start-msg" style="display:none;font-size:18px;font-weight:700;color:#374151;margin-bottom:12px;">잠시 후 게임이 시작됩니다</div>
+          <div id="start-msg" style="display:none;font-size:18px;font-weight:700;color:#fff;margin-bottom:12px;">잠시 후 게임이 시작됩니다</div>
 
           <div id="timer-area" style="display:none; position:relative;">
-            <div id="ready-msg" style="font-size:18px;font-weight:700;color:#374151;margin-bottom:8px;">곧 캐치테이블 예약이 시작됩니다.. 준비하세요!</div>
+            <div id="ready-msg" style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px;">곧 캐치테이블 예약이 시작됩니다.. 준비하세요!</div>
               <div id="loading-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
             <!-- 사이트 접속하기 버튼 제거: 로딩/알림만 표시 -->
             <!-- 알림은 시간 도래 시 중앙에 단독 표시 -->
@@ -61,7 +117,7 @@
                 .message-container{width:100%;max-width:480px;position:relative}
                 .profile-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;padding:0 16px;position:relative}
                 .profile-icon{width:42px;height:42px;background:#ff6b35;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;flex-shrink:0;line-height:1;padding-bottom:2px}
-                .profile-name{font-size:13px;color:#333;font-weight:600;margin-top:2px}
+                .profile-name{font-size:13px;color:#fff;font-weight:600;margin-top:2px}
                 .message-bubble{background:#fff;border-radius:0 18px 18px 18px;overflow:visible;box-shadow:0 2px 6px rgba(0,0,0,0.15);margin-left:16px;margin-right:60px;max-width:calc(100% - 76px);position:relative}
                 .bubble-header{background:#fee500;padding:12px 18px;font-size:15px;font-weight:700;color:#3c1e1e;letter-spacing:-0.3px}
                 .bubble-content{padding:20px 18px}
@@ -96,8 +152,8 @@
             </template>
           </div>
 
-          <div id="result-area" style="display:none;margin-top:18px;">
-            <div id="result-msg" style="font-size:20px;font-weight:700;color:#111827;margin-bottom:12px;"></div>
+          <div id="result-area" class="result-area-card" style="display:none;">
+            <div id="result-msg" style="font-size:20px;font-weight:700;color:#fff;margin-bottom:12px;"></div>
             <div>
               <button id="retry-btn" type="button" style="background:#fff;color:#2563EB;border:2px solid #2563EB;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">다시하기</button>
             </div>
@@ -121,7 +177,7 @@
 
     var timerId = null;
     var startTime = 0;
-    var duration = 5000;
+    var duration = 10000;
     var remaining = duration;
     var isReadyToProceed = false; // 7~10초 사이 알림 등장 후 진행 가능 (앱으로 가기 버튼 활성)
     
@@ -129,7 +185,7 @@
     var selectedLevel = urlParams.get('level') || 'normal';
 
     var levelConfigs = {
-      easy:   { duration: 5000, successWindow: 150 },
+      easy:   { duration: 10000, successWindow: 150 },
       normal: { duration: 5000, successWindow: 80 },
       hard:   { duration: 5000,  successWindow: 40 }
     };
@@ -171,7 +227,9 @@
 
     function getLimitMs(level){
       if(level === 'easy') return 15000;
-      return 10000; // normal, hard 모두 10초
+      if(level === 'normal') return 7000;
+      if(level === 'hard') return 5000;
+      return 10000;
     }
 
     // 미션 생성: 날짜/인원/시간 조건
@@ -184,7 +242,7 @@
       // 이번 달의 말일 계산 (오늘부터 말일까지 랜덤)
       var lastDayOfMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
       var randPick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
-      var timePool = [ '오전 11:30','오전 12:00','오전 12:30','오후 5:30','오후 6:00','오후 6:30','오후 7:00','오후 7:30','오후 8:00' ];
+      var timePool = [ '오전 11:30','오후 12:00','오후 12:30','오후 1:00','오후 1:30','오후 5:30','오후 6:00','오후 6:30','오후 7:00','오후 7:30','오후 8:00' ];
       var peoplePool = [1,2,3,4,5,6,7,8,9];
 
       var condDate = randInt(ddToday, lastDayOfMonth);
@@ -405,6 +463,27 @@
         var s = Math.floor(r/1000);
         var mm = String(Math.floor(s/60)).padStart(2,'0');
         var ss = String(s%60).padStart(2,'0');
+        remainEl.textContent = mm+':'+ss;
+        if(r<=0){ cancelAnimationFrame(reqAnimId); reqAnimId=null; }
+        else { reqAnimId = requestAnimationFrame(tick); }
+      }
+      if(reqAnimId) cancelAnimationFrame(reqAnimId);
+      reqAnimId = requestAnimationFrame(tick);
+      panel.style.display = 'block';
+    };
+
+    function formatRestRule(rule){
+      if(rule.kind==='date') return '날짜: '+rule.value+'일';
+      if(rule.kind==='people') return '인원: '+rule.value+'명';
+      if(rule.kind==='time') return '시간: '+rule.value;
+      return '알 수 없는 조건';
+    }
+  })();
+  </script>
+  
+</body>
+</html>
+ = String(s%60).padStart(2,'0');
         remainEl.textContent = mm+':'+ss;
         if(r<=0){ cancelAnimationFrame(reqAnimId); reqAnimId=null; }
         else { reqAnimId = requestAnimationFrame(tick); }

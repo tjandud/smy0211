@@ -652,11 +652,12 @@
         const gameData = JSON.parse(localStorage.getItem('ticketpro_feedback_data') || '{}');
         console.log('게임 데이터:', gameData);
 
-        // 사용자 정보 표시
+        // 사용자 정보 표시 (userInfo 요소가 있을 때만)
         if (typeof getCurrentUser === 'function') {
             const user = getCurrentUser();
-            if (user && user.nickname) {
-                document.getElementById('userInfo').textContent = user.nickname + '님';
+            const userInfoEl = document.getElementById('userInfo');
+            if (user && user.nickname && userInfoEl) {
+                userInfoEl.textContent = user.nickname + '님';
             }
         }
 

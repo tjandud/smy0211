@@ -194,3 +194,56 @@
     }
 })();
 </script>
+
+<script>
+// 좌석 자동 선점 시뮬레이션 (다른 사람이 좌석을 가져가는 효과)
+(function() {
+    var seatDisableInterval = null;
+    var disableSpeed = 200; // 0.8초마다 좌석 선점 (난이도 조절: 숫자 낮을수록 빠름)
+
+    function startSeatDisabling() {
+        seatDisableInterval = setInterval(function() {
+            // 선택 가능한 좌석들 (선점 안 된 것 + 내가 선택 안 한 것)
+            var availableSeats = document.querySelectorAll("[id^='seat_block_']:not(.SeatMap_disabled__MFwIq):not(.seat-selected)");
+
+            if (availableSeats.length === 0) {
+                // 더 이상 선택 가능한 좌석이 없으면 중지
+                clearInterval(seatDisableInterval);
+                alert('⚠️ 모든 좌석이 매진되었습니다!');
+                return;
+            }
+
+            // 랜덤하게 1~3개 좌석 선점
+            var numToDisable = Math.min(Math.floor(Math.random() * 3) + 1, availableSeats.length);
+
+            for (var i = 0; i < numToDisable; i++) {
+                var randomIndex = Math.floor(Math.random() * availableSeats.length);
+                var seatToDisable = availableSeats[randomIndex];
+
+                if (seatToDisable && !seatToDisable.classList.contains('SeatMap_disabled__MFwIq')) {
+                    seatToDisable.classList.add('SeatMap_disabled__MFwIq');
+                    seatToDisable.style.fill = '#999';
+                    seatToDisable.style.fillOpacity = '1';
+                    seatToDisable.style.cursor = 'not-allowed';
+
+                    // 다시 가져오기 (선점된 좌석 제외)
+                    availableSeats = document.querySelectorAll("[id^='seat_block_']:not(.SeatMap_disabled__MFwIq):not(.seat-selected)");
+                }
+            }
+
+            // 남은 좌석 수 콘솔에 표시
+            var remaining = document.querySelectorAll("[id^='seat_block_']:not(.SeatMap_disabled__MFwIq)").length;
+            console.log('🎫 남은 좌석: ' + remaining + '석');
+
+        }, disableSpeed);
+    }
+
+    // 페이지 떠날 때 인터벌 정리
+    window.addEventListener('beforeunload', function() {
+        if (seatDisableInterval) clearInterval(seatDisableInterval);
+    });
+
+    // 2초 후 좌석 선점 시작 (사용자가 좌석 선택할 시간 부여)
+    setTimeout(startSeatDisabling, 2000);
+})();
+</script>
