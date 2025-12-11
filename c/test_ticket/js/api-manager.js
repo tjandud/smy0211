@@ -249,12 +249,12 @@ async function listApiKeys(adminPassword) {
             return { success: false, data: [], message: '조회 중 오류가 발생했습니다.' };
         }
 
-        // 마스킹 처리 (사이트에서 전체 키 안 보이게)
+        // 마스킹 처리 (관리자 페이지에서 토글로 확인 가능)
         const maskedData = data.map((item) => {
             return {
                 ...item,
                 key_value_masked: maskApiKey(item.key_value),
-                key_value_full: null  // 전체 키는 표시 안 함
+                key_value_full: item.key_value  // 관리자에게는 전체 키 제공
             };
         });
 
