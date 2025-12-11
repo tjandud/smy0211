@@ -241,7 +241,7 @@ async function listApiKeys(adminPassword) {
     try {
         const { data, error } = await supabase
             .from('api_keys')
-            .select('id, key_name, key_value, description, is_active, created_at, updated_at')
+            .select('id, key_name, key_value, is_encrypted, description, is_active, created_at, updated_at')
             .order('key_name');
 
         if (error) {
@@ -249,14 +249,33 @@ async function listApiKeys(adminPassword) {
             return { success: false, data: [], message: '조회 중 오류가 발생했습니다.' };
         }
 
-        // 마스킹 처리 (관리자 페이지에서 토글로 확인 가능)
-        const maskedData = data.map((item) => {
-            return {
+        if (!data || data.length === 0) {
+            return { success: true, data: [], message: '등록된 키가 없습니다.' };
+        }
+
+        // 암호화된 키는 복호화하여 처리
+        const maskedData = [];
+        for (const item of data) {
+            let decryptedValue = item.key_value || '';
+
+            // 암호화된 키면 복호화 시도
+            if (item.is_encrypted && item.key_value) {
+                try {
+                    const decrypted = await decryptApiKey(item.key_value, adminPassword);
+                    if (decrypted) {
+                        decryptedValue = decrypted;
+                    }
+                } catch (e) {
+                    console.error('복호화 실패:', e);
+                }
+            }
+
+            maskedData.push({
                 ...item,
-                key_value_masked: maskApiKey(item.key_value),
-                key_value_full: item.key_value  // 관리자에게는 전체 키 제공
-            };
-        });
+                key_value_masked: maskApiKey(decryptedValue),
+                key_value_full: decryptedValue
+            });
+        }
 
         return { success: true, data: maskedData, message: '조회 성공' };
     } catch (err) {
