@@ -483,6 +483,570 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        /* ========== 영수증 티켓 스타일 ========== */
+        .receipt-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            perspective: 1000px;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        /* output 빛나는 효과 */
+        .output {
+            align-self: center;
+            background: inherit;
+            border-radius: 100px;
+            padding: 0 12px 0 10px;
+            height: 36px;
+            min-width: 420px;
+            position: relative;
+            top: -140px;
+        }
+
+        .output .cover {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            bottom: 2px;
+            left: 2px;
+            border-radius: 100px;
+            clip-path: inset(0 0 0 0 round 100px);
+            background: #0a0a0f;
+            transition: filter 1000ms cubic-bezier(0, 0, 0, 1);
+            filter: blur(5px);
+        }
+
+        .output .cover::after {
+            content: "";
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-radius: 100px;
+            position: absolute;
+            background: inherit;
+            opacity: 0.5;
+        }
+
+        .output .wrap-colors-1,
+        .output .wrap-colors-2 {
+            overflow: hidden;
+            border-radius: 100px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .output .wrap-colors-1 {
+            opacity: 0.35;
+            filter: blur(3px);
+        }
+
+        .output .bg-colors {
+            background: conic-gradient(transparent 0deg,
+                    #8400ff 65deg,
+                    #00ccff 144deg,
+                    #1356b4 180deg,
+                    transparent 324deg,
+                    transparent 360deg);
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            margin: auto;
+            inset: 0;
+            left: 50%;
+            transform: translateX(-50%) rotate(220deg);
+            border-radius: 50%;
+            animation: cycle-rotate 3s ease-in-out infinite;
+        }
+
+        .output::before {
+            content: "";
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            border-radius: inherit;
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #ffffff14;
+            opacity: 0.4;
+            transition:
+                opacity 400ms linear,
+                background-color 400ms linear;
+        }
+
+        .output::after {
+            content: "";
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            top: 14px;
+            background: linear-gradient(0deg, transparent, black);
+            height: 9px;
+            mix-blend-mode: soft-light;
+            border-radius: 100px;
+        }
+
+        @keyframes cycle-rotate {
+            from {
+                transform: translateX(-50%) rotate(0deg);
+            }
+            to {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        /* 티켓 영역 구조 */
+        .area {
+            --ease-elastic: cubic-bezier(0.5, 2, 0.3, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            inset: 0;
+        }
+
+        .area::after {
+            pointer-events: none;
+            content: "";
+            position: absolute;
+            top: 66%;
+            left: 0;
+            right: 0;
+            height: 100px;
+            width: 30%;
+            margin: auto;
+            background-color: #648cc630;
+            filter: blur(2em);
+            opacity: 0.7;
+            transform: perspective(10px) rotateX(5deg) scale(1, 0.5);
+            z-index: 0;
+        }
+
+        .ticket-mask {
+            position: absolute;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            mask-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, white 20px);
+            perspective: 1000px;
+            top: calc(50% - 142px);
+            left: 0;
+            right: 0;
+            height: 100%;
+            min-height: 1500px;
+        }
+
+        .ticket {
+            float: left;
+            animation: ticket-move 11s ease-in-out infinite;
+            transform: translateY(50px);
+            perspective: 3000px;
+        }
+
+        @keyframes ticket-move {
+            0% { transform: translateY(-300px); }
+            7% { transform: translateY(-250px); }
+            12% { transform: translateY(-200px); }
+            16% { transform: translateY(-170px); }
+            22% { transform: translateY(-100px); }
+            27% { transform: translateY(-40px); }
+            34%, 88% { transform: translateY(45px); }
+            100% { transform: translateY(100%) rotateX(160deg) scale(5); }
+        }
+
+        .ticket:hover .ticket-flip-container {
+            transform: rotateY(180deg);
+        }
+
+        .ticket-flip-container {
+            transition: 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .float {
+            transform-style: preserve-3d;
+            pointer-events: none;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .front, .back {
+            display: inline-block;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .front {
+            z-index: 1;
+        }
+
+        .back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotateY(-180deg);
+        }
+
+        .ticket-body {
+            display: block;
+            position: relative;
+            width: 340px;
+            margin-bottom: 20px;
+            padding: 0;
+            border-radius: 7px 7px 0 0;
+            background-color: white;
+            background: linear-gradient(to bottom, white, #dcfffd);
+            color: black;
+            text-align: center;
+        }
+
+        .ticket-body svg,
+        .ticket-body img {
+            pointer-events: none;
+        }
+
+        .ticket-body .bold {
+            font-weight: 800;
+        }
+
+        .ticket-body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            mask-image: linear-gradient(white 50%, transparent 100%);
+            border-radius: 7px 7px 0 0;
+            background: radial-gradient(at 30% -5%, #90f1f1, #d3ccf0, rgba(255, 255, 255, 0) 25%),
+                radial-gradient(at 30% 40%, #aad1f0, rgba(255, 255, 255, 0) 20%),
+                radial-gradient(at 50% 70%, #c4f2e5, rgba(255, 255, 255, 0) 30%),
+                radial-gradient(at 70% 0%, #d3ccf0, rgba(255, 255, 255, 0) 20%),
+                linear-gradient(75deg, #90f1f1 5%, rgba(255, 255, 255, 0), #aad1f0, rgba(255, 255, 255, 0), #e9d0ed, rgba(255, 255, 255, 0), #d3ccf0, rgba(255, 255, 255, 0), #c4f2e5 90%);
+        }
+
+        .ticket-body::after {
+            content: "";
+            display: block;
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            background:
+                -webkit-linear-gradient(-135deg, #dcfffd 50%, transparent 50%) 0 50%,
+                -webkit-linear-gradient(-45deg, #dcfffd 50%, transparent 50%) 0 50%,
+                transparent;
+            background-repeat: repeat-x;
+            background-size: 16px 16px, 16px 16px, cover, cover;
+            height: 16px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .ticket-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 15px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.4);
+            text-align: left;
+            height: 54px;
+        }
+
+        .ticket-header::after,
+        .ticket-header::before {
+            content: "";
+            display: block;
+            width: 13px;
+            height: 13px;
+            background-color: #0a0a0f;
+            position: absolute;
+            border-radius: 50%;
+            z-index: 11;
+            bottom: -7px;
+        }
+
+        .ticket-header::after { left: -8px; }
+        .ticket-header::before { right: -8px; }
+
+        .ticket-name {
+            font-weight: 300;
+            font-size: 1.05em;
+            line-height: normal;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: -2px;
+        }
+
+        .ticket-name span {
+            display: inline-block;
+        }
+
+        .ticket-name .bold {
+            font-weight: 800;
+        }
+
+
+        .ticket-contents {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 180px;
+            position: relative;
+        }
+
+        .ticket-event {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            margin-top: -20px;
+            font-weight: 600;
+        }
+
+        .ticket-score {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ticket-score-label {
+            font-size: 13px;
+            letter-spacing: 0.3em;
+            margin-top: 8px;
+            color: #2f4c8b;
+            opacity: 0.8;
+        }
+
+        .ticket-number {
+            position: absolute;
+            left: 15px;
+            bottom: -6px;
+            font-size: 1.5em;
+            color: #b5ddff;
+            font-weight: bolder;
+        }
+
+
+        .ticket-reflex {
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            bottom: -5px;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .ticket-reflex::before {
+            content: "";
+            position: absolute;
+            width: 300px;
+            background: linear-gradient(to right,
+                rgba(221, 249, 255, 0.4) 10%,
+                rgba(221, 245, 255, 0.7) 60%,
+                rgba(221, 246, 255, 0.6) 60%,
+                rgba(221, 255, 254, 0.4) 90%);
+            top: -10%;
+            bottom: -10%;
+            left: -132%;
+            transform: translateX(0) skew(-30deg);
+            transition: all 0.7s ease;
+        }
+
+        .ticket:hover .ticket-reflex::before,
+        .float:hover .ticket-reflex::before {
+            transform: translate(280%, 0) skew(-30deg);
+        }
+
+        .float .front .ticket-reflex::before {
+            transition-delay: 0.3s;
+        }
+
+        /* 뒷면 스타일 */
+        .back .ticket-contents {
+            min-height: 220px;
+        }
+
+        /* 앞면 높이를 뒷면과 맞춤 */
+        .front .ticket-contents {
+            min-height: 220px;
+        }
+
+        .ticket-back-info {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .ticket-back-info .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+        }
+
+        .ticket-back-info .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .ticket-back-info .info-label {
+            color: #666;
+        }
+
+        .ticket-back-info .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+
+        .ticket-date {
+            display: flex;
+            gap: 2px;
+        }
+
+        .ticket-date .slash {
+            padding: 0 1px;
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        /* QR코드 스타일 */
+        .ticket-qrcode {
+            position: absolute;
+            right: 15px;
+            bottom: -8px;
+        }
+
+        .ticket-qrcode img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            opacity: 0.9;
+        }
+
+        .back .ticket-qrcode {
+            position: relative;
+            right: auto;
+            bottom: auto;
+            margin-top: 15px;
+        }
+
+        .back .ticket-qrcode img {
+            width: 80px;
+            height: 80px;
+            animation: breath 3s ease-in-out infinite;
+        }
+
+        @keyframes breath {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* SVG 큐브 아이콘 */
+        .icon-cube {
+            position: absolute;
+            height: 110%;
+            z-index: 1;
+            top: -3px;
+            left: 0;
+            right: 0;
+            margin: auto;
+            mix-blend-mode: soft-light;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .icon-cube path {
+            animation-delay: calc(var(--i) * 100ms) !important;
+            transform-origin: center;
+        }
+
+        .icon-cube .path-center {
+            animation: path-center 3s ease-in-out infinite;
+        }
+
+        @keyframes path-center {
+            50% { transform: scale(1.3); }
+        }
+
+        .icon-cube .path-t {
+            animation: path-t 1.6s ease-in-out infinite;
+        }
+
+        @keyframes path-t {
+            50% { transform: translateY(1px); }
+        }
+
+        .icon-cube .path-tl {
+            animation: path-tl 1.6s ease-in-out infinite;
+        }
+
+        @keyframes path-tl {
+            50% { transform: translateX(1px) translateY(1px); }
+        }
+
+        .icon-cube .path-tr {
+            animation: path-tr 1.6s ease-in-out infinite;
+        }
+
+        @keyframes path-tr {
+            50% { transform: translateX(-1px) translateY(1px); }
+        }
+
+        .icon-cube .path-br {
+            animation: path-br 1.6s ease-in-out infinite;
+        }
+
+        @keyframes path-br {
+            50% { transform: translateX(-1px) translateY(-1px); }
+        }
+
+        .icon-cube .path-bl {
+            animation: path-bl 1.6s ease-in-out infinite;
+        }
+
+        @keyframes path-bl {
+            50% { transform: translateX(1px) translateY(-1px); }
+        }
+
+        .icon-cube .path-b {
+            animation: path-b 1.6s ease-in-out infinite;
+        }
+
+        @keyframes path-b {
+            50% { transform: translateY(-1px); }
+        }
+
+        /* noise 효과 */
+        .noise {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0.05;
+            mask-image: linear-gradient(transparent 5%, white 30%, white 70%, transparent 95%);
+            filter: grayscale(1);
+            pointer-events: none;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
@@ -544,6 +1108,114 @@
             <div class="ai-badge">AI 피드백</div>
             <h1 class="ai-title">TicketPro AI 코치</h1>
             <p class="ai-subtitle">Gemini AI 기반 실시간 분석</p>
+        </div>
+
+        <!-- 영수증 티켓 섹션 -->
+        <div class="receipt-section">
+            <!-- output 빛나는 효과 -->
+            <div class="output">
+                <div class="wrap-colors-1">
+                    <div class="bg-colors"></div>
+                </div>
+                <div class="wrap-colors-2">
+                    <div class="bg-colors"></div>
+                </div>
+                <div class="cover"></div>
+            </div>
+
+            <!-- 티켓 영역 (슬라이드 다운 애니메이션) -->
+            <div class="area">
+                <div class="ticket-mask">
+                    <div class="ticket">
+                        <div class="ticket-flip-container">
+                            <div class="float">
+                                <!-- 앞면 -->
+                                <div class="front">
+                                    <div class="ticket-body">
+                                        <div class="ticket-reflex"></div>
+                                        <!-- SVG 큐브 아이콘 -->
+                                        <svg class="icon-cube" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path style="--i: 1" class="path-center" d="M12 12.75L14.25 11.437M12 12.75L9.75 11.437M12 12.75V15" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path style="--i: 2" class="path-t" d="M9.75 3.562L12 2.25L14.25 3.563" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path style="--i: 3" class="path-tr" d="M21 7.5L18.75 6.187M21 7.5V9.75M21 7.5L18.75 8.813" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path style="--i: 4" class="path-br" d="M21 14.25V16.5L18.75 17.813" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path style="--i: 5" class="path-b" d="M12 21.75L14.25 20.437M12 21.75V19.5M12 21.75L9.75 20.437" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path style="--i: 6" class="path-bl" d="M5.25 17.813L3 16.5V14.25" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path style="--i: 7" class="path-tl" d="M3 7.5L5.25 6.187M3 7.5L5.25 8.813M3 7.5V9.75" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                        <header class="ticket-header">
+                                            <div class="ticket-name">
+                                                <div>
+                                                    <span>T</span><span>I</span><span>C</span><span>K</span><span>E</span><span>T</span>
+                                                </div>
+                                                <div>
+                                                    <span class="bold">P</span><span class="bold">R</span><span class="bold">O</span>
+                                                </div>
+                                            </div>
+                                        </header>
+                                        <div class="ticket-contents">
+                                            <div class="ticket-event">
+                                                <div class="ticket-score" id="ticketScore">-</div>
+                                                <div class="ticket-score-label">TOTAL SCORE</div>
+                                            </div>
+                                            <div class="ticket-number" id="ticketNumber">#001</div>
+                                            <div class="ticket-qrcode">
+                                                <img src="../../../mjc_qr.png" alt="QR"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 뒷면 -->
+                                <div class="back">
+                                    <div class="ticket-body">
+                                        <div class="ticket-reflex"></div>
+                                        <header class="ticket-header">
+                                            <div class="ticket-name">
+                                                <div>
+                                                    <span>T</span><span>I</span><span>C</span><span>K</span><span>E</span><span>T</span>
+                                                </div>
+                                                <div>
+                                                    <span class="bold">P</span><span class="bold">R</span><span class="bold">O</span>
+                                                </div>
+                                            </div>
+                                            <div class="ticket-date" id="ticketDate">
+                                                <span class="bold">-</span>
+                                                <span class="slash">/</span>
+                                                <span>-</span>
+                                                <span class="slash">/</span>
+                                                <span>-</span>
+                                            </div>
+                                        </header>
+                                        <div class="ticket-contents">
+                                            <div class="ticket-back-info">
+                                                <div class="info-row">
+                                                    <span class="info-label">카테고리</span>
+                                                    <span class="info-value" id="ticketCategory">-</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="info-label">난이도</span>
+                                                    <span class="info-value" id="ticketDifficulty">-</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="info-label">소요시간</span>
+                                                    <span class="info-value" id="ticketTime">-</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="info-label">클릭수</span>
+                                                    <span class="info-value" id="ticketClicks">-</span>
+                                                </div>
+                                                <div class="ticket-qrcode">
+                                                    <img src="../../../mjc_qr.png" alt="QR"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 콘텐츠 그리드 -->
@@ -695,10 +1367,34 @@
                 console.warn('게임 데이터가 없습니다. 연습을 먼저 진행해주세요.');
             }
 
-            document.getElementById('categoryValue').textContent = getCategoryName(gameData.category);
-            document.getElementById('difficultyValue').textContent = getDifficultyName(gameData.difficulty);
-            document.getElementById('timeValue').textContent = formatTime(gameData.elapsedTime);
-            document.getElementById('clicksValue').textContent = (gameData.clickCount || 0) + '회';
+            const categoryName = getCategoryName(gameData.category);
+            const difficultyName = getDifficultyName(gameData.difficulty);
+            const timeFormatted = formatTime(gameData.elapsedTime);
+            const clicksText = (gameData.clickCount || 0) + '회';
+
+            document.getElementById('categoryValue').textContent = categoryName;
+            document.getElementById('difficultyValue').textContent = difficultyName;
+            document.getElementById('timeValue').textContent = timeFormatted;
+            document.getElementById('clicksValue').textContent = clicksText;
+
+            // 영수증 티켓 데이터 채우기
+            document.getElementById('ticketCategory').textContent = categoryName;
+            document.getElementById('ticketDifficulty').textContent = difficultyName;
+            document.getElementById('ticketTime').textContent = timeFormatted;
+            document.getElementById('ticketClicks').textContent = clicksText;
+
+            // 날짜 표시
+            const now = new Date();
+            const dateStr = now.getFullYear() + '.' +
+                           String(now.getMonth() + 1).padStart(2, '0') + '.' +
+                           String(now.getDate()).padStart(2, '0') + ' ' +
+                           String(now.getHours()).padStart(2, '0') + ':' +
+                           String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('ticketDate').textContent = dateStr;
+
+            // 티켓 번호 생성 (랜덤)
+            const ticketNum = '#' + String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+            document.getElementById('ticketNumber').textContent = ticketNum;
 
             // 메트릭스 표시 (실제 데이터만 사용, 없으면 '-' 표시)
             const accuracy = gameData.accuracy;
@@ -1027,6 +1723,7 @@
             let current = 0;
             const duration = 1500;
             const startTime = performance.now();
+            const ticketScoreEl = document.getElementById('ticketScore');
 
             function update(currentTime) {
                 const elapsed = currentTime - startTime;
@@ -1037,6 +1734,10 @@
                 current = Math.round(eased * targetScore);
 
                 element.textContent = current;
+                // 티켓 점수도 함께 업데이트
+                if (ticketScoreEl) {
+                    ticketScoreEl.textContent = current;
+                }
 
                 if (progress < 1) {
                     requestAnimationFrame(update);
@@ -1096,5 +1797,21 @@
             setTimeout(getAIFeedback, 300);
         });
     </script>
+
+    <!-- noise 효과 -->
+    <div class="noise">
+        <svg height="100%" width="100%">
+            <defs>
+                <pattern height="500" width="500" patternUnits="userSpaceOnUse" id="noise-pattern">
+                    <filter y="0" x="0" id="noise">
+                        <feTurbulence stitchTiles="stitch" numOctaves="3" baseFrequency="0.65" type="fractalNoise"></feTurbulence>
+                        <feBlend mode="screen"></feBlend>
+                    </filter>
+                    <rect filter="url(#noise)" height="500" width="500"></rect>
+                </pattern>
+            </defs>
+            <rect fill="url(#noise-pattern)" height="100%" width="100%"></rect>
+        </svg>
+    </div>
 </body>
 </html>
