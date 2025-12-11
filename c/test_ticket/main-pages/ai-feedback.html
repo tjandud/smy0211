@@ -720,10 +720,12 @@
             document.getElementById('efficiencyValue').textContent = efficiency ? efficiency + '점' : '-';
         }
 
-        // AI 피드백 요청
-        async function getAIFeedback() {
+        // AI 피드백 요청 (재시도 로직 포함)
+        async function getAIFeedback(retryCount = 0) {
             const aiAnalysisContent = document.getElementById('aiAnalysisContent');
             const totalScoreEl = document.getElementById('totalScore');
+            const MAX_RETRIES = 3;
+            const RETRY_DELAY = 5000; // 5초 대기
 
             // API 키가 없으면 먼저 로드 (암호화된 키 자동 복호화)
             if (!API_KEY) {
@@ -760,6 +762,32 @@
                     })
                 });
 
+                // 429 Rate Limit 오류 처리
+                if (response.status === 429) {
+                    if (retryCount < MAX_RETRIES) {
+                        const waitTime = RETRY_DELAY * (retryCount + 1);
+                        aiAnalysisContent.innerHTML = `
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div class="loading-text">API 요청 제한에 도달했습니다.<br>${Math.ceil(waitTime/1000)}초 후 재시도합니다... (${retryCount + 1}/${MAX_RETRIES})</div>
+                            </div>
+                        `;
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        return getAIFeedback(retryCount + 1);
+                    } else {
+                        // 최대 재시도 횟수 초과 - 로컬 피드백 생성
+                        const localResult = generateLocalFeedback(gameData);
+                        animateScore(totalScoreEl, localResult.score);
+                        aiAnalysisContent.innerHTML = localResult.analysisHTML + `
+                            <div style="margin-top: 16px; padding: 12px; background: rgba(249, 115, 22, 0.1); border-radius: 8px; font-size: 13px; color: var(--accent-orange);">
+                                ⚠️ AI 서버가 바쁩니다. 기본 분석 결과를 표시합니다.<br>
+                                잠시 후 다시 시도해주세요.
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+
                 const data = await response.json();
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
@@ -774,14 +802,88 @@
 
             } catch (error) {
                 console.error('AI 피드백 오류:', error);
-                aiAnalysisContent.innerHTML = `
-                    <div class="analysis-content" style="color: #ef4444;">
-                        AI 피드백을 불러오는 중 오류가 발생했습니다.<br>
-                        잠시 후 다시 시도해주세요.
+
+                // 네트워크 오류 시 재시도
+                if (retryCount < MAX_RETRIES) {
+                    const waitTime = RETRY_DELAY * (retryCount + 1);
+                    aiAnalysisContent.innerHTML = `
+                        <div class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">연결 오류. ${Math.ceil(waitTime/1000)}초 후 재시도합니다... (${retryCount + 1}/${MAX_RETRIES})</div>
+                        </div>
+                    `;
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    return getAIFeedback(retryCount + 1);
+                }
+
+                // 최종 실패 시 로컬 피드백
+                const localResult = generateLocalFeedback(gameData);
+                animateScore(totalScoreEl, localResult.score);
+                aiAnalysisContent.innerHTML = localResult.analysisHTML + `
+                    <div style="margin-top: 16px; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; font-size: 13px; color: #ef4444;">
+                        ⚠️ AI 피드백을 불러오는 중 오류가 발생했습니다.<br>
+                        기본 분석 결과를 표시합니다.
                     </div>
                 `;
-                totalScoreEl.textContent = '-';
             }
+        }
+
+        // 로컬 피드백 생성 (API 실패 시 대체)
+        function generateLocalFeedback(data) {
+            const elapsedSec = (data.elapsedTime || 0) / 1000;
+            const clicks = data.clickCount || 0;
+            const difficulty = getDifficultyName(data.difficulty);
+
+            // 점수 계산
+            let score = 70;
+            if (elapsedSec < 10) score += 15;
+            else if (elapsedSec < 20) score += 10;
+            else if (elapsedSec < 30) score += 5;
+
+            if (clicks <= 5) score += 10;
+            else if (clicks <= 10) score += 5;
+
+            if (data.difficulty === 'hard') score += 5;
+
+            score = Math.min(100, Math.max(0, score));
+
+            const analysisHTML = `
+                <div class="analysis-section">
+                    <div class="analysis-title">📊 종합 평가</div>
+                    <div class="analysis-content">
+                        ${difficulty} 난이도에서 ${elapsedSec.toFixed(1)}초 만에 성공하셨습니다!
+                        ${clicks}번의 클릭으로 미션을 완료했네요.
+                        ${score >= 80 ? '훌륭한 성과입니다! 🎉' : score >= 60 ? '좋은 시도였습니다! 💪' : '더 연습하면 좋아질 거예요! 화이팅! 🔥'}
+                    </div>
+                </div>
+                <div class="analysis-section">
+                    <div class="analysis-title">✨ 잘한 점</div>
+                    <div class="analysis-content">
+                        <ul class="analysis-list">
+                            <li>미션을 성공적으로 완료했습니다</li>
+                            ${elapsedSec < 15 ? '<li>빠른 시간 내에 완료했습니다</li>' : ''}
+                            ${clicks <= 8 ? '<li>효율적인 클릭으로 진행했습니다</li>' : ''}
+                        </ul>
+                    </div>
+                </div>
+                <div class="analysis-section">
+                    <div class="analysis-title">💡 개선할 점</div>
+                    <div class="analysis-content">
+                        <ul class="analysis-list">
+                            ${elapsedSec >= 15 ? '<li>시간을 단축하기 위해 UI 위치를 미리 파악해보세요</li>' : '<li>현재 속도를 유지하면서 정확도를 높여보세요</li>'}
+                            ${clicks > 8 ? '<li>불필요한 클릭을 줄여보세요</li>' : '<li>더 어려운 난이도에 도전해보세요</li>'}
+                        </ul>
+                    </div>
+                </div>
+                <div class="analysis-section">
+                    <div class="analysis-title">🎯 실전 팁</div>
+                    <div class="analysis-content">
+                        실제 티케팅에서는 미리 로그인하고, 결제 정보를 저장해두면 더 빠르게 진행할 수 있습니다!
+                    </div>
+                </div>
+            `;
+
+            return { score, analysisHTML };
         }
 
         // 프롬프트 생성

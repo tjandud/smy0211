@@ -72,52 +72,71 @@ async function saveBookingRecord(category, difficulty, elapsedTime, selectionDat
         return null;
     }
 
-    // 먼저 기존 기록이 있는지 확인
-    const { data: existing, error: findError } = await supabase
-        .from('booking_records')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('category', category)
-        .eq('difficulty', difficulty)
-        .single();
+    // 카테고리/난이도 한글 변환
+    const categoryMap = {
+        'concert': '콘서트', 'goods': '굿즈', 'restaurant': '식당',
+        '콘서트': '콘서트', '굿즈': '굿즈', '식당': '식당'
+    };
+    const difficultyMap = {
+        'easy': '쉬움', 'normal': '보통', 'hard': '어려움',
+        '쉬움': '쉬움', '보통': '보통', '어려움': '어려움'
+    };
+    const catKorean = categoryMap[category] || category;
+    const diffKorean = difficultyMap[difficulty] || difficulty;
 
-    if (existing) {
-        // 기존 기록이 있으면 업데이트
-        const { data, error } = await supabase
+    try {
+        // 먼저 기존 기록이 있는지 확인 (.single() 대신 .maybeSingle() 사용)
+        const { data: existing, error: findError } = await supabase
             .from('booking_records')
-            .update({
-                elapsed_time: elapsedTime,
-                selection_data: selectionData,
-                created_at: new Date().toISOString()
-            })
-            .eq('id', existing.id)
-            .select()
-            .single();
+            .select('id')
+            .eq('user_id', userId)
+            .eq('category', catKorean)
+            .eq('difficulty', diffKorean)
+            .maybeSingle();
 
-        if (error) {
-            console.error('기록 업데이트 오류:', error);
-            return null;
+        if (findError) {
+            console.error('기존 기록 조회 오류:', findError);
         }
-        return data.id;
-    } else {
-        // 기존 기록이 없으면 새로 삽입
-        const { data, error } = await supabase
-            .from('booking_records')
-            .insert({
-                user_id: userId,
-                category: category,
-                difficulty: difficulty,
-                elapsed_time: elapsedTime,
-                selection_data: selectionData
-            })
-            .select()
-            .single();
 
-        if (error) {
-            console.error('기록 저장 오류:', error);
-            return null;
+        if (existing && existing.id) {
+            // 기존 기록이 있으면 업데이트
+            const { data, error } = await supabase
+                .from('booking_records')
+                .update({
+                    elapsed_time: elapsedTime,
+                    selection_data: selectionData,
+                    created_at: new Date().toISOString()
+                })
+                .eq('id', existing.id)
+                .select();
+
+            if (error) {
+                console.error('기록 업데이트 오류:', error);
+                return null;
+            }
+            return data && data[0] ? data[0].id : existing.id;
+        } else {
+            // 기존 기록이 없으면 새로 삽입
+            const { data, error } = await supabase
+                .from('booking_records')
+                .insert({
+                    user_id: userId,
+                    category: catKorean,
+                    difficulty: diffKorean,
+                    elapsed_time: elapsedTime,
+                    selection_data: selectionData
+                })
+                .select();
+
+            if (error) {
+                console.error('기록 저장 오류:', error);
+                return null;
+            }
+            return data && data[0] ? data[0].id : true;
         }
-        return data.id;
+    } catch (err) {
+        console.error('기록 저장 예외:', err);
+        return null;
     }
 }
 
