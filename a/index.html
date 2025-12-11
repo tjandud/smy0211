@@ -1348,45 +1348,49 @@
     <script>
         // 사용자 카운트 기능
         (function() {
-            const countKey = 'ticketpro_user_count';
-            const visitedKey = 'ticketpro_visited';
+            try {
+                const countKey = 'ticketpro_user_count';
+                const visitedKey = 'ticketpro_visited';
 
-            // 현재 카운트 가져오기 (localStorage)
-            let count = parseInt(localStorage.getItem(countKey)) || 1247;
+                // 현재 카운트 가져오기 (localStorage)
+                let count = parseInt(localStorage.getItem(countKey)) || 1247;
 
-            // 처음 방문한 경우 카운트 증가
-            if (!sessionStorage.getItem(visitedKey)) {
-                count++;
-                localStorage.setItem(countKey, count);
-                sessionStorage.setItem(visitedKey, 'true');
-            }
-
-            // 숫자 포맷팅 (1000 이상이면 K로 표시)
-            function formatNumber(num) {
-                if (num >= 1000) {
-                    return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+                // 처음 방문한 경우 카운트 증가
+                if (!sessionStorage.getItem(visitedKey)) {
+                    count++;
+                    localStorage.setItem(countKey, count);
+                    sessionStorage.setItem(visitedKey, 'true');
                 }
-                return num.toString();
-            }
 
-            // 카운트 애니메이션
-            const countElement = document.getElementById('user-count');
-            if (countElement) {
-                let current = 0;
-                const target = count;
-                const duration = 1500;
-                const step = target / (duration / 16);
-
-                function animate() {
-                    current += step;
-                    if (current < target) {
-                        countElement.textContent = formatNumber(Math.floor(current));
-                        requestAnimationFrame(animate);
-                    } else {
-                        countElement.textContent = formatNumber(target);
+                // 숫자 포맷팅 (1000 이상이면 K로 표시)
+                function formatNumber(num) {
+                    if (num >= 1000) {
+                        return (num / 1000).toFixed(1).replace('.0', '') + 'K';
                     }
+                    return num.toString();
                 }
-                animate();
+
+                // 카운트 애니메이션
+                const countElement = document.getElementById('user-count');
+                if (countElement) {
+                    let current = 0;
+                    const target = count;
+                    const duration = 1500;
+                    const step = target / (duration / 16);
+
+                    function animate() {
+                        current += step;
+                        if (current < target) {
+                            countElement.textContent = formatNumber(Math.floor(current));
+                            requestAnimationFrame(animate);
+                        } else {
+                            countElement.textContent = formatNumber(target);
+                        }
+                    }
+                    animate();
+                }
+            } catch (e) {
+                console.warn('Storage 접근 불가:', e);
             }
         })();
     </script>
